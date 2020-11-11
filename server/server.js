@@ -47,7 +47,7 @@ app.post('/api/login',(req,res)=>{
                     });
                 }else{
                     
-                    const token=jsonwebtoken.sign({user:user.Email},jwtSecret,{expiresIn:expireTime});
+                    const token=jsonwebtoken.sign({user:user.UserId},jwtSecret,{expiresIn:expireTime});
                     
                     res.cookie('token',token,{httpOnly:true,sameSite:true,maxAge:1000*expireTime});
                     res.json({UserId:user.UserId,
@@ -90,6 +90,22 @@ app.use(
 app.post('/api/auth',(req,res)=>{
     const user=req.user && req.user.user;
     res.json({Email:user});
+});
+
+app.post('/api/lectures',(req,res)=>{
+    const user=req.user && req.user.user;
+    const date_start=req.body.date_start;
+    const date_end =req.body.date_end;
+
+    dao.getLectures(user,date_start,date_end).then((data)=>{
+        res.json(data);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+
+
 });
 
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));

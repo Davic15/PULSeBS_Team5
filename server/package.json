@@ -1,12 +1,12 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Car Rental REST API server",
+  "description": "PULSeBS",
   "main": "server.js",
   "scripts": {
     "test": "jest"
   },
-  "author": "Web Applications I",
+  "author": "Team 5 SoftEng2",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.0",
