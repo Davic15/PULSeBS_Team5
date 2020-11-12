@@ -30,11 +30,7 @@ app.post('/api/hash',(req,res)=>{
 
 app.get('/api/seats/:lecture_id',(req,res)=>{
     dao.getSeatsCount(req.params.lecture_id).then((obj)=>{
-        res.json({
-            LectureId:obj.LectureId,
-            BookedSeats:obj.BookedSeats,
-            TotalSeats:obj.TotalSeats
-            });
+        res.json(obj);
     }).catch((e)=>{
         res.status(400).json({errors:[{'param':'Server','msg':e}]});
     });
@@ -120,9 +116,17 @@ app.post('/api/lectures',(req,res)=>{
     });
 });
 
-app.post('/api/booking',(req,res)=>{
+app.post('/api/book',(req,res)=>{
     const user=req.user && req.user.user;
     const lecture_id=req.body.lecture_id;
+    dao.bookLecture(user,lecture_id).then((obj)=>{
+        console.log(JSON.stringify(obj));
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
 });
 
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));

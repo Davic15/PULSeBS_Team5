@@ -50,6 +50,8 @@ exports.generateHash=function(newpassword){
     })
 };
 
+
+//return lectures a student can book in a certain time frame
 exports.getLectures=function(userId,date_start,date_end){
     return new Promise(
         (resolve,reject)=>{
@@ -96,7 +98,9 @@ exports.getLectures=function(userId,date_start,date_end){
     );
 }
 
+//return true if the studends hasn't already booked the lecture
 exports.checkBooking=function(user_id,lecture_id){
+
     return new Promise(
         (resolve,reject)=>{
         const sql="SELECT count(*) as n FROM Booking WHERE StudentId=? and LectureId=?";
@@ -111,6 +115,7 @@ exports.checkBooking=function(user_id,lecture_id){
     });
 }
 
+//return true if the student is enrolled for the course of the lecture he is trying to attend
 exports.checkCourses=function(user_id,lecture_id){
     return new Promise(
         (resolve,reject)=>{
@@ -128,18 +133,21 @@ exports.checkCourses=function(user_id,lecture_id){
     });
 }
 
+//returns number og booked seats and the total seats for a lecture
 exports.getSeatsCount=function(lecture_id){
+    
     return new Promise(
         (resolve,reject)=>{
         const sql="SELECT Lecture.LectureId, count(distinct Booking.BookingId)as BookedSeats, Seats as TotalSeats "+
                     "FROM Classroom, Lecture LEFT JOIN Booking ON  Booking.LectureId=Lecture.LectureId "+
-                    "WHERE  Classroom.ClassroomId=Lecture.ClassRoomId " +
                     "and Lecture.LectureId=? and Booking.State=0 "+
+                    "WHERE  Classroom.ClassroomId=Lecture.ClassRoomId " +
                     "Group BY Lecture.LectureId,Seats";
         db.get(sql, [lecture_id], (err, row) => {
             if(err)
                 reject(err);
             else if(row)
+                console.log(JSON.stringify(row));
                 resolve({
                     LectureId:row.LectureId,
                     BookedSeats:row.BookedSeats,
@@ -149,17 +157,41 @@ exports.getSeatsCount=function(lecture_id){
     });
 }
 
+//book a lecture for a student
+exports.bookLecture=async function(user_id,lecture_id){
 
+    return new Promise(
+        async (resolve,reject)=>{
+        
+        const isBooked=await this.checkBooking(user_id,lecture_id);
+        if(isBooked.ok==false)
+            resolve({error:"already booked"});
+        else{
+            const isEnrolled=await this.checkCourses(user_id,lecture_id);
+            if(isEnrolled.ok==true){
 
+                const seats=await this.getSeatsCount(lecture_id);
+                console.log(JSON.stringify(seats));
+                if(seats.LectureId){
+                    let enqueue=0;
+                    if(seats.BookedSeats>=seats.TotalSeats)
+                        enqueue=1;
+                    console.log(enqueue);
+                    const sql="INSERT INTO Booking (StudentId,LectureId,Timestamp,Present,State) "+
+                                "VALUES (?,?,?,?,?)";
+                                db.run(sql,[user_id,lecture_id,Date.now(),1,enqueue],
+                                    function(err){
+                                        if(err){
+                                            reject(err);
+                                        }
+                                        else
+                                            resolve({BookingId:this.lastID,Enquueued:enqueue});
+                                    });
+                }else
+                    reject({error:"server error"})
+            }else
+                resolve({error:"student not enrolled"});
+        }
+    });
+}
 
-
-   /* const sql="INSERT INTO queue_log (timestamp,timestamp_served,req_type,served,counter,waiting_time)  VALUES(?,'NULL',?,0,0,?)";   
-    db.run(sql,[timestamp,params.req_type,waiting_time],
-        function(err){
-            if(err){
-                reject(err);
-            }
-            else
-                resolve({id:this.lastID, display_id:this.lastID-baseid, timestamp:timestamp,req_type:params.req_type,req_name:req_name.name,waiting_time:waiting_time});
-        });
-    });*/
