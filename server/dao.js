@@ -34,6 +34,8 @@ const db=new sqlite.Database('./PULSEeBS_db',(err)=>{
     );
 }
 
+
+
 //caompares two crypted passwords
 exports.checkPassword=function(clearpwd,password){
     return bcrypt.compareSync(clearpwd,password);
@@ -94,13 +96,70 @@ exports.getLectures=function(userId,date_start,date_end){
     );
 }
 
-/*
-SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,#seats,Teacher.Name as TeacherName,Surname as TeacherSurnamem
-FROM Lecture,StudentCourse,User as Teacher, Course ,Classroom
-where 
-Lecture.CourseId=StudentCourse.CourseId 
-and Course.CourseId=studentCourse.CourseId
-and Teacher.UserId=Course.TeacherId
-and Lecture.ClassRoomId=Classroom.ClassroomId
-and StudentCourse.UserId=1
-*/
+exports.checkBooking=function(user_id,lecture_id){
+    return new Promise(
+        (resolve,reject)=>{
+        const sql="SELECT count(*) as n FROM Booking WHERE StudentId=? and LectureId=?";
+        db.get(sql, [user_id,lecture_id], (err, row) => {
+            if(err)
+                reject(err);
+            else if(row.n && row.n>0)
+                resolve({ok:false});
+            else
+                resolve({ok:true});
+        });
+    });
+}
+
+exports.checkCourses=function(user_id,lecture_id){
+    return new Promise(
+        (resolve,reject)=>{
+        const sql="SELECT COUNT(*) as n FROM StudentCourse,Course,Lecture "+
+                "where StudentCourse.CourseId=Course.CourseId and Lecture.CourseId=Course.CourseId "+
+                "and StudentCourse.UserId=? and Lecture.LectureId=?";
+        db.get(sql, [user_id,lecture_id], (err, row) => {
+            if(err)
+                reject(err);
+            else if(row.n && row.n>0)
+                resolve({ok:true});
+            else
+                resolve({ok:false});
+        });
+    });
+}
+
+exports.getSeatsCount=function(lecture_id){
+    return new Promise(
+        (resolve,reject)=>{
+        const sql="SELECT Lecture.LectureId, count(distinct Booking.BookingId)as BookedSeats, Seats as TotalSeats "+
+                    "FROM Classroom, Lecture LEFT JOIN Booking ON  Booking.LectureId=Lecture.LectureId "+
+                    "WHERE  Classroom.ClassroomId=Lecture.ClassRoomId " +
+                    "and Lecture.LectureId=? and Booking.State=0 "+
+                    "Group BY Lecture.LectureId,Seats";
+        db.get(sql, [lecture_id], (err, row) => {
+            if(err)
+                reject(err);
+            else if(row)
+                resolve({
+                    LectureId:row.LectureId,
+                    BookedSeats:row.BookedSeats,
+                    TotalSeats:row.TotalSeats
+                    });
+        });
+    });
+}
+
+
+
+
+
+   /* const sql="INSERT INTO queue_log (timestamp,timestamp_served,req_type,served,counter,waiting_time)  VALUES(?,'NULL',?,0,0,?)";   
+    db.run(sql,[timestamp,params.req_type,waiting_time],
+        function(err){
+            if(err){
+                reject(err);
+            }
+            else
+                resolve({id:this.lastID, display_id:this.lastID-baseid, timestamp:timestamp,req_type:params.req_type,req_name:req_name.name,waiting_time:waiting_time});
+        });
+    });*/

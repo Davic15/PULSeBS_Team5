@@ -26,6 +26,20 @@ app.post('/api/hash',(req,res)=>{
     console.log(hash);
     res.json({Password:hash});
 });
+/////////////////////////////
+
+app.get('/api/seats/:lecture_id',(req,res)=>{
+    dao.getSeatsCount(req.params.lecture_id).then((obj)=>{
+        res.json({
+            LectureId:obj.LectureId,
+            BookedSeats:obj.BookedSeats,
+            TotalSeats:obj.TotalSeats
+            });
+    }).catch((e)=>{
+        res.status(400).json({errors:[{'param':'Server','msg':e}]});
+    });
+});
+
 
 app.post('/api/login',(req,res)=>{
     const email=req.body.email;
@@ -87,9 +101,9 @@ app.use(
 
 
 ///API to test if i got the webtoken
-app.post('/api/auth',(req,res)=>{
+app.post('/api/auth',async (req,res)=>{
     const user=req.user && req.user.user;
-    res.json({Email:user});
+    res.json(ret);
 });
 
 app.post('/api/lectures',(req,res)=>{
@@ -104,8 +118,11 @@ app.post('/api/lectures',(req,res)=>{
             {errors:[{'param':'Server','msg':'Server error'}]}
         );
     });
+});
 
-
+app.post('/api/booking',(req,res)=>{
+    const user=req.user && req.user.user;
+    const lecture_id=req.body.lecture_id;
 });
 
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));
