@@ -206,7 +206,6 @@ exports.getTeacherLectures=function(teacher_id, date_start,date_end){
                         "and Teacher.UserId==? "+
                         "and date(Start)>=date(?) and date(Start)<=date(?)";
                 db.all(sql,[teacher_id,date_start,date_end],(err,rows)=>{
-                    console.log(JSON.stringify(rows));
                     if (err){
                         reject(err);
                     }
@@ -226,6 +225,82 @@ exports.getTeacherLectures=function(teacher_id, date_start,date_end){
                                     ClassroomId:row.ClassroomId,
                                     ClassroomName:row.ClassroomName,
                                     Seats:row.Seats
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
+
+exports.getStudents=function(lecture_id){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql="SELECT BookingId,StudentId,Timestamp,Present,State,Name,Surname FROM Booking,User as Student "+
+                    "where Booking.StudentId=Student.UserId "+
+                    "and Booking.LectureId=?";
+                db.all(sql,[lecture_id],(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        resolve(undefined)
+                    }else {
+                        ret_array=[];
+                        for (row of rows){
+                            ret_array.push(
+                                {
+                                    BookingId:row.BookingId,
+                                    StudentId:row.StudentId,
+                                    Timestamp:row.Timestamp,
+                                    Present:row.Present,
+                                    State:row.State,
+                                    Name:row.Name,
+                                    Surname:row.Surname
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
+
+exports.getBookings=function(student_id){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql="SELECT BookingId,Lecture.LectureId,Course.CourseId,Course.Name as CourseName, Classroom.Name as ClassroomName,Start,End,Present,Lecture.State as LectureState, Booking.State as BookingState,Timestamp FROM Booking,Course,Lecture,Classroom "+
+                        "where Lecture.CourseId=Course.CourseId "+
+                        "and Booking.LectureId=Lecture.LectureId "+
+                         "and Lecture.CourseId=Classroom.ClassroomId "+
+                        "and Booking.StudentId=?";
+                db.all(sql,[student_id],(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        resolve(undefined)
+                    }else {
+                        ret_array=[];
+                        for (row of rows){
+                            ret_array.push(
+                                {
+                                    BookingId:row.BookingId,
+                                    LectureId:row.LectureId,
+                                    CourseId:row.CourseId,
+                                    CourseName:row.CourseName,
+                                    ClassroomName:row.ClassroomName,
+                                    Start:row.Start,
+                                    End:row.End,
+                                    Present:row.Present,
+                                    LectureState:row.LectureState,
+                                    BookingState:row.BookingState,
+                                    Timestamp:row.Timestamp
                                 }
                             );
                         }

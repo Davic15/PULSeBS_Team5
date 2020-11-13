@@ -97,7 +97,7 @@ app.use(
 
 
 
-app.post('/api/lectures',(req,res)=>{
+app.post('/api/student_lectures',(req,res)=>{
     const user=req.user && req.user.user;
     const date_start=req.body.date_start;
     const date_end =req.body.date_end;
@@ -117,6 +117,34 @@ app.post('/api/teacherlectures',(req,res)=>{
     const date_end =req.body.date_end;
 
     dao.getTeacherLectures(user,date_start,date_end).then((data)=>{
+        res.json(data);
+    }).catch((err)=>{
+        console.log(JSON.stringify(err));
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
+app.post('/api/studentlist',(req,res)=>{
+    const user=req.user && req.user.user;
+    const lecture_id=req.body.lecture_id;
+
+    dao.getStudents(lecture_id).then((data)=>{
+        res.json(data);
+    }).catch((err)=>{
+        console.log(JSON.stringify(err));
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
+app.post('/api/bookinglist',(req,res)=>{
+    const user=req.user && req.user.user;
+    const student_id=req.body.student_id;
+
+    dao.getBookings(student_id).then((data)=>{
         res.json(data);
     }).catch((err)=>{
         console.log(JSON.stringify(err));
