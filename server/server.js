@@ -57,7 +57,7 @@ app.post('/api/login',(req,res)=>{
                     });
                 }else{
                     
-                    const token=jsonwebtoken.sign({user:user.UserId},jwtSecret,{expiresIn:expireTime});
+                    const token=jsonwebtoken.sign({user:user.UserId/*, role:user.Type*/},jwtSecret,{expiresIn:expireTime});
                     
                     res.cookie('token',token,{httpOnly:true,sameSite:true,maxAge:1000*expireTime});
                     res.json({UserId:user.UserId,
@@ -84,6 +84,11 @@ app.use(cookieParser());
 app.post('/api/logout',(req,res)=>{
     res.clearCookie('token').end();
 });
+
+function checkRole(user, roles) {
+    const role = user && user.role;
+    return roles.includes(role);
+}
 
 app.use(
     jwt({
