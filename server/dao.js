@@ -67,6 +67,7 @@ exports.getLectures=function(userId,date_start,date_end){
             db.all(sql,[userId,date_start,date_end],(err,rows)=>{
                 console.log(JSON.stringify(rows));
                     if (err){
+                        console.log(JSON.stringify(err));
                         reject(err);
                     }
                     else if(rows.length===0){
@@ -105,8 +106,10 @@ exports.checkBooking=function(user_id,lecture_id){
         (resolve,reject)=>{
         const sql="SELECT count(*) as n FROM Booking WHERE StudentId=? and LectureId=?";
         db.get(sql, [user_id,lecture_id], (err, row) => {
-            if(err)
+            if(err){
+                console.log(JSON.stringify(err));
                 reject(err);
+            }
             else if(row.n && row.n>0)
                 resolve({ok:false});
             else
@@ -123,8 +126,10 @@ exports.checkCourses=function(user_id,lecture_id){
                 "where StudentCourse.CourseId=Course.CourseId and Lecture.CourseId=Course.CourseId "+
                 "and StudentCourse.UserId=? and Lecture.LectureId=?";
         db.get(sql, [user_id,lecture_id], (err, row) => {
-            if(err)
+            if(err){
+                console.log(JSON.stringify(err));
                 reject(err);
+            }
             else if(row.n && row.n>0)
                 resolve({ok:true});
             else
@@ -144,9 +149,10 @@ exports.getSeatsCount=function(lecture_id){
                     "WHERE  Classroom.ClassroomId=Lecture.ClassRoomId " +
                     "Group BY Lecture.LectureId,Seats";
         db.get(sql, [lecture_id], (err, row) => {
-            if(err)
+            if(err){
+                console.log(JSON.stringify(err));
                 reject(err);
-            else if(row)
+            }else if(row)
                 console.log(JSON.stringify(row));
                 resolve({
                     LectureId:row.LectureId,
@@ -182,6 +188,7 @@ exports.bookLecture=async function(user_id,lecture_id){
                                 db.run(sql,[user_id,lecture_id,Date.now(),1,enqueue],
                                     function(err){
                                         if(err){
+                                            console.log(JSON.stringify(err));
                                             reject(err);
                                         }
                                         else
@@ -207,6 +214,7 @@ exports.getTeacherLectures=function(teacher_id, date_start,date_end){
                         "and date(Start)>=date(?) and date(Start)<=date(?)";
                 db.all(sql,[teacher_id,date_start,date_end],(err,rows)=>{
                     if (err){
+                        console.log(JSON.stringify(err));
                         reject(err);
                     }
                     else if(rows.length===0){
@@ -244,6 +252,7 @@ exports.getStudents=function(lecture_id){
                     "and Booking.LectureId=?";
                 db.all(sql,[lecture_id],(err,rows)=>{
                     if (err){
+                        console.log(JSON.stringify(err));
                         reject(err);
                     }
                     else if(rows.length===0){
@@ -281,6 +290,7 @@ exports.getBookings=function(student_id){
                         "and Booking.StudentId=?";
                 db.all(sql,[student_id],(err,rows)=>{
                     if (err){
+                        console.log(JSON.stringify(err));
                         reject(err);
                     }
                     else if(rows.length===0){
@@ -310,5 +320,37 @@ exports.getBookings=function(student_id){
             );
         }
     );
+}
+
+exports.cancelBooking=function(booking_id){
+    return new Promise( (resolve,reject)=>{
+        const sql="UPDATE Booking SET State=1 WHERE BookingId=? ";
+        db.run(sql,[booking_id],
+            function(err){
+                
+                if(err){
+                    console.log(JSON.stringify(err));
+                    reject(err);
+                }
+                else
+                    resolve("OK");
+            });
+        });
+}
+
+exports.changeLecture=function(lecture_id){
+    return new Promise( (resolve,reject)=>{
+        const sql="UPDATE Lecture SET State=2 WHERE LectureId=? ";
+        db.run(sql,[lecture_id],
+            function(err){
+                
+                if(err){
+                    console.log(JSON.stringify(err));
+                    reject(err);
+                }
+                else
+                    resolve("OK");
+            });
+        });
 }
 

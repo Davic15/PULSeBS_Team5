@@ -172,4 +172,28 @@ app.post('/api/book',(req,res)=>{
     });
 });
 
+app.post('/api/cancelbooking',(req,res)=>{
+    const user=req.user && req.user.user;
+    const booking_id=req.body.booking_id;
+    dao.cancelBooking(booking_id).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
+app.post('/api/cancellecture',(req,res)=>{
+    const user=req.user && req.user.user;
+    const lecture_id=req.body.lecture_id;
+    dao.changeLecture(lecture_id).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));
