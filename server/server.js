@@ -24,7 +24,7 @@ app.post('/api/hash',(req,res)=>{
     console.log(password);
     const hash=dao.generateHash(password);
     console.log(hash);
-    res.json({Password:hash});
+    res.json(hash);
 });
 /////////////////////////////
 
@@ -96,11 +96,6 @@ app.use(
 //Authorized API
 
 
-///API to test if i got the webtoken
-app.post('/api/auth',async (req,res)=>{
-    const user=req.user && req.user.user;
-    res.json(ret);
-});
 
 app.post('/api/lectures',(req,res)=>{
     const user=req.user && req.user.user;
@@ -110,6 +105,21 @@ app.post('/api/lectures',(req,res)=>{
     dao.getLectures(user,date_start,date_end).then((data)=>{
         res.json(data);
     }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
+app.post('/api/teacherlectures',(req,res)=>{
+    const user=req.user && req.user.user;
+    const date_start=req.body.date_start;
+    const date_end =req.body.date_end;
+
+    dao.getTeacherLectures(user,date_start,date_end).then((data)=>{
+        res.json(data);
+    }).catch((err)=>{
+        console.log(JSON.stringify(err));
         res.status(500).json(
             {errors:[{'param':'Server','msg':'Server error'}]}
         );

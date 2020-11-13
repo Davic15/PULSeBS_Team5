@@ -133,7 +133,7 @@ exports.checkCourses=function(user_id,lecture_id){
     });
 }
 
-//returns number og booked seats and the total seats for a lecture
+//returns number of booked seats and the total seats for a lecture
 exports.getSeatsCount=function(lecture_id){
     
     return new Promise(
@@ -193,5 +193,47 @@ exports.bookLecture=async function(user_id,lecture_id){
                 resolve({error:"student not enrolled"});
         }
     });
+}
+
+exports.getTeacherLectures=function(teacher_id, date_start,date_end){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql="SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,Seats "+
+                        "FROM Lecture,User as Teacher, Course ,Classroom "+
+                        "where   Teacher.UserId=Course.TeacherId "+
+                        "and Lecture.ClassRoomId=Classroom.ClassroomId "+
+                        "and Lecture.CourseId=Course.CourseId "+
+                        "and Teacher.UserId==? "+
+                        "and date(Start)>=date(?) and date(Start)<=date(?)";
+                db.all(sql,[teacher_id,date_start,date_end],(err,rows)=>{
+                    console.log(JSON.stringify(rows));
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        resolve(undefined)
+                    }else {
+                        ret_array=[];
+                        for (row of rows){
+                            ret_array.push(
+                                {
+                                    LectureId:row.LectureId,
+                                    CourseId:row.CourseId,
+                                    CourseName:row.CourseName,
+                                    Start:row.Start,
+                                    End:row.End,
+                                    State:row.State,
+                                    ClassroomId:row.ClassroomId,
+                                    ClassroomName:row.ClassroomName,
+                                    Seats:row.Seats
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
 }
 
