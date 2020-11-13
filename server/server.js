@@ -1,6 +1,5 @@
 const express = require('express');
 const dao = require('./dao');
-const dao_jack = require('./dao_jack');
 const morgan = require('morgan');
 const jwt=require('express-jwt');
 const jsonwebtoken=require('jsonwebtoken');
@@ -48,7 +47,7 @@ app.post('/api/login',(req,res)=>{
                     });
                 }else{
                     
-                    const token=jsonwebtoken.sign({user:user.UserId/*, role:user.Type*/},jwtSecret,{expiresIn:expireTime});
+                    const token=jsonwebtoken.sign({user:user.UserId},jwtSecret,{expiresIn:expireTime});
                     
                     res.cookie('token',token,{httpOnly:true,sameSite:true,maxAge:1000*expireTime});
                     res.json({UserId:user.UserId,
@@ -75,17 +74,6 @@ app.use(cookieParser());
 app.post('/api/logout',(req,res)=>{
     res.clearCookie('token').end();
 });
-
-function checkRole(user, roles) {
-    const role=user && user.role;
-
-    if (!roles.includes(role)) {
-        return false;
-    }
-    else {
-        return true;
-    }
-}
 
 app.use(
     jwt({
