@@ -57,7 +57,7 @@ app.post('/api/login',(req,res)=>{
                     });
                 }else{
                     
-                    const token=jsonwebtoken.sign({user:user.UserId/*, role:user.Type*/},jwtSecret,{expiresIn:expireTime});
+                    const token=jsonwebtoken.sign({user:user.UserId, role:user.Type},jwtSecret,{expiresIn:expireTime});
                     
                     res.cookie('token',token,{httpOnly:true,sameSite:true,maxAge:1000*expireTime});
                     res.json({UserId:user.UserId,
@@ -85,8 +85,7 @@ app.post('/api/logout',(req,res)=>{
     res.clearCookie('token').end();
 });
 
-function checkRole(user, roles) {
-    const role = user && user.role;
+function checkRole(role, roles) {
     return roles.includes(role);
 }
 
@@ -100,12 +99,25 @@ app.use(
 
 //Authorized API
 
-
-
-app.post('/api/student_lectures',(req,res)=>{
+app.post('/api/auth',(req,res)=>{
     const user=req.user && req.user.user;
+    const role = req.user && req.user.role;
+    res.json({user:user,role:role});
+});
+
+
+
+app.post('/api/studentlectures',(req,res)=>{
+    const user=req.user && req.user.user;
+    const role = req.user && req.user.role;
     const date_start=req.body.date_start;
     const date_end =req.body.date_end;
+
+    if(!checkRole(role,['student'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
 
     dao.getLectures(user,date_start,date_end).then((data)=>{
         res.json(data);
@@ -118,8 +130,17 @@ app.post('/api/student_lectures',(req,res)=>{
 
 app.post('/api/teacherlectures',(req,res)=>{
     const user=req.user && req.user.user;
+    const role = req.user && req.user.role;
     const date_start=req.body.date_start;
     const date_end =req.body.date_end;
+
+    if(!checkRole(role,['teacher'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    
 
     dao.getTeacherLectures(user,date_start,date_end).then((data)=>{
         res.json(data);
@@ -133,9 +154,16 @@ app.post('/api/teacherlectures',(req,res)=>{
 
 app.post('/api/studentlist',(req,res)=>{
     const user=req.user && req.user.user;
+    const role = req.user && req.user.role;
     const lecture_id=req.body.lecture_id;
 
-    dao.getStudents(lecture_id).then((data)=>{
+    if(!checkRole(role,['teacher'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    dao.getStudents(user,lecture_id).then((data)=>{
         res.json(data);
     }).catch((err)=>{
         console.log(JSON.stringify(err));
@@ -147,9 +175,15 @@ app.post('/api/studentlist',(req,res)=>{
 
 app.post('/api/bookinglist',(req,res)=>{
     const user=req.user && req.user.user;
-    const student_id=req.body.student_id;
+    const role = req.user && req.user.role;
 
-    dao.getBookings(student_id).then((data)=>{
+    if(!checkRole(role,['student'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    dao.getBookings(user).then((data)=>{
         res.json(data);
     }).catch((err)=>{
         console.log(JSON.stringify(err));
@@ -162,6 +196,12 @@ app.post('/api/bookinglist',(req,res)=>{
 app.post('/api/book',(req,res)=>{
     const user=req.user && req.user.user;
     const lecture_id=req.body.lecture_id;
+    const role = req.user && req.user.role;
+    if(!checkRole(role,['student'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
     dao.bookLecture(user,lecture_id).then((obj)=>{
         console.log(JSON.stringify(obj));
         res.json(obj);
@@ -175,6 +215,14 @@ app.post('/api/book',(req,res)=>{
 app.post('/api/cancelbooking',(req,res)=>{
     const user=req.user && req.user.user;
     const booking_id=req.body.booking_id;
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['student'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
     dao.cancelBooking(booking_id).then((obj)=>{
         res.json(obj);
     }).catch((err)=>{
@@ -187,6 +235,36 @@ app.post('/api/cancelbooking',(req,res)=>{
 app.post('/api/cancellecture',(req,res)=>{
     const user=req.user && req.user.user;
     const lecture_id=req.body.lecture_id;
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['teacher'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    dao.cancelLecture(lecture_id).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
+
+
+app.post('/api/changelecture',(req,res)=>{
+    const user=req.user && req.user.user;
+    const lecture_id=req.body.lecture_id;
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['teacher'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
     dao.changeLecture(lecture_id).then((obj)=>{
         res.json(obj);
     }).catch((err)=>{
@@ -195,5 +273,13 @@ app.post('/api/cancellecture',(req,res)=>{
         );
     });
 });
+
+
+
+
+
+
+
+
 
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));
