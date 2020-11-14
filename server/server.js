@@ -97,26 +97,6 @@ app.use(
 );
 
 
-//Authorized API
-
-app.post('/api/auth',async (req,res)=>{
-    const user=req.user && req.user.user;
-    const role = req.user && req.user.role;
-    var replacements = {"%NAME%":"Stefano","%AGE%":"22","%EVENT%":"666"},
-    str = 'My Name is %NAME% and my age is %AGE%.';
-
-    str = str.replace(/%\w+%/g, function(all) {
-        return replacements[all] || all;
-    });
-
-    const ret=await dao.getEmailInfo(3);
-    console.log(JSON.stringify(ret));
-    res.json(ret);
-    //res.json({user:user,role:role,str:str});
-});
-
-
-
 app.post('/api/studentlectures',(req,res)=>{
     const user=req.user && req.user.user;
     const role = req.user && req.user.role;
