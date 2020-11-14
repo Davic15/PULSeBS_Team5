@@ -99,10 +99,20 @@ app.use(
 
 //Authorized API
 
-app.post('/api/auth',(req,res)=>{
+app.post('/api/auth',async (req,res)=>{
     const user=req.user && req.user.user;
     const role = req.user && req.user.role;
-    res.json({user:user,role:role});
+    var replacements = {"%NAME%":"Stefano","%AGE%":"22","%EVENT%":"666"},
+    str = 'My Name is %NAME% and my age is %AGE%.';
+
+    str = str.replace(/%\w+%/g, function(all) {
+        return replacements[all] || all;
+    });
+
+    const ret=await dao.getEmailInfo(3);
+    console.log(JSON.stringify(ret));
+    res.json(ret);
+    //res.json({user:user,role:role,str:str});
 });
 
 
@@ -243,7 +253,7 @@ app.post('/api/cancellecture',(req,res)=>{
         );
     }
 
-    dao.cancelLecture(lecture_id).then((obj)=>{
+    dao.changeLecture(user,lecture_id,1).then((obj)=>{
         res.json(obj);
     }).catch((err)=>{
         res.status(500).json(
@@ -265,7 +275,7 @@ app.post('/api/changelecture',(req,res)=>{
         );
     }
 
-    dao.changeLecture(lecture_id).then((obj)=>{
+    dao.changeLecture(user,lecture_id,2).then((obj)=>{
         res.json(obj);
     }).catch((err)=>{
         res.status(500).json(
@@ -273,9 +283,6 @@ app.post('/api/changelecture',(req,res)=>{
         );
     });
 });
-
-
-
 
 
 

@@ -1,5 +1,14 @@
 const sqlite=require('sqlite3').verbose();
 const bcrypt=require('bcrypt');
+const emailer=require('./email');
+
+const bookinConfirmationText="<p>Dear %NAME% %SURNAME%,<br/>you were succesfully booked to lecture \"%LECTURE%\"  %TIME%, classroom %CLASSROOM%<p>";
+const bookinEnqueueText="<p>Dear %NAME% %SURNAME%,<br/>the lecture you were trying to book (lecture %LECTURE% at %TIME%, classroom %CLASSROOM%) is full </br> you will be notified if a seats will be available <p>";
+const bookinDequeueText="<p>Dear %NAME% %SURNAME%,<br/>the lecture you were trying to book (lecture %LECTURE% at %TIME%, classroom %CLASSROOM%) is now available </br> you can now attend the lecture <p>";
+const lectureDeletedText="<p>Dear %NAME% %SURNAME%,<br/>the lecture  %LECTURE% at %TIME%, classroom %CLASSROOM% has been canceled";
+const lectureChangedText="<p>Dear %NAME% %SURNAME%,<br/>the lecture  %LECTURE% at %TIME%, classroom %CLASSROOM% will be held online";
+
+const subject="LECTURE BOOKING INFO";
 
 //open db connection
 const db=new sqlite.Database('./PULSEeBS_db',(err)=>{
@@ -158,27 +167,72 @@ exports.checkTeacherCourses=function(teacher_id,lecture_id){
     });
 }
 
+exports.getLectureInfo=function(lecture_id){
+    return new Promise(
+        (resolve,reject)=>{
+        const sql="SELECT Course.Name as CourseName, Start ,Classroom.Name as ClassroomName "+
+                    "FROM Lecture,Classroom,Course "+
+                    "where Lecture.CourseId=Course.CourseId "+
+                    "and Classroom.ClassroomId=Lecture.ClassroomId "+
+                    "and LectureId=? ";
+        db.get(sql, [lecture_id], (err, row) => {
+            if(err){
+                console.log(JSON.stringify(err));
+                reject(err);
+            }else if(row){
+                console.log(JSON.stringify(row));
+                resolve({
+                    CourseName:row.CourseName,
+                    ClassroomName:row.ClassroomName,
+                    Start:row.Start
+                    });
+                }
+        });
+    });
+}
+
+exports.getStudentInfo=function(student_id){
+    return new Promise(
+        (resolve,reject)=>{
+        const sql="SELECT Name,Surname,Email FROM User where UserId=?";
+        db.get(sql, [student_id], (err, row) => {
+            if(err){
+                console.log(JSON.stringify(err));
+                reject(err);
+            }else if(row){
+                console.log(JSON.stringify(row));
+                resolve({
+                    Name:row.Name,
+                    Surname:row.Surname,
+                    Email:row.Email
+                    });
+            }
+        });
+    });
+}
+
 //returns number of booked seats and the total seats for a lecture
 exports.getSeatsCount=function(lecture_id){
     
     return new Promise(
         (resolve,reject)=>{
-        const sql="SELECT Lecture.LectureId, count(distinct Booking.BookingId)as BookedSeats, Seats as TotalSeats "+
-                    "FROM Classroom, Lecture LEFT JOIN Booking ON  Booking.LectureId=Lecture.LectureId "+
-                    "and Lecture.LectureId=? and Booking.State=0 "+
-                    "WHERE  Classroom.ClassroomId=Lecture.ClassRoomId " +
-                    "Group BY Lecture.LectureId,Seats";
+        const sql= "SELECT T.LectureId,TotalSeats,count(DISTINCT(Booking.BookingId)) as BookedSeats FROM "+
+                    "(SELECT Lecture.LectureId, Seats as TotalSeats from Lecture,Classroom where Classroom.ClassroomId=Lecture.ClassRoomId) as T "+
+                    "LEFT OUTER JOIN Booking ON T.LectureId=Booking.LectureId "+
+                    "WHERE T.LectureId=? "+
+                    "GROUP BY T.LectureId,TotalSeats";
         db.get(sql, [lecture_id], (err, row) => {
             if(err){
                 console.log(JSON.stringify(err));
                 reject(err);
-            }else if(row)
+            }else if(row){
                 console.log(JSON.stringify(row));
                 resolve({
                     LectureId:row.LectureId,
                     BookedSeats:row.BookedSeats,
                     TotalSeats:row.TotalSeats
                     });
+                }
         });
     });
 }
@@ -197,22 +251,38 @@ exports.bookLecture=async function(user_id,lecture_id){
             if(isEnrolled.ok==true){
 
                 const seats=await this.getSeatsCount(lecture_id);
-                console.log(JSON.stringify(seats));
                 if(seats.LectureId){
                     let enqueue=0;
+                    console.log(JSON.stringify(seats));
                     if(seats.BookedSeats>=seats.TotalSeats)
                         enqueue=1;
                     console.log(enqueue);
+                    
+                    const lectureInfo = await this.getLectureInfo(lecture_id);
+                    const studentInfo = await this.getStudentInfo(user_id);
+
                     const sql="INSERT INTO Booking (StudentId,LectureId,Timestamp,Present,State) "+
                                 "VALUES (?,?,?,?,?)";
                                 db.run(sql,[user_id,lecture_id,Date.now(),1,enqueue],
-                                    function(err){
+                                    async function(err){
                                         if(err){
                                             console.log(JSON.stringify(err));
                                             reject(err);
                                         }
-                                        else
+                                        else{
+                                            
+                                            const emailReplacements={"%NAME%":studentInfo.Name,
+                                                                     "%SURNAME%":studentInfo.Surname,
+                                                                     "%LECTURE%":lectureInfo.CourseName,
+                                                                    "%TIME%":lectureInfo.Start,
+                                                                    "%CLASSROOM%":lectureInfo.ClassroomName}
+                                            if(enqueue==0)
+                                                emailer.send(studentInfo.Email,subject,bookinConfirmationText,emailReplacements);
+                                            else if(enqueue==1)
+                                                emailer.send(studentInfo.Email,subject,bookinEnqueueText,emailReplacements);
+                                            
                                             resolve({BookingId:this.lastID,Enqueued:enqueue});
+                                        }
                                     });
                 }else
                     reject({error:"server error"})
@@ -350,67 +420,149 @@ exports.getBookings=function(student_id){
     );
 }
 
-exports.cancelBooking=function(student_id, booking_id){
-    return new Promise( (resolve,reject)=>{
 
-        const sql="UPDATE Booking SET State=1 WHERE BookingId=? and StudentId=?";
-        db.run(sql,[booking_id,student_id],
+exports.getNextInLine=function(booking_id){
+    return new Promise(
+        (resolve,reject)=>{
+        const sql="SELECT BookingId,LectureId,StudentId FROM Booking  where LectureId=(SELECT LectureId from Booking where BookingId=?) and State=1 order by Timestamp";
+        db.get(sql, [booking_id], (err, row) => {
+            if(err){
+                console.log(JSON.stringify(err));
+                reject(err);
+            }else if(row){
+                console.log(JSON.stringify(row));
+                resolve({
+                    BookingId:row.BookingId,
+                    LectureId:row.LectureId,
+                    StudentId:row.StudentId
+                    });
+                }
+        });
+    });
+}
+
+exports.cancelBooking=function( booking_id){
+    return new Promise( async (resolve,reject)=>{
+
+        const nextBooking= await this.getNextInLine(booking_id);
+        let lectureInfo=undefined;
+        let studentInfo=undefined;
+        let othersql=undefined;
+        let sql="UPDATE Booking SET State=2 WHERE BookingId=?";
+        if(nextBooking){
+             othersql="UPDATE Booking SET State=0 WHERE BookingId=?"
+            lectureInfo = await this.getLectureInfo(nextBooking.LectureId); 
+            studentInfo = await this.getStudentInfo(nextBooking.StudentId);
+            console.log(JSON.stringify(lectureInfo));
+            console.log(JSON.stringify(studentInfo));
+        }
+        db.run(sql,[booking_id],
             function(err){
-                
                 if(err){
                     console.log(JSON.stringify(err));
                     reject(err);
                 }
-                else
+                else{
+                    if(nextBooking){
+                        db.run(othersql,[nextBooking.BookingId],function(err){
+                            if(err){
+                                console.log(JSON.stringify(err));
+                                reject(err);
+                            }else{
+                                const emailReplacements={"%NAME%":studentInfo.Name,
+                                                "%SURNAME%":studentInfo.Surname,
+                                                "%LECTURE%":lectureInfo.CourseName,
+                                                "%TIME%":lectureInfo.Start,
+                                                "%CLASSROOM%":lectureInfo.ClassroomName};
+                                 emailer.send(studentInfo.Email,subject,bookinDequeueText,emailReplacements);
+                            }
+                        });   
+                    }
                     resolve("OK");
+                }
             });
         });
 }
 
 
-exports.cancelLecture=function(teacher_id,lecture_id){
+
+exports.getEmailInfo=function(lecture_id){
+    return new Promise(
+        async (resolve,reject)=>{
+
+
+        const sql="SELECT Email,User.Name StudentName,Surname,Course.Name as CourseName, Start, Classroom.Name as ClassroomName FROM Booking,User,Lecture,Course,Classroom "+
+                    "where Booking.StudentId=User.UserId "+
+                    "and Booking.LectureId=Lecture.LectureId "+
+                    "and Course.CourseId=Lecture.CourseId "+   
+                    "and Lecture.ClassRoomId=Classroom.ClassroomId "+
+                    "and (Booking.State=0 or Booking.State=1) "+
+                    "and Booking.LectureId=?";
+            db.all(sql,[lecture_id],(err,rows)=>{
+                if (err){
+                    console.log(JSON.stringify(err));
+                    reject(err);
+                }
+                else if(rows.length===0){
+                    resolve(undefined)
+                }else {
+                    ret_array=[];
+                    for (row of rows){
+                        ret_array.push(
+                            {
+                                Email:row.Email,
+                                StudentName:row.StudentName,
+                                Surname:row.Surname,
+                                CourseName:row.CourseName,
+                                ClassroomName:row.ClassroomName,
+                                Start:row.Start
+                            }
+                        );
+                    }
+                    resolve(ret_array);
+                }
+            }
+        );
+    }
+        
+    );
+}
+
+exports.changeLecture=function(teacher_id,lecture_id,state){
     return new Promise( async (resolve,reject)=>{
 
         const chk=await this.checkTeacherCourses(teacher_id,lecture_id);
         if(chk.ok==false)
             resolve({error:"unauthorized access"});
         else{
-
-            const sql="UPDATE Lecture SET State=1 WHERE LectureId=? ";
-            db.run(sql,[lecture_id],
+            const students=await this.getEmailInfo(lecture_id);
+            const sql="UPDATE Lecture SET State=? WHERE LectureId=? ";
+            db.run(sql,[state,lecture_id],
                 function(err){
                     
                     if(err){
                         console.log(JSON.stringify(err));
                         reject(err);
                     }
-                    else
+                    else{
+                        if(students){
+                            for(s of students){
+                                const emailReplacements={
+                                "%NAME%":s.StudentName,
+                                "%SURNAME%":s.Surname,
+                                "%LECTURE%":s.CourseName,
+                                "%TIME%":s.Start,
+                                "%CLASSROOM%":s.ClassroomName};
+                                if(state==1)
+                                    emailer.send(s.Email,subject,lectureDeletedText,emailReplacements);
+                                else if(state==2)
+                                    emailer.send(s.Email,subject,lectureChangedText,emailReplacements);
+                            }
+                        }
+
                         resolve("OK");
-                });
-        }
-    });
-}
-
-exports.changeLecture=function(teacher_id,lecture_id){
-    return new Promise( async (resolve,reject)=>{
-
-        const chk=await this.checkTeacherCourses(teacher_id,lecture_id);
-        if(chk.ok==false)
-            resolve({error:"unauthorized access"});
-        else{
-
-            const sql="UPDATE Lecture SET State=2 WHERE LectureId=? ";
-            db.run(sql,[lecture_id],
-                function(err){
-                    
-                    if(err){
-                        console.log(JSON.stringify(err));
-                        reject(err);
                     }
-                    else
-                        resolve("OK");
                 });
         }
     });
 }
-
