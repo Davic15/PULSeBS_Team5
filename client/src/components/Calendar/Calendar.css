@@ -1,0 +1,128 @@
+.lecture {
+    position: relative;
+    overflow: hidden;
+    background-color: #cbf1f5;
+    padding: 0.5rem;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1rem 0 rgba(0, 0, 0, 0.1);
+}
+
+.lecture-tag {
+    width: 100%;
+    height: 25px;
+    border-radius: 0.25rem;
+}
+
+.day {
+    height: 100%;
+    display: inline-block;
+    border-right: 1px solid #b7b7b7;
+    background-color: #71c9ce;
+}
+
+.weekCalendar__header {
+    /*height: 3rem;*/
+    line-height: normal;
+    text-align: center;
+    font-size: large;
+    font-weight: normal;
+  }
+
+.weekCalendar__headerWrapper {
+    background-color: #3f72af;
+    border-radius: 1rem;
+    color: black;
+    border: 0px;
+}
+
+.weekCalendar__headerColumn {
+    /*border-right: 1px solid black;
+    border-top: 1px solid black;*/
+    border: 0px;
+    padding-bottom: 0rem;
+}
+
+.dayCell:hover {
+    background-color: #e3fdfd;
+}
+
+.weekCalendar__overlay_status_selection {
+    background-color: #e3fdfd;
+}
+
+.weekCalendar__scaleCell {
+    /*background-color: #3f72af;
+    border-bottom: 1px solid black;
+    border-left : 1px solid black;*/
+    border-right: 1px solid #b7b7b7;
+    /*margin-left:0px;*/
+    color: black;
+}
+
+
+.weekCalendar__scaleHeader {
+    /*background-color: #3f72af;*/
+    border: 0px;
+    background-color: white;
+    /*background-color: #3f72af;
+    border: 1px solid black;*/
+
+}
+
+.weekCalendar__scaleColumn {
+    border: 0px;
+    margin: 0px;
+}
+
+.react-date-picker {
+    z-index: 100;
+}
+
+.react-calendar__tile--active {
+    border: 0;
+    border-radius: 0.5rem;
+}
+
+.react-date-picker__calendar{
+    border: 0;
+    border-radius: 0.5rem;
+}
+
+.react-date-picker__wrapper {
+    border-radius: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    width: 150%;
+    text-align: center;
+}
+
+.calendar-container {
+    width: 85%;
+    /*align-content: center;*/
+    padding: 2rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2rem;
+    border-radius: 2rem;
+    border: 1px solid gray;
+}
+
+.daypick-row {
+    /*padding-bottom: 1.5rem;*/
+    margin-bottom: 1.5rem;
+    /*border-bottom: 1px solid gray;*/
+}
+
+.daypick-button {
+    border-radius: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.legend-square {
+    width: 15px;
+    height: 15px;
+}

@@ -43,7 +43,20 @@ const db=new sqlite.Database('./PULSEeBS_db',(err)=>{
     );
 }
 
-
+exports.getUserById = function (userid) {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM User WHERE UserId = ?";
+        db.all(sql, [userid], (err, rows) => {
+            if (err) 
+                reject(err);
+            else if (rows.length === 0)
+                resolve(undefined);
+            else{
+                resolve(rows[0]);
+            }
+        });
+    });
+  };
 
 //caompares two crypted passwords
 exports.checkPassword=function(clearpwd,password){
@@ -64,7 +77,23 @@ exports.generateHash=function(newpassword){
 exports.getLectures=function(userId,date_start,date_end){
     return new Promise(
         (resolve,reject)=>{
-            const sql="SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,Seats,Teacher.Name as TeacherName,Surname as TeacherSurname "+
+            const sql = "SELECT Lecture.LectureId AS LectureId, Lecture.Start AS Start, Lecture.End AS End, Lecture.State AS State, " +
+                "Course.CourseId AS CourseId, Course.Name AS CourseName, " +
+                "Classroom.ClassroomId AS ClassroomId, Classroom.Name AS ClassroomName, Classroom.Seats AS Seats, " +
+                "User.Name AS TeacherName, User.Surname AS TeacherSurname, " +
+                "COUNT(Booking.BookingId) AS BookingCount, " +
+                "Booking2.BookingId AS BookingId, Booking2.State AS BookingState " +
+                "FROM Lecture LEFT JOIN Booking ON Lecture.LectureId = Booking.LectureId " +
+                "LEFT JOIN Booking Booking2 ON Lecture.LectureId = Booking2.LectureId AND Booking2.StudentId = ?, " +
+                "StudentCourse, Course, Classroom, User " +
+                "WHERE Lecture.CourseId = StudentCourse.CourseId  AND StudentCourse.UserId = ? " +
+                "AND Lecture.CourseId = Course.CourseId " +
+                "AND Lecture.ClassRoomId = Classroom.ClassroomId " +
+                "AND Course.TeacherId = User.UserId " +
+                "AND DATE(Lecture.Start) >= DATE(?) AND DATE(Lecture.Start) <= DATE(?) " +
+                "AND Lecture.State <> 1 " +
+                "GROUP BY Lecture.LectureId ";
+            /*const sql="SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,Seats,Teacher.Name as TeacherName,Surname as TeacherSurname "+
                         "FROM Lecture,StudentCourse,User as Teacher, Course ,Classroom "+
                         "where "+
                         "Lecture.CourseId=StudentCourse.CourseId "+ 
@@ -72,9 +101,10 @@ exports.getLectures=function(userId,date_start,date_end){
                         "and Teacher.UserId=Course.TeacherId "+
                         "and Lecture.ClassRoomId=Classroom.ClassroomId "+
                         "and StudentCourse.UserId=? "+
-                        "and date(Start)>=date(?) and date(Start)<=date(?)";
-            db.all(sql,[userId,date_start,date_end],(err,rows)=>{
-                console.log(JSON.stringify(rows));
+                        "and date(Start)>=date(?) and date(Start)<=date(?)";*/
+            //db.all(sql,[userId,date_start,date_end],(err,rows)=>{
+            db.all(sql,[userId,userId,date_start,date_end],(err,rows)=>{
+                //console.log(JSON.stringify(rows));
                     if (err){
                         console.log(JSON.stringify(err));
                         reject(err);
@@ -96,7 +126,10 @@ exports.getLectures=function(userId,date_start,date_end){
                                     ClassroomName:row.ClassroomName,
                                     Seats:row.Seats,
                                     TeacherName:row.TeacherName,
-                                    TeacherSurname:row.TeacherSurname
+                                    TeacherSurname:row.TeacherSurname,
+                                    BookingCount:row.BookingCount,
+                                    BookingId:row.BookingId,
+                                    BookingState:row.BookingState
                                 }
                             );
                         }
@@ -295,13 +328,23 @@ exports.bookLecture=async function(user_id,lecture_id){
 exports.getTeacherLectures=function(teacher_id, date_start,date_end){
     return new Promise(
         (resolve,reject)=>{
-            const sql="SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,Seats "+
+            const sql = "SELECT Lecture.LectureId AS LectureId, Lecture.Start AS Start, Lecture.End AS End, Lecture.State AS State, " +
+                "Course.CourseId AS CourseId, Course.Name AS CourseName, " +
+                "Classroom.ClassroomId AS ClassroomId, Classroom.Name AS ClassroomName, Classroom.Seats AS Seats, " +
+                "COUNT(Booking.BookingId) AS BookingCount " +
+                "FROM Lecture LEFT JOIN Booking ON Lecture.LectureId = Booking.LectureId, Course, Classroom " +
+                "WHERE Lecture.CourseId = Course.CourseId AND Course.TeacherId = ? " +
+                "AND Lecture.ClassRoomId = Classroom.ClassroomId " +
+                "AND DATE(Lecture.Start) >= DATE(?) AND DATE(Lecture.Start) <= DATE(?)" +
+                "AND Lecture.State <> 1 " +
+                "GROUP BY Lecture.LectureId ";
+            /*const sql="SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,Seats "+
                         "FROM Lecture,User as Teacher, Course ,Classroom "+
                         "where   Teacher.UserId=Course.TeacherId "+
                         "and Lecture.ClassRoomId=Classroom.ClassroomId "+
                         "and Lecture.CourseId=Course.CourseId "+
                         "and Teacher.UserId==? "+
-                        "and date(Start)>=date(?) and date(Start)<=date(?)";
+                        "and date(Start)>=date(?) and date(Start)<=date(?)";*/
                 db.all(sql,[teacher_id,date_start,date_end],(err,rows)=>{
                     if (err){
                         console.log(JSON.stringify(err));
@@ -322,7 +365,8 @@ exports.getTeacherLectures=function(teacher_id, date_start,date_end){
                                     State:row.State,
                                     ClassroomId:row.ClassroomId,
                                     ClassroomName:row.ClassroomName,
-                                    Seats:row.Seats
+                                    Seats:row.Seats,
+                                    BookingCount:row.BookingCount
                                 }
                             );
                         }
@@ -384,7 +428,7 @@ exports.getBookings=function(student_id){
             const sql="SELECT BookingId,Lecture.LectureId,Course.CourseId,Course.Name as CourseName, Classroom.Name as ClassroomName,Start,End,Present,Lecture.State as LectureState, Booking.State as BookingState,Timestamp FROM Booking,Course,Lecture,Classroom "+
                         "where Lecture.CourseId=Course.CourseId "+
                         "and Booking.LectureId=Lecture.LectureId "+
-                         "and Lecture.CourseId=Classroom.ClassroomId "+
+                        "and Lecture.CourseId=Classroom.ClassroomId "+
                         "and Booking.StudentId=?";
                 db.all(sql,[student_id],(err,rows)=>{
                     if (err){
@@ -566,3 +610,38 @@ exports.changeLecture=function(teacher_id,lecture_id,state){
         }
     });
 }
+
+/*exports.getLectureBookings = function(lecture_id) {
+    return new Promise(
+        (resolve,reject)=>{
+            const sql="SELECT BookingId, Name, Surname, Present, Booking.State as BookingState, Timestamp FROM Booking, User " +
+                        "WHERE Booking.LectureId=?"
+                        "and Booking.StudentId=User.UserId";
+                db.all(sql,[lecture_id],(err,rows)=>{
+                    if (err){
+                        console.log(JSON.stringify(err));
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        resolve(undefined)
+                    }else {
+                        ret_array=[];
+                        for (row of rows){
+                            ret_array.push(
+                                {
+                                    BookingId:row.BookingId,
+                                    Present:row.Present,
+                                    BookingState:row.BookingState,
+                                    Timestamp:row.Timestamp,
+                                    Name:row.Name,
+                                    Surname:row.Surname
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}*/

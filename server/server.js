@@ -96,6 +96,19 @@ app.use(
     })
 );
 
+//Authorized API
+app.post('/api/user', (req,res) => {
+    const userid=req.user && req.user.user;
+
+    dao.getUserById(userid)
+        .then((user) => {
+            res.json({Email: user.Email});
+        }).catch(
+        (err) => {
+            res.status(401).json(authErrorObj);
+        }
+    );
+});
 
 app.post('/api/studentlectures',(req,res)=>{
     const user=req.user && req.user.user;
@@ -241,8 +254,6 @@ app.post('/api/cancellecture',(req,res)=>{
         );
     });
 });
-
-
 
 app.post('/api/changelecture',(req,res)=>{
     const user=req.user && req.user.user;
