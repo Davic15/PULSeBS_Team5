@@ -28,14 +28,14 @@
     Access:authenticated /student
     type: POST
     Body:{**date_start**:'aaaa-mm-dd',**date_end**:'aaaa-mm-dd'}
-    Response 200: [{**LectureId**:integer, **CourseId**:integer, **CourseName**:string, **Start**:'aaaa-mm-dd hh:mm',**End**:'aaaa-mm-dd hh:mm', **State**:0 or 1 or 2, **ClassroomId**:integer, **ClassroomName**:string,**Seats**:integer, **TeacherName**:string, **TeacherSurname**:string},....]
+    Response 200: [{**LectureId**:integer, **CourseId**:integer, **CourseName**:string, **Start**:'aaaa-mm-dd hh:mm',**End**:'aaaa-mm-dd hh:mm', **State**:0 or 1 or 2, **ClassroomId**:integer, **ClassroomName**:string,**Seats**:integer, **TeacherName**:string, **TeacherSurname**:string, **BookingCount**:integer, **BookingId**:integer (null), **BookingState**:integer (null)},....]
     Description: return a JSON array containing the list of lectures bookable by a student in a certain time range
 
 * ### /api/teacherlectures
     Access:authenticated /teacher
     type: POST
     Body:{**date_start**:'aaaa-mm-dd',**date_end**:'aaaa-mm-dd'}
-    Response 200: [{**LectureId**:integer, **CourseId**:integer, **CourseName**:string, **Start**:'aaaa-mm-dd hh:mm',**End**:'aaaa-mm-dd hh:mm', **State**:0 or 1 or 2, **ClassroomId**:integer, **ClassroomName**:string,**Seats**:integer},....]
+    Response 200: [{**LectureId**:integer, **CourseId**:integer, **CourseName**:string, **Start**:'aaaa-mm-dd hh:mm',**End**:'aaaa-mm-dd hh:mm', **State**:0 or 1 or 2, **ClassroomId**:integer, **ClassroomName**:string,**Seats**:integer,**BookingCount**:integer},....]
     Description: return a JSON array containing the list of lectures held by a teacher in a certain time range
 
 * ### /api/studentlist
