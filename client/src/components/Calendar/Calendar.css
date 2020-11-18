@@ -128,3 +128,24 @@
     width: 15px;
     height: 15px;
 }
+
+.div-center{
+    margin: 0 auto;
+
+}
+
+.btn-size-student{
+    padding: 10px;
+    width: 120px;
+    height: 60px;
+    margin:10px;
+    left: 50%;
+}
+
+.btn-size-teacher{
+    padding: 10px;
+    width: 120px;
+    height: 60px;
+    margin:10px;
+    left: 50%;
+}

@@ -2,6 +2,8 @@ import React from 'react';
 import './Calendar.css';
 import API from '../../API';
 import LectureCalendar from './LectureCalendar';
+import {AuthContext} from '../AuthContext/AuthContext';
+import {Redirect} from "react-router-dom";
 
 const moment = require('moment');
 
@@ -68,12 +70,28 @@ class LectureCalendarTeacher extends React.Component {
         const start = moment(this.state.day);
         start.subtract(start.weekday()-1, 'days');
         return <>
-            <LectureCalendar
-                onDateChange={this.onDateChange}
-                lectures={this.state.lectures}
-                lectureComponent={this.LectureComponent}
-                modalComponent={this.Modal}
-            />
+            <div>
+                <div>
+                    <LectureCalendar
+                        onDateChange={this.onDateChange}
+                        lectures={this.state.lectures}
+                        lectureComponent={this.LectureComponent}
+                        modalComponent={this.Modal}
+                    />
+                </div>
+                <AuthContext.Consumer>
+                    {(context)=>(
+                    <div className="div-center">
+                        {context.authUser && 
+                            <>
+                                <button className="btn btn-lg btn-primary text-uppercase custom-color btn-size-teacher btn-default" type="submit" variant="primary" onClick = {() => {context.logoutUser()}} >Log out</button>
+                            </>
+                        }
+                        {!context.authUser && <Redirect to = "/login"/>} 
+                    </div>
+                )}
+                </AuthContext.Consumer>
+            </div>
         </>;
     }
 
@@ -159,6 +177,7 @@ class StudentList extends React.Component {
             })}
             </tbody>
         </table>
+        
     }
 }
 
