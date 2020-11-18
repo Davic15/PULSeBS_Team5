@@ -125,7 +125,7 @@ class LectureCalendarTeacher extends React.Component {
                 <StudentList onLoad={() => this.getStudentList(lecture.LectureId)} students={this.state.students}/>
             </>}
             
-            {(this.isPresence(lecture) && minutesLeft>=30) && <button onClick={changeLecture}>Change to remote lecture</button>}
+            {(this.isPresence(lecture) && minutesLeft>=30 ) && <button onClick={changeLecture}>Change to remote lecture</button>}
             {minutesLeft>=60 && <button onClick={cancelLecture}>Cancel lecture</button>}
             <button onClick={() => closeModal()}>Close</button>
         </div>;

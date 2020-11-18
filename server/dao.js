@@ -147,7 +147,7 @@ exports.checkBooking=function(user_id,lecture_id){
 
     return new Promise(
         (resolve,reject)=>{
-        const sql="SELECT count(*) as n FROM Booking WHERE StudentId=? and LectureId=?";
+        const sql="SELECT count(*) as n FROM Booking WHERE StudentId=? and LectureId=? and State!=2";
         db.get(sql, [user_id,lecture_id], (err, row) => {
             if(err){
                 console.log(JSON.stringify(err));
@@ -485,19 +485,28 @@ exports.getNextInLine=function(booking_id){
                     StudentId:row.StudentId
                     });
                 }
+            else
+                {
+                    resolve({
+                        });
+                }
         });
     });
 }
 
 exports.cancelBooking=function( booking_id){
     return new Promise( async (resolve,reject)=>{
-
+        console.log("OOK");
         const nextBooking= await this.getNextInLine(booking_id);
+        
+        console.log("doppio ok");
         let lectureInfo=undefined;
         let studentInfo=undefined;
         let othersql=undefined;
         let sql="UPDATE Booking SET State=2 WHERE BookingId=?";
-        if(nextBooking){
+        
+        if(nextBooking.BookingId!=undefined){
+            console.log(JSON.stringify(nextBooking));
              othersql="UPDATE Booking SET State=0 WHERE BookingId=?"
             lectureInfo = await this.getLectureInfo(nextBooking.LectureId); 
             studentInfo = await this.getStudentInfo(nextBooking.StudentId);
@@ -511,7 +520,7 @@ exports.cancelBooking=function( booking_id){
                     reject(err);
                 }
                 else{
-                    if(nextBooking){
+                    if(nextBooking.BookingId!=undefined){
                         db.run(othersql,[nextBooking.BookingId],function(err){
                             if(err){
                                 console.log(JSON.stringify(err));

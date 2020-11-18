@@ -155,14 +155,14 @@ async function book(lectureId) {
 }
 
 async function cancelBooking(bookingId) {
-    console.log("API "+bookingId);
+    console.log("APIcancel "+bookingId+" "+baseURL + "/cancelbooking");
     return new Promise((resolve, reject) => {
-        fetch(baseURL + "/cancelbooking", {
+         fetch(baseURL + "/cancelbooking", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({booking_id: bookingId}),
+            body: JSON.stringify({booking_id: bookingId})
         }).then((response) => {
             if (response.ok){
                 resolve({});
@@ -177,12 +177,12 @@ async function cancelBooking(bookingId) {
 
 async function cancelLecture(lectureId) {
     return new Promise((resolve, reject) => {
-        fetch(baseURL + "/cancellecture", {
+         fetch(baseURL + "/cancellecture", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({lecture_id: lectureId}),
+            body: JSON.stringify({lecture_id: lectureId})
         }).then((response) => {
             if (response.ok){
                 resolve({});

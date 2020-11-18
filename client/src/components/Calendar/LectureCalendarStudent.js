@@ -50,10 +50,12 @@ class LectureCalendarStudent extends React.Component {
         .catch((err) => console.log(err));
     }
 
-    cancelBooking = (bookingId) => {
+    AcancelBooking = (bookingId) => {
         API.cancelBooking(bookingId)
-        .then(() => this.getLectures(this.state.day))
-        .catch((err) => console.log(err));
+        .then(() =>{ 
+            console.log("OKKKKKK");
+            this.getLectures(this.state.day)})
+        .catch((err) => console.log("ERR"));
     }
 
     isBooked = (lecture) => { return (lecture.State==0 && lecture.BookingId != null && lecture.BookingState==0); }
@@ -135,11 +137,12 @@ class LectureCalendarStudent extends React.Component {
 
         const cancelBooking = () => {
             console.log("CANCEL "+JSON.stringify(lecture));
-            this.cancelBooking(lecture.BookingId);
+            this.AcancelBooking(lecture.BookingId);
             closeModal();
         }
 
         var minutesLeft = moment.duration(start.diff(moment())).as("minutes");
+        console.log("minutes left:"+minutesLeft);
 
         return <div>
             <b>{lecture.CourseName}</b>
