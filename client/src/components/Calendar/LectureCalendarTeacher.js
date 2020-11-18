@@ -20,27 +20,29 @@ class LectureCalendarTeacher extends React.Component {
     }
 
     onDateChange = (value) => {
+        const day = moment(value);
         this.setState({day: moment(value)});
-        this.getLectures();
+        this.getLectures(day);
     }
 
-    getLectures = () => {
-        const start = moment(this.state.day);
+    getLectures = (day) => {
+        const start = moment(day);
+        start.subtract(start.weekday()-1, 'days');
         const end = moment(start).add(6, 'days');
         API.getTeacherLectures(start, end)
-        .then((lectures) => this.setState({day: start, lectures: lectures}))
+        .then((lectures) => this.setState({lectures: lectures}))
         .catch((err) => console.log(err));
     }
 
     cancelLecture = (lectureId) => {
         API.cancelLecture(lectureId)
-        .then(this.getLectures)
+        .then(() => this.getLectures(this.state.day))
         .catch((err) => console.log(err));
     }
 
     changeLecture = (lectureId) => {
         API.changeLecture(lectureId)
-        .then(this.getLectures)
+        .then(() => this.getLectures(this.state.day))
         .catch((err) => console.log(err));
     }
 
@@ -85,11 +87,11 @@ class LectureCalendarTeacher extends React.Component {
             <div className="lecture-tag" style={{backgroundColor:this.getColorCode(lecture)}}>
                 <b>{lecture.CourseName}</b>
             </div>
-            <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
+            <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
             {!(this.isRemote(lecture)) && <>
-                <p>{lecture.ClassroomName}</p>
-                <p>{lecture.BookingCount+"/"+lecture.Seats}</p>
-            </>}
+                {lecture.ClassroomName}<br/>
+                {lecture.BookingCount+"/"+lecture.Seats}<br/>
+            </>}</p>
         </div>;
     }
     
@@ -110,23 +112,54 @@ class LectureCalendarTeacher extends React.Component {
             this.changeLecture(lecture.LectureId);
             closeModal();
         }
-
-        /*if(this.isPresence(lecture))
-            this.getStudentList(lecture);*/
+        
+        var minutesLeft = moment.duration(start.diff(moment())).as("minutes");
 
         return <div>
             <b>{lecture.CourseName}</b>
             <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
             <p>{lecture.ClassroomName}</p>
-            {!(this.isRemote(lecture)) && <>
+            {this.isPresence(lecture) && <>
                 <p>{lecture.ClassroomName}</p>
                 <p>{lecture.BookingCount+"/"+lecture.Seats}</p>
+                <StudentList onLoad={() => this.getStudentList(lecture.LectureId)} students={this.state.students}/>
             </>}
             
-            {this.isPresence(lecture) && <button onClick={changeLecture}>Change to remote lecture</button>}
-            <button onClick={cancelLecture}>Cancel lecture</button>
+            {(this.isPresence(lecture) && minutesLeft>=30) && <button onClick={changeLecture}>Change to remote lecture</button>}
+            {minutesLeft>=60 && <button onClick={cancelLecture}>Cancel lecture</button>}
             <button onClick={() => closeModal()}>Close</button>
         </div>;
+    }
+}
+
+class StudentList extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    componentDidMount() {
+        this.props.onLoad();
+    }
+
+    render() {
+        return <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Surname</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+            {this.props.students.map((student) => {
+                return <tr>
+                    <td>{student.StudentId}</td>
+                    <td>{student.Surname}</td>
+                    <td>{student.Name}</td>
+                </tr>;
+            })}
+            </tbody>
+        </table>
     }
 }
 

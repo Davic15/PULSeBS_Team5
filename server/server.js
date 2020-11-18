@@ -143,8 +143,6 @@ app.post('/api/teacherlectures',(req,res)=>{
         );
     }
 
-    
-
     dao.getTeacherLectures(user,date_start,date_end).then((data)=>{
         res.json(data);
     }).catch((err)=>{

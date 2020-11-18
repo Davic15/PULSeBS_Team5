@@ -100,6 +100,9 @@ class App extends React.Component{
           <Route path="/lectures">
               <LectureCalendarStudent />
           </Route>
+          <Route path="/teacher">
+              <LectureCalendarTeacher />
+          </Route>
           <Route path="/">
               <Redirect to="/login" />
           </Route>

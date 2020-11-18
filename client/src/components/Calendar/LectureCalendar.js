@@ -24,7 +24,7 @@ class LectureCalendar extends React.Component {
 
     onDateChange = (value) => {
         this.setState({day: moment(value)});
-        this.props.onDateChange();
+        this.props.onDateChange(value);
     }
 
     render() {
@@ -57,8 +57,8 @@ class LectureCalendar extends React.Component {
         </>;
     }
 }
-const DayComponent = (props) => {
+/*const DayComponent = (props) => {
     return <HeaderCell className="day" date={props.date} dayFormat={props.dayFormat}/>;
-}
+}*/
 
 export default LectureCalendar;

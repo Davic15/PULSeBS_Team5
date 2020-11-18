@@ -83,8 +83,8 @@ exports.getLectures=function(userId,date_start,date_end){
                 "User.Name AS TeacherName, User.Surname AS TeacherSurname, " +
                 "COUNT(Booking.BookingId) AS BookingCount, " +
                 "Booking2.BookingId AS BookingId, Booking2.State AS BookingState " +
-                "FROM Lecture LEFT JOIN Booking ON Lecture.LectureId = Booking.LectureId " +
-                "LEFT JOIN Booking Booking2 ON Lecture.LectureId = Booking2.LectureId AND Booking2.StudentId = ?, " +
+                "FROM Lecture LEFT JOIN Booking ON Lecture.LectureId = Booking.LectureId AND Booking.State = 0 " +
+                "LEFT JOIN Booking Booking2 ON Lecture.LectureId = Booking2.LectureId AND Booking2.StudentId = ? AND Booking2.State <> 2, " +
                 "StudentCourse, Course, Classroom, User " +
                 "WHERE Lecture.CourseId = StudentCourse.CourseId  AND StudentCourse.UserId = ? " +
                 "AND Lecture.CourseId = Course.CourseId " +
@@ -93,6 +93,7 @@ exports.getLectures=function(userId,date_start,date_end){
                 "AND DATE(Lecture.Start) >= DATE(?) AND DATE(Lecture.Start) <= DATE(?) " +
                 "AND Lecture.State <> 1 " +
                 "GROUP BY Lecture.LectureId ";
+                console.log(sql+"\n"+userId+" "+date_start+ " "+date_end);
             /*const sql="SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,Seats,Teacher.Name as TeacherName,Surname as TeacherSurname "+
                         "FROM Lecture,StudentCourse,User as Teacher, Course ,Classroom "+
                         "where "+
@@ -332,12 +333,13 @@ exports.getTeacherLectures=function(teacher_id, date_start,date_end){
                 "Course.CourseId AS CourseId, Course.Name AS CourseName, " +
                 "Classroom.ClassroomId AS ClassroomId, Classroom.Name AS ClassroomName, Classroom.Seats AS Seats, " +
                 "COUNT(Booking.BookingId) AS BookingCount " +
-                "FROM Lecture LEFT JOIN Booking ON Lecture.LectureId = Booking.LectureId, Course, Classroom " +
+                "FROM Lecture LEFT JOIN Booking ON Lecture.LectureId = Booking.LectureId AND Booking.State = 0, Course, Classroom " +
                 "WHERE Lecture.CourseId = Course.CourseId AND Course.TeacherId = ? " +
                 "AND Lecture.ClassRoomId = Classroom.ClassroomId " +
-                "AND DATE(Lecture.Start) >= DATE(?) AND DATE(Lecture.Start) <= DATE(?)" +
+                "AND DATE(Lecture.Start) >= DATE(?) AND DATE(Lecture.Start) <= DATE(?) " +
                 "AND Lecture.State <> 1 " +
                 "GROUP BY Lecture.LectureId ";
+                console.log(sql+"\n"+teacher_id+" "+date_start+ " "+date_end);
             /*const sql="SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,Seats "+
                         "FROM Lecture,User as Teacher, Course ,Classroom "+
                         "where   Teacher.UserId=Course.TeacherId "+
@@ -388,8 +390,9 @@ exports.getStudents=function(user,lecture_id){
                 resolve({error:"unauthorized access"});
             else{
 
-                const sql="SELECT BookingId,StudentId,Timestamp,Present,State,Name,Surname FROM Booking,User as Student "+
+                const sql="SELECT BookingId,StudentId,Timestamp,Present,Name,Surname FROM Booking,User as Student "+
                         "where Booking.StudentId=Student.UserId "+
+                        "and Booking.State=0 "+
                         "and Booking.LectureId=?";
                     db.all(sql,[lecture_id],(err,rows)=>{
                         if (err){
@@ -429,6 +432,7 @@ exports.getBookings=function(student_id){
                         "where Lecture.CourseId=Course.CourseId "+
                         "and Booking.LectureId=Lecture.LectureId "+
                         "and Lecture.CourseId=Classroom.ClassroomId "+
+                        "and Booking.State <> 2 "+
                         "and Booking.StudentId=?";
                 db.all(sql,[student_id],(err,rows)=>{
                     if (err){

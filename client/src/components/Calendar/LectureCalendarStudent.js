@@ -6,8 +6,8 @@ import LectureCalendar from './LectureCalendar';
 const moment = require('moment');
 
 const colorBookable = "white";
-const colorBooked = "green";
-const colorFull = "yellow";
+const colorBooked = "lightgreen";
+const colorWaiting = "yellow";
 const colorRemote = "orange";
 
 class LectureCalendarStudent extends React.Component {
@@ -17,46 +17,48 @@ class LectureCalendarStudent extends React.Component {
         const filters = {
             bookable: true,
             booked: true,
-            full: true,
+            waiting: true,
             remote: true
         }
         this.state = {day: moment(), filters: filters, lectures: [], selectedLectures: []};
     }
 
     componentDidMount() { 
-        this.getLectures();
+        this.getLectures(moment());
     }
 
     onDateChange = (value) => {
+        const day = moment(value);
         this.setState({day: moment(value)});
-        this.getLectures();
+        this.getLectures(day);
     }
 
-    getLectures = () => {
-        const start = moment(this.state.day);
+    getLectures = (day) => {
+        const start = moment(day);
+        start.subtract(start.weekday()-1, 'days');
         const end = moment(start).add(6, 'days');
         API.getStudentLectures(start, end)
         .then((lectures) => {
-            this.setState({day: start, lectures: lectures});
+            this.setState({lectures: lectures});
             this.applyFilters(this.state.filters);
         }).catch((err) => console.log(err));
     }
 
     book = (lectureId) => {
         API.book(lectureId)
-        .then(this.getLectures)
+        .then(() => this.getLectures(this.state.day))
         .catch((err) => console.log(err));
     }
 
     cancelBooking = (bookingId) => {
         API.cancelBooking(bookingId)
-        .then(this.getLectures)
+        .then(() => this.getLectures(this.state.day))
         .catch((err) => console.log(err));
     }
 
-    isBooked = (lecture) => { return (lecture.State==0 && lecture.BookingId != null); }
-    isBookable = (lecture) => { return (lecture.State==0 && lecture.Seats > lecture.BookingCount && lecture.BookingId == null); }
-    isFull = (lecture) => { return (lecture.State==0 && lecture.Seats <= lecture.BookingCount && lecture.BookingId == null); }
+    isBooked = (lecture) => { return (lecture.State==0 && lecture.BookingId != null && lecture.BookingState==0); }
+    isBookable = (lecture) => { return (lecture.State==0 && lecture.BookingId == null); }
+    isWaiting = (lecture) => { return (lecture.State==0 && lecture.BookingId != null && lecture.BookingState==1); }
     isRemote = (lecture) => { return lecture.State!=0; }
 
     getColorCode = (lecture) => {
@@ -64,8 +66,8 @@ class LectureCalendarStudent extends React.Component {
             return colorBookable;
         else if(this.isBooked(lecture))
             return colorBooked;
-        else if(this.isFull(lecture))
-            return colorFull;
+        else if(this.isWaiting(lecture))
+            return colorWaiting;
         else if(this.isRemote(lecture))
             return colorRemote;
         else
@@ -91,10 +93,10 @@ class LectureCalendarStudent extends React.Component {
 
     applyFilters = (filters) => {
         const selectedLectures = this.state.lectures.filter((lecture) => {
-            return filters.booked && this.isBooked(lecture) ||
-                filters.bookable && this.isBookable(lecture) ||
-                filters.full && this.isFull(lecture) ||
-                filters.remote && this.isRemote(lecture);
+            return (filters.booked && this.isBooked(lecture)) ||
+                (filters.bookable && this.isBookable(lecture)) ||
+                (filters.waiting && this.isWaiting(lecture)) ||
+                (filters.remote && this.isRemote(lecture));
         });
         this.setState({filters: filters, selectedLectures: selectedLectures});
     }
@@ -109,12 +111,12 @@ class LectureCalendarStudent extends React.Component {
             <div className="lecture-tag" style={{backgroundColor:this.getColorCode(lecture)}}>
                 <b>{lecture.CourseName}</b>
             </div>
-            <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
-            <p>{lecture.TeacherName+" "+lecture.TeacherSurname}</p>
+            <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
+            {lecture.TeacherName+" "+lecture.TeacherSurname}<br/>
             {!(this.isRemote(lecture)) && <>
-                <p>{lecture.ClassroomName}</p>
-                <p>{lecture.BookingCount+"/"+lecture.Seats}</p>
-            </>}
+                {lecture.ClassroomName}<br/>
+                {lecture.BookingCount+"/"+lecture.Seats}<br/>
+            </>}</p>
         </div>;
     }
     
@@ -137,14 +139,18 @@ class LectureCalendarStudent extends React.Component {
             closeModal();
         }
 
+        var minutesLeft = moment.duration(start.diff(moment())).as("minutes");
+
         return <div>
             <b>{lecture.CourseName}</b>
             <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
             <p>{lecture.TeacherName+" "+lecture.TeacherSurname}</p>
             <p>{lecture.ClassroomName}</p>
             <p>{lecture.Seats}</p>
-            {this.isBookable(lecture) && <button onClick={book}>Book</button>}
-            {this.isBooked(lecture) && <button onClick={cancelBooking}>Cancel booking</button>}
+            {minutesLeft>=0 && <>
+                {this.isBookable(lecture) && <button onClick={book}>Book</button>}
+                {(this.isBooked(lecture) || this.isWaiting(lecture)) && <button onClick={cancelBooking}>Cancel booking</button>}
+            </>}
             <button onClick={closeModal}>Close</button>
         </div>;
     }
@@ -163,14 +169,14 @@ class LectureCalendarStudent extends React.Component {
                 <label htmlFor="booked">Booked</label>
             </div>
             <div>
+                <div className="legend-square" style={{backgroundColor: colorWaiting}}></div>
+                <input type="checkbox" id="waiting" checked={props.filters["waiting"]} onChange={(event) => onFiltersChange(event)} />
+                <label htmlFor="waiting">Bookable (Waiting)</label>
+            </div>
+            <div>
                 <div className="legend-square" style={{backgroundColor: colorBookable}}></div>
                 <input type="checkbox" id="bookable" checked={props.filters["bookable"]} onChange={(event) => onFiltersChange(event)} />
                 <label htmlFor="bookable">Bookable</label>
-            </div>
-            <div>
-                <div className="legend-square" style={{backgroundColor: colorFull}}></div>
-                <input type="checkbox" id="full" checked={props.filters["full"]} onChange={(event) => onFiltersChange(event)} />
-                <label htmlFor="full">Bookable (Full)</label>
             </div>
             <div>
                 <div className="legend-square" style={{backgroundColor: colorRemote}}></div>
