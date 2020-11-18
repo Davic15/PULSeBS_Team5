@@ -149,7 +149,7 @@ class LectureCalendarStudent extends React.Component {
             <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
             <p>{lecture.TeacherName+" "+lecture.TeacherSurname}</p>
             <p>{lecture.ClassroomName}</p>
-            <p>{lecture.Seats}</p>
+            <p>{lecture.BookingCount+"/"+lecture.Seats}</p>
             {minutesLeft>=0 && <>
                 {this.isBookable(lecture) && <button onClick={book}>Book</button>}
                 {(this.isBooked(lecture) || this.isWaiting(lecture)) && <button onClick={cancelBooking}>Cancel booking</button>}

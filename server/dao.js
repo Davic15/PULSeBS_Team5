@@ -50,7 +50,7 @@ exports.getUserById = function (userid) {
             if (err) 
                 reject(err);
             else if (rows.length === 0)
-                resolve(undefined);
+                resolve([]);
             else{
                 resolve(rows[0]);
             }
@@ -111,7 +111,7 @@ exports.getLectures=function(userId,date_start,date_end){
                         reject(err);
                     }
                     else if(rows.length===0){
-                        resolve(undefined)
+                        resolve([])
                     }else {
                         ret_array=[];
                         for (row of rows){
@@ -353,7 +353,7 @@ exports.getTeacherLectures=function(teacher_id, date_start,date_end){
                         reject(err);
                     }
                     else if(rows.length===0){
-                        resolve(undefined)
+                        resolve([])
                     }else {
                         ret_array=[];
                         for (row of rows){
@@ -400,7 +400,7 @@ exports.getStudents=function(user,lecture_id){
                             reject(err);
                         }
                         else if(rows.length===0){
-                            resolve(undefined)
+                            resolve([])
                         }else {
                             ret_array=[];
                             for (row of rows){
@@ -440,7 +440,7 @@ exports.getBookings=function(student_id){
                         reject(err);
                     }
                     else if(rows.length===0){
-                        resolve(undefined)
+                        resolve([])
                     }else {
                         ret_array=[];
                         for (row of rows){
@@ -561,7 +561,7 @@ exports.getEmailInfo=function(lecture_id){
                     reject(err);
                 }
                 else if(rows.length===0){
-                    resolve(undefined)
+                    resolve([])
                 }else {
                     ret_array=[];
                     for (row of rows){

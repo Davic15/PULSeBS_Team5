@@ -118,7 +118,6 @@ class LectureCalendarTeacher extends React.Component {
         return <div>
             <b>{lecture.CourseName}</b>
             <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
-            <p>{lecture.ClassroomName}</p>
             {this.isPresence(lecture) && <>
                 <p>{lecture.ClassroomName}</p>
                 <p>{lecture.BookingCount+"/"+lecture.Seats}</p>
