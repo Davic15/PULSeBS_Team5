@@ -83,7 +83,12 @@
 
 
 
-    
+#Docker
+
+In order to run the application with docker, download the code form Github, open the terminal in the main root and launch the following commands:
+
+* ### docker-compose build
+* ### docker-compose run
 
 
 
