@@ -149,3 +149,11 @@
     margin:10px;
     left: 50%;
 }
+
+#chkbox{
+    margin-top: 5%;
+}
+
+.legend-square{
+    border:1px solid black;
+}

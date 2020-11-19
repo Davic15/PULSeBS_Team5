@@ -82,16 +82,17 @@ class LectureCalendarStudent extends React.Component {
         const start = moment(this.state.day);
         start.subtract(start.weekday()-1, 'days');
         return <>
-            <LectureCalendar
-                onDateChange={this.onDateChange}
-                lectures={this.state.selectedLectures}
-                lectureComponent={this.LectureComponent}
-                modalComponent={this.Modal}
-            />
-            <this.LegendFilters
-                filters={this.state.filters}
-                onFiltersChange={this.applyFilters}
-            />
+                    <this.LegendFilters
+                        filters={this.state.filters}
+                        onFiltersChange={this.applyFilters}
+                    />
+                    <LectureCalendar
+                        onDateChange={this.onDateChange}
+                        lectures={this.state.selectedLectures}
+                        lectureComponent={this.LectureComponent}
+                        modalComponent={this.Modal}
+                    />
+                    
         </>;
     }
 
@@ -170,40 +171,42 @@ class LectureCalendarStudent extends React.Component {
         return (
             <AuthContext.Consumer>
                 {(context)=>(
-                
+                //////////////////////////////
                 <div>
-                    <div>
-                        <div className="legend-square" style={{backgroundColor: colorBooked}}></div>
-                        <input type="checkbox" id="booked" checked={props.filters["booked"]} onChange={(event) => onFiltersChange(event)} />
-                        <label htmlFor="booked">Booked</label>
-                    </div>
-                    <div>
-                        <div className="legend-square" style={{backgroundColor: colorWaiting}}></div>
-                        <input type="checkbox" id="waiting" checked={props.filters["waiting"]} onChange={(event) => onFiltersChange(event)} />
-                        <label htmlFor="waiting">Bookable (Waiting)</label>
-                    </div>
-                    <div>
-                        <div className="legend-square" style={{backgroundColor: colorBookable}}></div>
-                        <input type="checkbox" id="bookable" checked={props.filters["bookable"]} onChange={(event) => onFiltersChange(event)} />
-                        <label htmlFor="bookable">Bookable</label>
-                    </div>
-                    <div>
-                        <div className="legend-square" style={{backgroundColor: colorRemote}}></div>
-                        <input type="checkbox" id="remote" checked={props.filters["remote"]} onChange={(event) => onFiltersChange(event)} />
-                        <label htmlFor="remote">Remote</label>
-                    </div>
+                    <div class="container" id="chkbox">
+                        <div class="row">
+                            <div class="col-sm">
+                                <div className="legend-square" style={{backgroundColor: colorBooked}}></div>
+                                <input type="checkbox" id="booked" checked={props.filters["booked"]} onChange={(event) => onFiltersChange(event)} />
+                                <label htmlFor="booked">Booked</label>
+                            </div>
+                            <div class="col-sm">
+                                <div className="legend-square" style={{backgroundColor: colorWaiting}}></div>
+                                <input type="checkbox" id="waiting" checked={props.filters["waiting"]} onChange={(event) => onFiltersChange(event)} />
+                                <label htmlFor="waiting">Bookable (Waiting)</label>
+                            </div>
+                            <div class="col-sm">
+                                <div className="legend-square" style={{backgroundColor: colorBookable}}></div>
+                                <input type="checkbox" id="bookable" checked={props.filters["bookable"]} onChange={(event) => onFiltersChange(event)} />
+                                <label htmlFor="bookable">Bookable</label>
+                            </div>
+                            <div class="col-sm">
+                                <div className="legend-square" style={{backgroundColor: colorRemote}}></div>
+                                <input type="checkbox" id="remote" checked={props.filters["remote"]} onChange={(event) => onFiltersChange(event)} />
+                                <label htmlFor="remote">Remote</label>
+                            </div>
+                        
                     {context.authUser && 
                     <>
-                        <div class="container">
-                            <div class="row">
-                                <div class="col text-center">
+                                <div class="col text-center col-sm">
                                     <button className="btn btn-lg btn-primary text-uppercase custom-color btn-size-student btn-default" type="submit" variant="primary" onClick = {() => {context.logoutUser()}}>Log out</button>
                                     
                                 </div>
-                            </div>
-                        </div>
                     </>
+                    
                     }
+                    </div>
+                    </div>
                     {!context.authUser && <Redirect to = "/login"/>}                
                 </div>
                 )}

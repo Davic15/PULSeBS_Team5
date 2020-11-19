@@ -71,15 +71,7 @@ class LectureCalendarTeacher extends React.Component {
         start.subtract(start.weekday()-1, 'days');
         return <>
             <div>
-                <div>
-                    <LectureCalendar
-                        onDateChange={this.onDateChange}
-                        lectures={this.state.lectures}
-                        lectureComponent={this.LectureComponent}
-                        modalComponent={this.Modal}
-                    />
-                </div>
-                <AuthContext.Consumer>
+            <AuthContext.Consumer>
                     {(context)=>(
                     <div className="div-center">
                         {context.authUser && 
@@ -91,6 +83,15 @@ class LectureCalendarTeacher extends React.Component {
                     </div>
                 )}
                 </AuthContext.Consumer>
+                <div>
+                    <LectureCalendar
+                        onDateChange={this.onDateChange}
+                        lectures={this.state.lectures}
+                        lectureComponent={this.LectureComponent}
+                        modalComponent={this.Modal}
+                    />
+                </div>
+                
             </div>
         </>;
     }
