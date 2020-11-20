@@ -6,8 +6,8 @@ import Login from "./components/Login/Login";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import API from "../src/API";
 import {AuthContext} from "../src/components/AuthContext/AuthContext";
-import WeekCalendar from "./components/Calendar/LectureCalendar";
-import LectureCalendar from './components/Calendar/LectureCalendar';
+//import WeekCalendar from "./components/Calendar/LectureCalendar";
+//import LectureCalendar from './components/Calendar/LectureCalendar';
 import LectureCalendarStudent from './components/Calendar/LectureCalendarStudent';
 import LectureCalendarTeacher from './components/Calendar/LectureCalendarTeacher';
 
