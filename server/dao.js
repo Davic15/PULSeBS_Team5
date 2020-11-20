@@ -402,8 +402,8 @@ exports.getStudents=function(user,lecture_id){
                         else if(rows.length===0){
                             resolve([])
                         }else {
-                            ret_array=[];
-                            for (row of rows){
+                            let ret_array=[];
+                            for (let row of rows){
                                 ret_array.push(
                                     {
                                         BookingId:row.BookingId,
