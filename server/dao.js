@@ -11,7 +11,7 @@ const lectureChangedText="<p>Dear %NAME% %SURNAME%,<br/>the lecture  %LECTURE% a
 const subject="LECTURE BOOKING INFO";
 
 //open db connection
-const db=new sqlite.Database('./PULSEeBS_db',(err)=>{
+let db=new sqlite.Database('./PULSEeBS_db',(err)=>{
     if(err){
          console.error(err.message);
          throw err;
@@ -67,7 +67,6 @@ exports.checkPassword=function(clearpwd,password){
 //WARNING: TO BE REMOVED IN FINAL VERSION!!!!
 exports.generateHash=function(newpassword){
     bcrypt.hash(newpassword, 10, function(err, hash) {
-        console.log(hash);
         return hash;
     })
 };
@@ -93,21 +92,9 @@ exports.getLectures=function(userId,date_start,date_end){
                 "AND DATE(Lecture.Start) >= DATE(?) AND DATE(Lecture.Start) <= DATE(?) " +
                 "AND Lecture.State <> 1 " +
                 "GROUP BY Lecture.LectureId ";
-                console.log(sql+"\n"+userId+" "+date_start+ " "+date_end);
-            /*const sql="SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,Seats,Teacher.Name as TeacherName,Surname as TeacherSurname "+
-                        "FROM Lecture,StudentCourse,User as Teacher, Course ,Classroom "+
-                        "where "+
-                        "Lecture.CourseId=StudentCourse.CourseId "+ 
-                        "and Course.CourseId=studentCourse.CourseId "+
-                        "and Teacher.UserId=Course.TeacherId "+
-                        "and Lecture.ClassRoomId=Classroom.ClassroomId "+
-                        "and StudentCourse.UserId=? "+
-                        "and date(Start)>=date(?) and date(Start)<=date(?)";*/
-            //db.all(sql,[userId,date_start,date_end],(err,rows)=>{
+     
             db.all(sql,[userId,userId,date_start,date_end],(err,rows)=>{
-                //console.log(JSON.stringify(rows));
                     if (err){
-                        console.log(JSON.stringify(err));
                         reject(err);
                     }
                     else if(rows.length===0){
@@ -150,7 +137,6 @@ exports.checkBooking=function(user_id,lecture_id){
         const sql="SELECT count(*) as n FROM Booking WHERE StudentId=? and LectureId=? and State!=2";
         db.get(sql, [user_id,lecture_id], (err, row) => {
             if(err){
-                console.log(JSON.stringify(err));
                 reject(err);
             }
             else if(row.n && row.n>0)
@@ -170,7 +156,6 @@ exports.checkStudentCourses=function(user_id,lecture_id){
                 "and StudentCourse.UserId=? and Lecture.LectureId=?";
         db.get(sql, [user_id,lecture_id], (err, row) => {
             if(err){
-                console.log(JSON.stringify(err));
                 reject(err);
             }
             else if(row.n && row.n>0)
@@ -190,7 +175,6 @@ exports.checkTeacherCourses=function(teacher_id,lecture_id){
             "and Teacher.UserId=? and Lecture.LectureId=? ";
         db.get(sql, [teacher_id,lecture_id], (err, row) => {
             if(err){
-                console.log(JSON.stringify(err));
                 reject(err);
             }
             else if(row.n && row.n>0)
@@ -211,10 +195,8 @@ exports.getLectureInfo=function(lecture_id){
                     "and LectureId=? ";
         db.get(sql, [lecture_id], (err, row) => {
             if(err){
-                console.log(JSON.stringify(err));
                 reject(err);
             }else if(row){
-                console.log(JSON.stringify(row));
                 resolve({
                     CourseName:row.CourseName,
                     ClassroomName:row.ClassroomName,
@@ -231,15 +213,16 @@ exports.getStudentInfo=function(student_id){
         const sql="SELECT Name,Surname,Email FROM User where UserId=?";
         db.get(sql, [student_id], (err, row) => {
             if(err){
-                console.log(JSON.stringify(err));
                 reject(err);
-            }else if(row){
-                console.log(JSON.stringify(row));
+            }else if(row) {
                 resolve({
                     Name:row.Name,
                     Surname:row.Surname,
                     Email:row.Email
                     });
+            }
+            else {
+                resolve(undefined);
             }
         });
     });
@@ -257,10 +240,8 @@ exports.getSeatsCount=function(lecture_id){
                     "GROUP BY T.LectureId,TotalSeats";
         db.get(sql, [lecture_id], (err, row) => {
             if(err){
-                console.log(JSON.stringify(err));
                 reject(err);
             }else if(row){
-                console.log(JSON.stringify(row));
                 resolve({
                     LectureId:row.LectureId,
                     BookedSeats:row.BookedSeats,
@@ -287,10 +268,8 @@ exports.bookLecture=async function(user_id,lecture_id){
                 const seats=await this.getSeatsCount(lecture_id);
                 if(seats.LectureId){
                     let enqueue=0;
-                    console.log(JSON.stringify(seats));
                     if(seats.BookedSeats>=seats.TotalSeats)
                         enqueue=1;
-                    console.log(enqueue);
                     
                     const lectureInfo = await this.getLectureInfo(lecture_id);
                     const studentInfo = await this.getStudentInfo(user_id);
@@ -300,7 +279,6 @@ exports.bookLecture=async function(user_id,lecture_id){
                                 db.run(sql,[user_id,lecture_id,Date.now(),1,enqueue],
                                     async function(err){
                                         if(err){
-                                            console.log(JSON.stringify(err));
                                             reject(err);
                                         }
                                         else{
@@ -339,17 +317,9 @@ exports.getTeacherLectures=function(teacher_id, date_start,date_end){
                 "AND DATE(Lecture.Start) >= DATE(?) AND DATE(Lecture.Start) <= DATE(?) " +
                 "AND Lecture.State <> 1 " +
                 "GROUP BY Lecture.LectureId ";
-                console.log(sql+"\n"+teacher_id+" "+date_start+ " "+date_end);
-            /*const sql="SELECT LectureId,Course.CourseId,Course.Name as CourseName,Start,End,State,Classroom.ClassroomId,Classroom.Name as ClassroomName,Seats "+
-                        "FROM Lecture,User as Teacher, Course ,Classroom "+
-                        "where   Teacher.UserId=Course.TeacherId "+
-                        "and Lecture.ClassRoomId=Classroom.ClassroomId "+
-                        "and Lecture.CourseId=Course.CourseId "+
-                        "and Teacher.UserId==? "+
-                        "and date(Start)>=date(?) and date(Start)<=date(?)";*/
+
                 db.all(sql,[teacher_id,date_start,date_end],(err,rows)=>{
                     if (err){
-                        console.log(JSON.stringify(err));
                         reject(err);
                     }
                     else if(rows.length===0){
@@ -396,7 +366,6 @@ exports.getStudents=function(user,lecture_id){
                         "and Booking.LectureId=?";
                     db.all(sql,[lecture_id],(err,rows)=>{
                         if (err){
-                            console.log(JSON.stringify(err));
                             reject(err);
                         }
                         else if(rows.length===0){
@@ -436,7 +405,6 @@ exports.getBookings=function(student_id){
                         "and Booking.StudentId=?";
                 db.all(sql,[student_id],(err,rows)=>{
                     if (err){
-                        console.log(JSON.stringify(err));
                         reject(err);
                     }
                     else if(rows.length===0){
@@ -475,10 +443,8 @@ exports.getNextInLine=function(booking_id){
         const sql="SELECT BookingId,LectureId,StudentId FROM Booking  where LectureId=(SELECT LectureId from Booking where BookingId=?) and State=1 order by Timestamp";
         db.get(sql, [booking_id], (err, row) => {
             if(err){
-                console.log(JSON.stringify(err));
                 reject(err);
             }else if(row){
-                console.log(JSON.stringify(row));
                 resolve({
                     BookingId:row.BookingId,
                     LectureId:row.LectureId,
@@ -496,27 +462,21 @@ exports.getNextInLine=function(booking_id){
 
 exports.cancelBooking=function( booking_id){
     return new Promise( async (resolve,reject)=>{
-        console.log("OOK");
         const nextBooking= await this.getNextInLine(booking_id);
         
-        console.log("doppio ok");
         let lectureInfo=undefined;
         let studentInfo=undefined;
         let othersql=undefined;
         let sql="UPDATE Booking SET State=2 WHERE BookingId=?";
         
         if(nextBooking.BookingId!=undefined){
-            console.log(JSON.stringify(nextBooking));
-             othersql="UPDATE Booking SET State=0 WHERE BookingId=?"
+            othersql="UPDATE Booking SET State=0 WHERE BookingId=?"
             lectureInfo = await this.getLectureInfo(nextBooking.LectureId); 
             studentInfo = await this.getStudentInfo(nextBooking.StudentId);
-            console.log(JSON.stringify(lectureInfo));
-            console.log(JSON.stringify(studentInfo));
         }
         db.run(sql,[booking_id],
             function(err){
                 if(err){
-                    console.log(JSON.stringify(err));
                     reject(err);
                 }
                 else{
@@ -557,7 +517,6 @@ exports.getEmailInfo=function(lecture_id){
                     "and Booking.LectureId=?";
             db.all(sql,[lecture_id],(err,rows)=>{
                 if (err){
-                    console.log(JSON.stringify(err));
                     reject(err);
                 }
                 else if(rows.length===0){
@@ -598,7 +557,6 @@ exports.changeLecture=function(teacher_id,lecture_id,state){
                 function(err){
                     
                     if(err){
-                        console.log(JSON.stringify(err));
                         reject(err);
                     }
                     else{
