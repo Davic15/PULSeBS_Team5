@@ -214,7 +214,7 @@ app.post('/api/book',(req,res)=>{
 });
 
 app.post('/api/cancelbooking',(req,res)=>{
-    const user=req.user && req.user.user;
+    //const user=req.user && req.user.user;
     const booking_id=req.body.booking_id;
     const role = req.user && req.user.role;
     if(!checkRole(role,['student'])){

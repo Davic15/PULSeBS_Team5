@@ -113,8 +113,8 @@ exports.getLectures=function(userId,date_start,date_end){
                     else if(rows.length===0){
                         resolve([])
                     }else {
-                        ret_array=[];
-                        for (row of rows){
+                        let ret_array=[];
+                        for (let row of rows){
                             ret_array.push(
                                 {
                                     LectureId:row.LectureId,
@@ -521,10 +521,10 @@ exports.cancelBooking=function( booking_id){
                 }
                 else{
                     if(nextBooking.BookingId!=undefined){
-                        db.run(othersql,[nextBooking.BookingId],function(err){
-                            if(err){
-                                console.log(JSON.stringify(err));
-                                reject(err);
+                        db.run(othersql,[nextBooking.BookingId],function(err2){
+                            if(err2){
+                                console.log(JSON.stringify(err2));
+                                reject(err2);
                             }else{
                                 const emailReplacements={"%NAME%":studentInfo.Name,
                                                 "%SURNAME%":studentInfo.Surname,
@@ -603,7 +603,7 @@ exports.changeLecture=function(teacher_id,lecture_id,state){
                     }
                     else{
                         if(students){
-                            for(s of students){
+                            for(let s of students){
                                 const emailReplacements={
                                 "%NAME%":s.StudentName,
                                 "%SURNAME%":s.Surname,

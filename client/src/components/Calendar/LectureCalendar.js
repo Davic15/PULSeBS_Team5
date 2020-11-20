@@ -1,13 +1,13 @@
 import React from 'react';
 import WeekCalendar from 'react-week-calendar';
-import HeaderCell from 'react-week-calendar';
+//import HeaderCell from 'react-week-calendar';
 //import 'react-week-calendar/dist/style.less';
 // or import css file
 import 'react-week-calendar/dist/style.css';
 import DatePicker from 'react-date-picker'
 
 import './Calendar.css';
-import API from '../../API';
+//import API from '../../API';
 
 const moment = require('moment');
 
