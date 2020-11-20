@@ -483,7 +483,6 @@ exports.cancelBooking=function( booking_id){
                     if(nextBooking.BookingId!=undefined){
                         db.run(othersql,[nextBooking.BookingId],function(err2){
                             if(err2){
-                                console.log(JSON.stringify(err2));
                                 reject(err2);
                             }else{
                                 const emailReplacements={"%NAME%":studentInfo.Name,
