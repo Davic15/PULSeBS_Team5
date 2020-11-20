@@ -11,6 +11,7 @@ const expireTime = 1800; //seconds
 
 const PORT = 3001;
 const app = express();
+app.disable("x-powered-by");
 
 app.use(morgan('tiny'));
 app.use(express.json());

@@ -355,8 +355,8 @@ exports.getTeacherLectures=function(teacher_id, date_start,date_end){
                     else if(rows.length===0){
                         resolve([])
                     }else {
-                        ret_array=[];
-                        for (row of rows){
+                        let ret_array=[];
+                        for (let row of rows){
                             ret_array.push(
                                 {
                                     LectureId:row.LectureId,
