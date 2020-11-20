@@ -1,5 +1,6 @@
+const moment = require('moment');
 const dao = require('../dao');
-const sqlite=require('sqlite3').verbose();
+const sqlite = require('sqlite3').verbose();
 
 const db = new sqlite.Database('./PULSEeBS_db_TEST',(err)=>{
     if(err){
@@ -9,6 +10,70 @@ const db = new sqlite.Database('./PULSEeBS_db_TEST',(err)=>{
 });
 
 dao.db = this.db;
+let today = new Date();
+const monday = new Date(today.setDate(today.getDate() - today.getDay() + 8));
+today = new Date();
+const wednesday = new Date(today.setDate(today.getDate() - today.getDay() + 10));
+today = new Date();
+const friday = new Date(today.setDate(today.getDate() - today.getDay() + 12));
+const start1 = moment(monday.setHours(8, 30, 0, 0)).format("YYYY-MM-DD HH:mm:ss");
+const end1 = moment(monday.setHours(11, 30, 0, 0)).format("YYYY-MM-DD HH:mm:ss");
+const start2 = moment(wednesday.setHours(10, 0, 0, 0)).format("YYYY-MM-DD HH:mm:ss");
+const end2 = moment(wednesday.setHours(11, 30, 0, 0)).format("YYYY-MM-DD HH:mm:ss");
+const start3 = moment(wednesday.setHours(10, 0, 0, 0)).format("YYYY-MM-DD HH:mm:ss");
+const end3 = moment(wednesday.setHours(13, 0, 0, 0)).format("YYYY-MM-DD HH:mm:ss"); 
+const start4 = moment(friday.setHours(10, 0, 0, 0)).format("YYYY-MM-DD HH:mm:ss");
+const end4 = moment(friday.setHours(13, 0, 0, 0)).format("YYYY-MM-DD HH:mm:ss"); 
+
+const range1 = moment(monday.setHours(0, 0, 0, 0)).format("YYYY-MM-DD");
+const range2 = moment(friday.setHours(23, 59, 59, 0)).format("YYYY-MM-DD");
+console.log(range1);
+console.log(range2);
+
+const stats = ["DELETE FROM Booking", 
+            "DELETE FROM Lecture",
+            `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (1, 2, '${start1}', '${end1}', 0, 3)`,
+            `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (2, 2, '${start2}', '${end2}', 0, 4)`,
+            `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (3, 3, '${start3}', '${end3}', 0, 5)`,
+            `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (4, 3, '${start4}', '${end4}', 0, 3)`];
+
+
+db.run(stats[0], (err, rows) => {
+    if (err) {
+        console.log(err);
+    }
+
+    db.run(stats[1], (err, rows) => {
+        if (err) {
+            console.log(err);
+        }
+
+        db.run(stats[2], (err, rows) => {
+            if (err) {
+                console.log(err);
+            }
+
+            db.run(stats[3], (err, rows) => {
+                if (err) {
+                    console.log(err);
+                }
+
+                db.run(stats[4], (err, rows) => {
+                    if (err) {
+                        console.log(err);
+                    }
+
+                    db.run(stats[5], (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                });
+            });
+        });
+    });
+});
+
 
 test('User is defined', async() => {
     const user = await dao.getUser("teacher1@gmail.com");
@@ -47,7 +112,7 @@ test('Equal passwords', async() => {
 });*/
 
 test('Get lectures for student', async() => {
-    const lectures = await dao.getLectures(6, "2020-11-13", "2020-11-20");
+    const lectures = await dao.getLectures(6, range1, range2);
     expect(lectures).toBeDefined();
     expect(lectures.length).toBe(4);
 });
@@ -131,7 +196,7 @@ test('Get seats count for lecture', async() => {
 });
 
 test('Get lectures for teacher', async() => {
-    const lectures = await dao.getTeacherLectures(7, "2020-11-13", "2020-11-20");
+    const lectures = await dao.getTeacherLectures(7, range1, range2);
     expect(lectures).toBeDefined();
     expect(lectures.length).toBe(4);
 });
