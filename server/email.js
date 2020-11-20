@@ -12,34 +12,31 @@ exports.replacePlaceHolders=function(str,replacements){
 }
 
 exports.send=async function(recepient,subject,text,replacements) {
-  // Generate test SMTP service account from ethereal.email
-  // Only needed if you don't have a real mail account for testing
-  let testAccount = await nodemailer.createTestAccount();
 
-  // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false, // true for 465, false for other ports
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
-      user: testAccount.user, // generated ethereal user
-      pass: testAccount.pass, // generated ethereal password
+      user: "pulsebs.softeng2@gmail.com", 
+      pass: "ognotvgwkzavqpws", 
     },
   });
 
+  recepient = "pulsebs.softeng2@gmail.com"; //force send to our email
   // send mail with defined transport object
   let info = await transporter.sendMail({
-    from: '"PULSeBs platform" <info@plusebs.com>', // sender address
+    from: '"PULSeBs platform" <pulsebs.softeng2@gmail.com>', // sender address
     to: recepient, // list of receivers
     subject: subject, // Subject line
     text: this.replacePlaceHolders(text,replacements), // plain text body
     html: this.replacePlaceHolders(text,replacements), // html body
   });
 
-  console.log("\n\t\tMessage sent: %s", info.messageId);
+  //console.log("\n\t\tMessage sent: %s", info.messageId);
   // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
   // Preview only available when sending through an Ethereal account
-  console.log("\t\t\tPreview URL: %s\n", nodemailer.getTestMessageUrl(info));
+  //console.log("\t\t\tPreview URL: %s\n", nodemailer.getTestMessageUrl(info));
   // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
 }
