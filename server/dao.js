@@ -442,8 +442,8 @@ exports.getBookings=function(student_id){
                     else if(rows.length===0){
                         resolve([])
                     }else {
-                        ret_array=[];
-                        for (row of rows){
+                       let ret_array=[];
+                        for (let row of rows){
                             ret_array.push(
                                 {
                                     BookingId:row.BookingId,
@@ -563,8 +563,8 @@ exports.getEmailInfo=function(lecture_id){
                 else if(rows.length===0){
                     resolve([])
                 }else {
-                    ret_array=[];
-                    for (row of rows){
+                    let ret_array=[];
+                    for (let row of rows){
                         ret_array.push(
                             {
                                 Email:row.Email,
