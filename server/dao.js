@@ -12,15 +12,19 @@ const lectureChangedText="<p>Dear %NAME% %SURNAME%,<br/>the lecture  %LECTURE% a
 
 const subject="LECTURE BOOKING INFO";
 
+let db;
 //open db connection
-let db=new sqlite.Database('./PULSEeBS_db',(err)=>{
-    if(err){
-         console.error(err.message);
-         throw err;
-    }
- });
+exports.initializeDBConn = function(dbName) {
+    db = new sqlite.Database(dbName,(err)=>{
+        if (err) {
+            throw err;
+        }
+    });
 
- exports.getUser=function(username){
+    return db;
+}
+
+exports.getUser=function(username){
     return new Promise(
         (resolve,reject)=>{
             const sql="SELECT * FROM User WHERE Email= ?";
@@ -135,17 +139,23 @@ exports.getLectures=function(userId,date_start,date_end){
 exports.checkBooking=function(user_id,lecture_id){
 
     return new Promise(
-        (resolve,reject)=>{
-        const sql="SELECT count(*) as n FROM Booking WHERE StudentId=? and LectureId=? and State!=2";
-        db.get(sql, [user_id,lecture_id], (err, row) => {
-            if(err){
-                reject(err);
+        async (resolve,reject)=>{
+            const isEnrolled = await this.checkStudentCourses(user_id,lecture_id);
+            if (isEnrolled.ok==true) {
+                const sql="SELECT count(*) as n FROM Booking WHERE StudentId=? and LectureId=? and State!=2";
+                db.get(sql, [user_id,lecture_id], (err, row) => {
+                    if(err){
+                        reject(err);
+                    }
+                    else if(row.n && row.n>0)
+                        resolve({ok:false});
+                    else
+                        resolve({ok:true});
+                });
             }
-            else if(row.n && row.n>0)
-                resolve({ok:false});
-            else
-                resolve({ok:true});
-        });
+            else {
+                resolve({error:"student not enrolled"});
+            }
     });
 }
 

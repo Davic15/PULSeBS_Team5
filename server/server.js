@@ -18,7 +18,7 @@ app.use(morgan('tiny'));
 app.use(express.json());
 
 emaildeamon.startEmailDeamon()
-
+dao.initializeDBConn('./PULSEeBS_db');
 
 //public API
 
