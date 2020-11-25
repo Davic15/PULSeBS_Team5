@@ -13,6 +13,23 @@ exports.replacePlaceHolders=function(str,replacements){
 
 exports.send=async function(recepient,subject,text,replacements) {
 
+
+  let testAccount = await nodemailer.createTestAccount();
+
+  // create reusable transporter object using the default SMTP transport
+  
+  //PLEASE DO NOT DELETE THIS COMMENT
+  /*let transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: testAccount.user, // generated ethereal user
+      pass: testAccount.pass, // generated ethereal password
+    },
+  });*/
+
+
   let transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,

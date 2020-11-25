@@ -2,6 +2,8 @@ const sqlite=require('sqlite3').verbose();
 const bcrypt=require('bcrypt');
 const emailer=require('./email');
 
+
+
 const bookinConfirmationText="<p>Dear %NAME% %SURNAME%,<br/>you were succesfully booked to lecture \"%LECTURE%\"  %TIME%, classroom %CLASSROOM%<p>";
 const bookinEnqueueText="<p>Dear %NAME% %SURNAME%,<br/>the lecture you were trying to book (lecture %LECTURE% at %TIME%, classroom %CLASSROOM%) is full </br> you will be notified if a seats will be available <p>";
 const bookinDequeueText="<p>Dear %NAME% %SURNAME%,<br/>the lecture you were trying to book (lecture %LECTURE% at %TIME%, classroom %CLASSROOM%) is now available </br> you can now attend the lecture <p>";
@@ -581,37 +583,63 @@ exports.changeLecture=function(teacher_id,lecture_id,state){
     });
 }
 
-/*exports.getLectureBookings = function(lecture_id) {
+//get information needed to send scheduled email at teachers
+exports.getAllLecturesForEmail=function(teacher_id, date_start,date_end){
     return new Promise(
         (resolve,reject)=>{
-            const sql="SELECT BookingId, Name, Surname, Present, Booking.State as BookingState, Timestamp FROM Booking, User " +
-                        "WHERE Booking.LectureId=?"
-                        "and Booking.StudentId=User.UserId";
-                db.all(sql,[lecture_id],(err,rows)=>{
+            const sql = "SELECT Lecture.LectureId as Lec_id, Course.Name as CourseName,Start,Email,User.Name as TeacherName,Surname, Classroom.Name as ClassroomName , Seats as TotSeats, COUNT(DISTINCT Booking.BookingId) as BookedSeats "+
+            "FROM Lecture left join Booking on Booking.LectureId=Lecture.LectureId and Booking.State=0 "+
+			"inner join Course on Lecture.CourseId=Course.CourseId "+
+			"inner join User on Course.TeacherId=User.UserId "+
+			"inner join Classroom on Lecture.ClassroomId= Classroom.ClassroomId "+
+            "and Lecture.State=0  and EmailSent=0 and DATE(Start)>DATE('now') and DATE(Start)<Date('now','+2 day')"+
+            "Group by Course.Name ,Start,Email,User.Name ,Surname,Classroom.Name,Seats" 
+
+                db.all(sql,(err,rows)=>{
                     if (err){
-                        console.log(JSON.stringify(err));
                         reject(err);
                     }
                     else if(rows.length===0){
-                        resolve(undefined)
+                        resolve([])
                     }else {
-                        ret_array=[];
-                        for (row of rows){
+                        let ret_array=[];
+                        for (let row of rows){
                             ret_array.push(
                                 {
-                                    BookingId:row.BookingId,
-                                    Present:row.Present,
-                                    BookingState:row.BookingState,
-                                    Timestamp:row.Timestamp,
-                                    Name:row.Name,
-                                    Surname:row.Surname
+                                    LectureId:row.Lec_id,
+                                    CourseName:row.CourseName,
+                                    Start:row.Start,
+                                    Email:row.Email,
+                                    TeacherName:row.TeacherName,
+                                    TeacherSurname:row.Surname,
+                                    ClassroomName:row.ClassroomName,
+                                    TotSeats:row.TotSeats,
+                                    BookedSeats:row.BookedSeats
                                 }
                             );
                         }
+
                         resolve(ret_array);
                     }
                 }
             );
         }
     );
-}*/
+}
+
+//update EmailSent flag in lecture table
+exports.SetEmailSent=function(lecture_id){
+    return new Promise((resolve,reject)=>{      
+        const sql="UPDATE Lecture SET EmailSent=1 WHERE LectureId=? ";
+        db.run(sql,[lecture_id],
+            function(err){ 
+                if(err){
+                    reject(err);
+                }else
+                    resolve("OK");
+                
+            });       
+    });
+}
+
+

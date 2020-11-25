@@ -1,10 +1,11 @@
 const express = require('express');
 const dao = require('./dao');
+const emaildeamon=require('./emailDeamon');
 const morgan = require('morgan');
 const jwt=require('express-jwt');
 const jsonwebtoken=require('jsonwebtoken');
 const cookieParser=require('cookie-parser');
-const moment=require('moment');
+
 
 const jwtSecret = '6xvL4xkAAbG49hcXf5GIYSvkDICiUAR6EdR5dLdwW7hMzUjjMUe9t6M5kSAYxsvX';
 const expireTime = 1800; //seconds
@@ -15,6 +16,9 @@ app.disable("x-powered-by");
 
 app.use(morgan('tiny'));
 app.use(express.json());
+
+emaildeamon.startEmailDeamon()
+
 
 //public API
 
