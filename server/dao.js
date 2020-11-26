@@ -189,8 +189,10 @@ exports.checkTeacherCourses=function(teacher_id,lecture_id){
 
 exports.getLectureInfo=function(lecture_id){
     return new Promise(
+        
         (resolve,reject)=>{
-        const sql="SELECT Course.Name as CourseName, Start ,Classroom.Name as ClassroomName "+
+            
+        const sql="SELECT Course.CourseId as CourseId,Course.Name as CourseName, Start ,Classroom.Name as ClassroomName "+
                     "FROM Lecture,Classroom,Course "+
                     "where Lecture.CourseId=Course.CourseId "+
                     "and Classroom.ClassroomId=Lecture.ClassroomId "+
@@ -200,11 +202,14 @@ exports.getLectureInfo=function(lecture_id){
                 reject(err);
             }else if(row){
                 resolve({
+                    CourseId:row.CourseId,
                     CourseName:row.CourseName,
                     ClassroomName:row.ClassroomName,
                     Start:row.Start
                     });
                 }
+            else
+                resolve({});
         });
     });
 }
@@ -583,6 +588,8 @@ exports.changeLecture=function(teacher_id,lecture_id,state){
     });
 }
 
+////SPRINT 2
+
 //get information needed to send scheduled email at teachers
 exports.getAllLecturesForEmail=function(teacher_id, date_start,date_end){
     return new Promise(
@@ -592,7 +599,7 @@ exports.getAllLecturesForEmail=function(teacher_id, date_start,date_end){
 			"inner join Course on Lecture.CourseId=Course.CourseId "+
 			"inner join User on Course.TeacherId=User.UserId "+
 			"inner join Classroom on Lecture.ClassroomId= Classroom.ClassroomId "+
-            "and Lecture.State=0  and EmailSent=0 and DATE(Start)>DATE('now') and DATE(Start)<Date('now','+2 day')"+
+            "and Lecture.State=0  and EmailSent=0 and DATE(Start)>DATE('now') and DATE(Start)<=Date('now','+1 day')"+
             "Group by Course.Name ,Start,Email,User.Name ,Surname,Classroom.Name,Seats" 
 
                 db.all(sql,(err,rows)=>{
@@ -643,3 +650,276 @@ exports.SetEmailSent=function(lecture_id){
 }
 
 
+exports.getStatistics=function(course_id,group_by,date_start,date_end){
+    return new Promise(
+        async (resolve,reject)=>{
+
+           
+        let sql="SELECT LectureId,CourseId,Start, ";
+    sql+=group_by=="week" ? "CAST(strftime('%W',Start) as INTEGER)as Week, " : "";
+    sql+=group_by=="month" ? " CAST(strftime('%m',Start) as INTEGER) as Month,": ""; 
+    sql+="CAST(strftime('%Y',Start) as INTEGER)as Year, "+
+        "SUM(BookedSeats) as SumBooked, "+
+        "SUM (Queuecount) as SumQueue, "+
+        "SUM(CancelledBookings) as SumCancelled, "+
+        "SUM (PresentCount) as SumPresent, "+
+        "SUM (CASE WHEN State = 0 then 1 ELSE 0 END) as TotHeld, "+
+        "SUM (CASE WHEN State = 1 then 1 ELSE 0 END) as TotCancelled, "+
+        "SUM (CASE WHEN State = 2 then 1 ELSE 0 END) as TotOnline, "+
+        "COUNT( * ) as TotLectures "+
+        "FROM "+
+        "(SELECT Lecture.LectureId,Lecture.CourseId,Lecture.State,Start,BookedSeats,Queuecount,CancelledBookings,PresentCount "+
+        "from (SELECT LectureId, "+
+                "SUM(CASE WHEN State = 0 then 1 ELSE 0 END) as BookedSeats, "+
+                "SUM(CASE WHEN State = 1 then 1 ELSE 0 END) as Queuecount, "+
+                "SUM(CASE WHEN State = 2 then 1 ELSE 0 END) as CancelledBookings, "+
+                "SUM(CASE WHEN Present = 1 and State=0 then 1 ELSE 0 END) as PresentCount "+
+                "FROM Booking "+
+                "Group by LectureId) as T1 "+
+        ", Lecture "+
+        "where T1.LectureId=Lecture.LectureId "+
+        "and CourseId=? and Lecture.State!=1 "+
+        "UNION "+
+        "SELECT Lecture.LectureId,Lecture.CourseId,Lecture.State,Start,BookedSeats,Queuecount,CancelledBookings,PresentCount "+
+        "from (SELECT LectureId, "+
+                "SUM(CASE WHEN State = 0 then 0 ELSE 0 END) as BookedSeats, "+
+                "SUM(CASE WHEN State = 1 then 0 ELSE 0 END) as Queuecount, "+
+                "SUM(CASE WHEN State = 2 then 1 ELSE 0 END) as CancelledBookings, "+
+                "SUM(CASE WHEN Present = 1 and State= 0 then 1 ELSE 0 END) as PresentCount "+
+                "FROM Booking "+
+                "Group by LectureId) as T2 "+
+        ", Lecture "+
+        "where T2.LectureId=Lecture.LectureId "+
+        "and CourseId=? and Lecture.State=1) as T "+
+        "WHERE "+
+        "Date(Start)>=Date(?) and Date(Start)<=Date(?) "+
+        "GROUP BY CourseId, ";
+    sql+=group_by=="lecture" ? "LectureId" :"";
+    sql+=group_by=="week" ? "Week" :"";
+    sql+=group_by=="month" ? "Month" :"";
+    sql+=",Year;";
+            db.all(sql,[course_id,course_id,date_start,date_end],(err,rows)=>{
+                if (err){
+                    reject(err);
+                }
+                else if(rows.length===0){
+                    resolve([])
+                }else {
+                    console.log(JSON.stringify(rows));
+                    let ret_array=[];
+                    var obj={LectureId:undefined,CourseId:0,Start:undefined,Week:undefined,Year:0,SumBooked:0,SumQueue:0,SumCancelled:0,SumPresent:0,TotHeld:0,TotCancelled:0,TotOnline:0,TotLectures:0};
+                    for (let row of rows){
+                        obj.LectureId=row.LectureId; 
+                        obj.CourseId=row.CourseId;
+                        obj.Start=row.Start;
+                        group_by=="lecture" ? obj.LectureId=row.LectureId : undefined;
+                        group_by=="week" ?  obj.Week=row.Week : undefined;
+                        group_by=="month" ? obj.Month=row.Month : undefined;
+                        obj.Year=row.Year;
+                        obj.SumBooked=row.SumBooked;            //number of bookings, refers only to held and cancelled lectures
+                        obj.SumQueue=row.SumQueue;              //number of people in queue, refers only to held and cancelled lectures
+                        obj.SumCancelled=row.SumCancelled;      //number of cancelled bookings, refers only to held and cancelled lectures
+                        obj.SumPresent=row.SumPresent;          //number of recorded presence, refers only to held lectures
+                        obj.TotHeld=row.TotHeld;                //number of held lectures
+                        obj.TotCancelled=row.TotCancelled;      //number of cancelled lectures
+                        obj.TotOnline=row.TotOnline;            //refers only to held and cancelled lectures
+                        obj.TotLectures=row.TotLectures;        //total number of lectures
+                        ret_array.push(Object.assign({},obj));
+                           
+                    }
+                    resolve(ret_array);
+                }
+            }
+        );
+    }
+        
+    );
+}
+
+/*DO NOT DELETE THIS COMMENT PLEASE
+
+SELECT LectureId,CourseId,State,
+CAST(strftime('%d',Start) as INTEGER)as Day,
+CAST(strftime('%W',Start) as INTEGER)as Week,
+CAST(strftime('%m',Start) as INTEGER) as Month,
+CAST(strftime('%Y',Start) as INTEGER)as Year,
+SUM(BookedSeats) as SumBooked,
+SUM (Queuecount) as SumQueue,
+SUM(CancelledBookings) as SumCancelled,
+SUM (PresentCount) as SumPresent,
+SUM (CASE WHEN State = 0 then 1 ELSE 0 END) as TotHeld,
+SUM (CASE WHEN State = 1 then 1 ELSE 0 END) as TotCanceled,
+SUM (CASE WHEN State = 2 then 1 ELSE 0 END) as TotOnline,
+COUNT( * ) as TotLectures
+from
+(SELECT Lecture.CourseId,Lecture.State,Start,BookedSeats,Queuecount,CancelledBookings,PresentCount
+from (SELECT LectureId,
+		SUM(CASE WHEN State = 0 then 1 ELSE 0 END) as BookedSeats,
+		SUM(CASE WHEN State = 1 then 1 ELSE 0 END) as Queuecount,
+		SUM(CASE WHEN State = 2 then 1 ELSE 0 END) as CancelledBookings,
+		SUM(CASE WHEN Present = 1 and State=0 then 1 ELSE 0 END) as PresentCount
+		FROM Booking
+		Group by LectureId) as T1
+, Lecture
+where T1.LectureId=Lecture.LectureId
+and CourseId=2 and Lecture.State!=1
+
+UNION
+
+SELECT Lecture.CourseId,Lecture.State,Start,BookedSeats,Queuecount,CancelledBookings,PresentCount
+from (SELECT LectureId,
+		SUM(CASE WHEN State = 0 then 0 ELSE 0 END) as BookedSeats,
+		SUM(CASE WHEN State = 1 then 0 ELSE 0 END) as Queuecount,
+		SUM(CASE WHEN State = 2 then 1 ELSE 0 END) as CancelledBookings,
+		SUM(CASE WHEN Present = 1 and State= 0 then 1 ELSE 0 END) as PresentCount
+		FROM Booking
+		Group by LectureId) as T2
+, Lecture
+where T2.LectureId=Lecture.LectureId
+and CourseId=2 and Lecture.State=1) as T
+WHERE
+ Date(Start)>=Date('2020-01-01') and Date(Start)<=Date('2020-12-31')
+GROUP BY LectureId,CourseId,Day,Year;*/
+
+//return a list of lectures for a course in a date range
+exports.getCourseLecture=function(course_id, date_start,date_end){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql = "SELECT Lecture.LectureId AS LectureId, Lecture.Start AS Start, Lecture.End AS End, Lecture.State AS State,  "+
+                        "Course.CourseId AS CourseId, Course.Name AS CourseName,  "+
+                        "User.Name as TeacherName, "+
+                        "User.Surname as TeacherSurname, "+
+                        "Classroom.ClassroomId as ClassroomId,Classroom.Name AS ClassroomName, Classroom.Seats AS Seats "+
+                        "FROM Lecture, Course, Classroom ,User "+
+                        "WHERE "+
+                        "Lecture.ClassRoomId = Classroom.ClassroomId  "+
+                        "and Course.TeacherId=User.UserId "+
+                        "and  Course.CourseId =? "+
+                        "and Lecture.CourseId=Course.CourseId "+
+                        "AND DATE(Lecture.Start) >= DATE(?) AND DATE(Lecture.Start) <= DATE(?);"
+
+                db.all(sql,[course_id,date_start,date_end],(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        
+                        resolve([])
+                    }else {
+                        let ret_array=[];
+                        
+                        for (let row of rows){
+                            ret_array.push(
+                                {
+                                    LectureId:row.LectureId,
+                                    CourseId:row.CourseId,
+                                    CourseName:row.CourseName,
+                                    Start:row.Start,
+                                    End:row.End,
+                                    State:row.State,
+                                    ClassroomId:row.ClassroomId,
+                                    ClassroomName:row.ClassroomName,
+                                    Seats:row.Seats
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
+
+
+
+exports.getLowerDate=function(lecture_id, n_lectures){
+    return new Promise(
+        (resolve,reject)=>{
+        const sql="SELECT Start from(SELECT Lecture.LectureId AS LectureId, Lecture.Start AS Start,Lecture.State AS State "+
+                    "FROM Lecture "+
+                    "where date(Start) <= (select date(Start) From lecture where LectureId=?) "+
+                    "and CourseId=(select CourseId From lecture where LectureId=?) "+
+                    "order by Start DESC "+
+                    "limit ?) as T "+
+                    "order by Start "+
+                    "limit 1;";
+        db.get(sql, [lecture_id,lecture_id,n_lectures], (err, row) => {
+            if(err){
+                reject(err);
+            }else if(row){
+                console.log(JSON.stringify(row));
+                resolve({Date:row.Start});
+                }
+            else
+                {
+                    resolve({
+                        });
+                }
+        });
+    });
+}
+
+exports.getTeacherCourses=function(teacher_id){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql = "SELECT CourseId, Name as CourseName from Course WHERE TeacherId=?"
+
+                db.all(sql,[teacher_id],(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        
+                        resolve([])
+                    }else {
+                        let ret_array=[];
+                        
+                        for (let row of rows){
+                            ret_array.push(
+                                {
+                                    CourseId:row.CourseId,
+                                    CourseName:row.CourseName
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
+
+exports.getAllCourses=function(){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql = "SELECT CourseId, Course.Name as CourseName,User.Name as TeacherName, User.Surname as TeacherSurname  from Course,User WHERE Course.TeacherId=User.UserId"
+
+                db.all(sql,(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        
+                        resolve([])
+                    }else {
+                        let ret_array=[];
+                        
+                        for (let row of rows){
+                            ret_array.push(
+                                {
+                                    CourseId:row.CourseId,
+                                    CourseName:row.CourseName,
+                                    TeacherName:row.TeacherName,
+                                    TeacherSurname:row.Surname
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}

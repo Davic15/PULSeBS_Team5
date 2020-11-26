@@ -277,8 +277,181 @@ app.post('/api/changelecture',(req,res)=>{
     });
 });
 
+//sprint 2
+
+app.post('/api/stats/:type/:groupby', async (req,res)=>{
+    const user=req.user && req.user.user;
+    const course_id=req.body.course_id;
+    const date_start=req.body.date_start;
+    const date_end=req.body.date_end;
+    const type = req.params.type;
+    const groupby= req.params.groupby;
+    const role = req.user && req.user.role;
 
 
+    if((type!="avg" && type !="tot") || (groupby!="week" && groupby !="month" ))
+        res.status(400).json(
+            {errors:[{'param':'Server','msg':'Bad Request'}]}
+    );
+
+    if(!checkRole(role,['teacher','booking-manager']) ){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }else if (checkRole(role,['teacher'])){
+            let courselist= (await dao.getTeacherCourses(user)).map(obj=>{return obj.CourseId});
+            if(!courselist.includes(course_id)){
+                res.status(401).json(
+                    {errors:[{'param':'Server','msg':'Unauthorized'}]}
+                );
+            }
+    }
+
+    dao.getStatistics(course_id,groupby,date_start,date_end).then((rows)=>{
+        let ret_array=[];
+        let obj={CourseId:-1,Week:undefined,Month:undefined,TotBooked:undefined,TotQueue:undefined,TotCancelled:undefined,TotPresent:undefined,
+            AvgBooked:undefined,AvgQueue:undefined,AvgCancelled:undefined,AvgPresent:undefined}
+        for (let row of rows){
+           
+            obj.CourseId=row.CourseId;
+            obj.Week= groupby=="week" ?  row.Week : undefined;
+            obj.Month= groupby=="month" ? row.Month : undefined;
+            obj.Year=row.Year;
+            if(type=="tot"){
+                obj.TotBooked=row.SumBooked;            //number of bookings, refers only to held and cancelled lectures
+                obj.TotQueue=row.SumQueue;              //number of people in queue, refers only to held and cancelled lectures
+                obj.TotCancelled=row.SumCancelled;      //number of cancelled bookings, refers only to held and cancelled lectures
+                obj.TotPresent=row.SumPresent;          //number of recorded presence, refers only to held lectures
+            }
+            if(type=="avg"){
+                obj.AvgBooked=row.SumBooked/(row.TotHeld+row.TotCancelled);            
+                obj.AvgQueue=row.SumQueue/(row.TotHeld+row.TotCancelled);              
+                obj.AvgCancelled=row.SumCancelled/row.TotLectures;      
+                obj.AvgPresent=row.SumPresent/row.TotHeld;          
+            }
+            ret_array.push(Object.assign({},obj));        
+        }
+        res.json(ret_array);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
+
+
+app.post('/api/courselectures', async (req,res)=>{
+    const user=req.user && req.user.user;
+    const course_id=req.body.course_id;
+    const date_start=req.body.date_start;
+    const date_end=req.body.date_end;
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['teacher','booking-manager']) ){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }else if (checkRole(role,['teacher'])){
+            let courselist= (await dao.getTeacherCourses(user)).map(obj=>{return obj.CourseId});
+            if(!courselist.includes(course_id)){
+                res.status(401).json(
+                    {errors:[{'param':'Server','msg':'Unauthorized'}]}
+                );
+            }
+    }
+
+    dao.getCourseLecture(course_id,date_start,date_end).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+
+});
+
+
+app.post('/api/dailystats', async (req,res)=>{
+    const user=req.user && req.user.user;
+    const lecture_id=req.body.lecture_id;
+    const n_lectures=req.body.n_lectures;
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['teacher','booking-manager']) ){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    console.log("OK"+ lecture_id);
+    let lectObj= await dao.getLectureInfo(lecture_id);
+    console.log(JSON.stringify(lectObj));
+    if (checkRole(role,['teacher'])){
+            let courselist= (await dao.getTeacherCourses(user)).map(obj=>{return obj.CourseId});
+            if(!courselist.includes(lectObj.CourseId)){
+                res.status(401).json(
+                    {errors:[{'param':'Server','msg':'Unauthorized'}]}
+                );
+            }
+    }
+    let start = await dao.getLowerDate(lecture_id,n_lectures);
+    console.log(JSON.stringify(start));
+
+    dao.getStatistics(lectObj.CourseId,'lecture',start.Date,lectObj.Start).then((rows)=>{
+        let ret_array=[];
+        let obj={LectureId:undefined,Start:undefined,CourseId:-1,TotBooked:undefined,TotQueue:undefined,TotCancelled:undefined,TotPresent:undefined}
+        for (let row of rows){
+           
+            obj.LectureId=row.LectureId;
+            obj.CourseId=row.CourseId;
+            obj.Start=row.Start;
+            obj.Year=row.Year;
+            obj.TotBooked=row.SumBooked;            //number of bookings, refers only to held and cancelled lectures
+            obj.TotQueue=row.SumQueue;              //number of people in queue, refers only to held and cancelled lectures
+            obj.TotCancelled=row.SumCancelled;      //number of cancelled bookings, refers only to held and cancelled lectures
+            obj.TotPresent=row.SumPresent;          //number of recorded presence, refers only to held lectures
+            
+            ret_array.push(Object.assign({},obj));        
+        }
+        res.json(ret_array);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+
+});
+
+app.get('/api/courses', async (req,res)=>{
+    const user=req.user && req.user.user;
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['teacher','booking-manager']) ){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }else if (checkRole(role,['teacher'])){
+            
+        dao.getTeacherCourses(user).then((obj)=>{
+            res.json(obj);
+        }).catch((err)=>{
+            res.status(500).json(
+                {errors:[{'param':'Server','msg':'Server error'}]}
+            );
+        });
+    }else{
+        dao.getAllCourses().then((obj)=>{
+            res.json(obj);
+        }).catch((err)=>{
+            res.status(500).json(
+                {errors:[{'param':'Server','msg':'Server error'}]}
+            );
+        });
+    }
+
+
+});
 
 
 
