@@ -4,6 +4,8 @@ import API from '../../API';
 import LectureCalendar from './LectureCalendar';
 import {AuthContext} from '../AuthContext/AuthContext';
 import {Redirect} from "react-router-dom";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 const moment = require('moment');
 
@@ -134,7 +136,7 @@ class LectureCalendarTeacher extends React.Component {
         
         var minutesLeft = moment.duration(start.diff(moment())).as("minutes");
 
-        return <div>
+        /*return <div>
             <b>{lecture.CourseName}</b>
             <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
             {this.isPresence(lecture) && <>
@@ -146,7 +148,34 @@ class LectureCalendarTeacher extends React.Component {
             {(this.isPresence(lecture) && minutesLeft>=30 ) && <button onClick={changeLecture}>Change to remote lecture</button>}
             {minutesLeft>=60 && <button onClick={cancelLecture}>Cancel lecture</button>}
             <button onClick={() => closeModal()}>Close</button>
-        </div>;
+        </div>;*/
+
+        return (
+            <Modal.Dialog>
+                <Modal.Header>
+                    <Modal.Title>Booking Option</Modal.Title>
+                </Modal.Header>
+
+                <Modal.Body>
+                    <div>
+                        <p><strong>Subject: </strong>{lecture.CourseName}</p>
+                        <p><strong>Time: </strong>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
+                        {this.isPresence(lecture) && <>
+                            <p><strong>Classroom: </strong>{lecture.ClassroomName}</p>
+                            <p><strong>Seats: </strong>{lecture.BookingCount+"/"+lecture.Seats}</p>
+                            <StudentList onLoad={() => this.getStudentList(lecture.LectureId)} students={this.state.students}/>
+                        </>}
+                    </div>
+                </Modal.Body>
+
+                <Modal.Footer>
+                    {(this.isPresence(lecture) && minutesLeft>=30 ) && <Button variant="primary" onClick={changeLecture}>Change to remote lecture</Button>}
+                    {minutesLeft>=60 && <Button variant="info" onClick={cancelLecture}>Cancel lecture</Button>}
+                    <Button variant="secondary" onClick={() => closeModal()}>Close</Button>
+                </Modal.Footer>
+        </Modal.Dialog>
+        
+        );
     }
 }
 

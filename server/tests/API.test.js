@@ -1,15 +1,6 @@
 const moment = require('moment');
 const dao = require('../dao');
-const sqlite = require('sqlite3').verbose();
 
-const db = new sqlite.Database('./PULSEeBS_db_TEST',(err)=>{
-    if(err){
-         console.error(err.message);
-         throw err;
-    }
-});
-
-dao.db = this.db;
 let today = new Date();
 const monday = new Date(today.setDate(today.getDate() - today.getDay() + 8));
 today = new Date();
@@ -27,46 +18,47 @@ const end4 = moment(friday.setHours(13, 0, 0, 0)).format("YYYY-MM-DD HH:mm:ss");
 
 const range1 = moment(monday.setHours(0, 0, 0, 0)).format("YYYY-MM-DD");
 const range2 = moment(friday.setHours(23, 59, 59, 0)).format("YYYY-MM-DD");
-console.log(range1);
-console.log(range2);
 
-const stats = ["DELETE FROM Booking", 
+const db = dao.initializeDBConn('./PULSEeBS_db_TEST');
+
+beforeAll(() => {
+    const stats = ["DELETE FROM Booking", 
             "DELETE FROM Lecture",
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (1, 2, '${start1}', '${end1}', 0, 3)`,
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (2, 2, '${start2}', '${end2}', 0, 4)`,
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (3, 3, '${start3}', '${end3}', 0, 5)`,
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (4, 3, '${start4}', '${end4}', 0, 3)`];
 
-
-db.run(stats[0], (err, rows) => {
-    if (err) {
-        console.log(err);
-    }
-
-    db.run(stats[1], (err, rows) => {
+    db.run(stats[0], (err, rows) => {
         if (err) {
             console.log(err);
         }
 
-        db.run(stats[2], (err, rows) => {
+        db.run(stats[1], (err, rows) => {
             if (err) {
                 console.log(err);
             }
 
-            db.run(stats[3], (err, rows) => {
+            db.run(stats[2], (err, rows) => {
                 if (err) {
                     console.log(err);
                 }
 
-                db.run(stats[4], (err, rows) => {
+                db.run(stats[3], (err, rows) => {
                     if (err) {
                         console.log(err);
                     }
 
-                    db.run(stats[5], (err, rows) => {
+                    db.run(stats[4], (err, rows) => {
                         if (err) {
                             console.log(err);
                         }
+
+                        db.run(stats[5], (err, rows) => {
+                            if (err) {
+                                console.log(err);
+                            }
+                        });
                     });
                 });
             });
@@ -111,44 +103,36 @@ test('Equal passwords', async() => {
     expect(res).toBeTruthy();
 });*/
 
-test('Get lectures for student', async() => {
+test('Get lectures for student 6', async() => {
     const lectures = await dao.getLectures(6, range1, range2);
     expect(lectures).toBeDefined();
+    console.log(lectures)
     expect(lectures.length).toBe(4);
 });
 
-test('Check bookings for student 6', async() => {
-    const booking = await dao.checkBooking(6, 5);
-    expect(booking.ok).toBeTruthy();
-});
-
-test('Check bookings for student 8', async() => {
-    const booking = await dao.checkBooking(8, 5);
-    expect(booking.ok).toBeFalsy();
+test('Get lectures for student 8', async() => {
+    const lectures = await dao.getLectures(8, range1, range2);
+    expect(lectures).toBeDefined();
+    expect(lectures.length).toBe(2);
 });
 
 test('Check course for student 6', async() => {
-    const course = await dao.checkStudentCourses(6, 6);
+    const course = await dao.checkStudentCourses(6, 3);
     expect(course.ok).toBeTruthy();
 });
 
 test('Check course for student 8', async() => {
-    const course = await dao.checkStudentCourses(8, 6);
+    const course = await dao.checkStudentCourses(8, 3);
     expect(course.ok).toBeFalsy();
 });
 
 test('Check course for teacher 7', async() => {
-    const course = await dao.checkTeacherCourses(7, 6);
+    const course = await dao.checkTeacherCourses(7, 1);
     expect(course.ok).toBeTruthy();
 });
 
-/*test('Check course for teacher 8', async() => {
-    const course = await dao.checkTeacherCourses(8, 6);
-    expect(course.ok).toBeFalsy();
-});*/
-
 test('Get lecture info', async() => {
-    const info = await dao.getLectureInfo(6);
+    const info = await dao.getLectureInfo(3);
     expect(info).toBeDefined();
     expect(info.CourseName).toBe("Web Applications");
 });
@@ -164,34 +148,50 @@ test('Get student info empty', async() => {
     expect(student).toBeUndefined();
 });
 
-test('Book lecture for student', async() => {
-    const book = await dao.bookLecture(8, 5);
+test('Book lecture for student enrolled', async() => {
+    const book = await dao.bookLecture(6, 3);
     expect(book).toBeDefined();
 });
 
-test('Book lecture for student already booked', async() => {
-    dao.bookLecture(8, 5).then(async function(book) {
-        expect(book).toBeDefined();
-        expect(book.error).toBe("already booked");
+test('Book lecture for student not enrolled', async() => {
+    const book = await dao.bookLecture(8, 3);
+    expect(book.error).toBe("student not enrolled");
+});
 
-        const cancel = await dao.cancelBooking(book.BookingId);
-        expect(cancel).toBe("OK");
-    });
+test('Check bookings for students enrolled', async() => {
+    const booking = await dao.checkBooking(6, 3);
+    expect(booking.ok).toBeFalsy();
+    const booking2 = await dao.checkBooking(8, 1);
+    expect(booking2.ok).toBeTruthy();
+});
+
+test('Check bookings for students not enrolled', async() => {
+    const booking = await dao.checkBooking(8, 3);
+    expect(booking.error).toBe("student not enrolled");
+});
+
+test('Book lecture for student already booked', async() => {
+    const book = await dao.bookLecture(6, 3);
+    expect(book).toBeDefined();
+    expect(book.error).toBe("already booked");
 });
 
 test('Get seats count for lecture', async() => {
-    const seats = await dao.getSeatsCount(6);
+    const seats = await dao.getSeatsCount(1);
     expect(seats).toBeDefined();
     expect(seats.BookedSeats).toBe(0);
     expect(seats.TotalSeats).toBe(50);
 
-    dao.bookLecture(8, 6).then(async function(book) {
+    dao.bookLecture(6, 1).then(async function(book) {
         expect(book).toBeDefined();
 
-        const seats2 = await dao.getSeatsCount(6);
+        const seats2 = await dao.getSeatsCount(1);
         expect(seats2).toBeDefined();
         expect(seats2.BookedSeats).toBe(1);
         expect(seats2.TotalSeats).toBe(50);
+
+        const cancel = await dao.cancelBooking(book.BookingId);
+        expect(cancel).toBe("OK");
     });
 });
 
@@ -202,10 +202,10 @@ test('Get lectures for teacher', async() => {
 });
 
 test('Get students for lecture', async() => {
-    dao.bookLecture(6, 10).then(async function(book) {
+    dao.bookLecture(6, 1).then(async function(book) {
         expect(book).toBeDefined();
 
-        const students = await dao.getStudents(7, 10);
+        const students = await dao.getStudents(7, 3);
         expect(students).toBeDefined();
         expect(students.length).toBe(1);
         expect(students[0].BookingId).toBe(book.BookingId);
@@ -217,7 +217,7 @@ test('Get students for lecture', async() => {
 });
 
 test('Get bookings for student', async() => {
-    dao.bookLecture(6, 10).then(async function(book) {
+    dao.bookLecture(6, 1).then(async function(book) {
         expect(book).toBeDefined();
 
         dao.getBookings(6).then(async function(bookings) {
@@ -235,32 +235,21 @@ test('Get bookings for student', async() => {
     expect(line).toBe({});
 });*/
 
-/*test('Cancel booking for student', async() => {
-    const booking = await dao.cancelBooking(33);
-    expect(booking).toBeDefined();
-    expect(booking).toBe("OK");
-});*/
-
 /*test('Get email info', async() => {
     
 });*/
 
 test('Cancel lecture for teacher', async() => {
-    dao.changeLecture(7, 7, 0).then(async function(reset) {
-        expect(reset).toBe("OK");   //reset lecture status
-
-        const cancel = await dao.changeLecture(7, 7, 1);
-        expect(cancel).toBe("OK");
-        await dao.changeLecture(7, 7, 0);
-    });
+    const cancel = await dao.changeLecture(7, 3, 1);
+    expect(cancel).toBe("OK");
+    //await dao.changeLecture(7, 3, 0);
 });
 
 test('Move lecture to remote for teacher', async() => {
-    dao.changeLecture(7, 8, 0).then(async function(reset) {
-        expect(reset).toBe("OK");   //reset lecture status
-
-        const move = await dao.changeLecture(7, 8, 2);
-        expect(move).toBe("OK");
-        await dao.changeLecture(7, 8, 0);
-    });
+    const move = await dao.changeLecture(7, 4, 2);
+    expect(move).toBe("OK");
+    //await dao.changeLecture(7, 4, 0);
 });
+
+/*test('Book canceled lecture for student')
+test('Book remote lecture for student')*/

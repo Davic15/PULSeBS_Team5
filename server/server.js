@@ -17,8 +17,8 @@ app.disable("x-powered-by");
 app.use(morgan('tiny'));
 app.use(express.json());
 
+dao.initializeDBConn('./PULSEeBS_db');
 emaildeamon.startEmailDeamon()
-
 
 //public API
 
@@ -375,8 +375,9 @@ app.post('/api/courselectures', async (req,res)=>{
 app.post('/api/dailystats', async (req,res)=>{
     const user=req.user && req.user.user;
     const lecture_id=req.body.lecture_id;
-    const n_lectures=req.body.n_lectures;
+    const n_lectures=parseInt(req.body.n_lectures);
     const role = req.user && req.user.role;
+    
 
     if(!checkRole(role,['teacher','booking-manager']) ){
         res.status(401).json(
@@ -386,7 +387,6 @@ app.post('/api/dailystats', async (req,res)=>{
 
     console.log("OK"+ lecture_id);
     let lectObj= await dao.getLectureInfo(lecture_id);
-    console.log(JSON.stringify(lectObj));
     if (checkRole(role,['teacher'])){
             let courselist= (await dao.getTeacherCourses(user)).map(obj=>{return obj.CourseId});
             if(!courselist.includes(lectObj.CourseId)){
@@ -395,10 +395,11 @@ app.post('/api/dailystats', async (req,res)=>{
                 );
             }
     }
-    let start = await dao.getLowerDate(lecture_id,n_lectures);
-    console.log(JSON.stringify(start));
+    let start = await dao.getLowerDate(lecture_id,n_lectures+1);
+    let end = await dao.getHigherDate(lecture_id,n_lectures+1);
+    console.log(JSON.stringify(end));
 
-    dao.getStatistics(lectObj.CourseId,'lecture',start.Date,lectObj.Start).then((rows)=>{
+    dao.getStatistics(lectObj.CourseId,'lecture',start.Date,end.Date).then((rows)=>{
         let ret_array=[];
         let obj={LectureId:undefined,Start:undefined,CourseId:-1,TotBooked:undefined,TotQueue:undefined,TotCancelled:undefined,TotPresent:undefined}
         for (let row of rows){

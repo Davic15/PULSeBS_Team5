@@ -4,6 +4,8 @@ import API from '../../API';
 import LectureCalendar from './LectureCalendar';
 import {AuthContext} from '../AuthContext/AuthContext';
 import {Redirect} from "react-router-dom";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 const moment = require('moment');
 
@@ -147,7 +149,7 @@ class LectureCalendarStudent extends React.Component {
         var minutesLeft = moment.duration(start.diff(moment())).as("minutes");
         console.log("minutes left:"+minutesLeft);
 
-        return <div>
+        /*return <div>
             <b>{lecture.CourseName}</b>
             <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
             <p>{lecture.TeacherName+" "+lecture.TeacherSurname}</p>
@@ -158,7 +160,33 @@ class LectureCalendarStudent extends React.Component {
                 {(this.isBooked(lecture) || this.isWaiting(lecture)) && <button onClick={cancelBooking}>Cancel booking</button>}
             </>}
             <button onClick={closeModal}>Close</button>
-        </div>;
+        </div>;*/
+        return (
+        <Modal.Dialog>
+            <Modal.Header>
+                <Modal.Title>Booking Options</Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body>
+                <div>
+                    <p><strong>Subject: </strong>{lecture.CourseName}</p>
+                    <p><strong>Time: </strong>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
+                    <p><strong>Professor: </strong>{lecture.TeacherName+" "+lecture.TeacherSurname}</p>
+                    <p><strong>Classroom: </strong>{lecture.ClassroomName}</p>
+                    <p><strong>Seats: </strong>{lecture.BookingCount+"/"+lecture.Seats}</p>
+                    
+                </div>
+            </Modal.Body>
+
+            <Modal.Footer>
+                {minutesLeft>=0 && <>
+                    {this.isBookable(lecture) && <Button variant="primary" onClick={book}>Book</Button>}
+                    {(this.isBooked(lecture) || this.isWaiting(lecture)) && <Button variant="info" onClick={cancelBooking}>Cancel booking</Button>}
+                </>}
+                <Button variant="secondary" onClick={closeModal}>Close</Button>
+            </Modal.Footer>
+        </Modal.Dialog>
+        );
     }
 
     LegendFilters = (props) => {
@@ -175,26 +203,29 @@ class LectureCalendarStudent extends React.Component {
                 <div>
                     <div class="container" id="chkbox">
                         <div class="row">
-                            <div class="col-sm">
-                                <div className="legend-square" style={{backgroundColor: colorBooked}}></div>
-                                <input type="checkbox" id="booked" checked={props.filters["booked"]} onChange={(event) => onFiltersChange(event)} />
-                                <label htmlFor="booked">Booked</label>
-                            </div>
-                            <div class="col-sm">
-                                <div className="legend-square" style={{backgroundColor: colorWaiting}}></div>
-                                <input type="checkbox" id="waiting" checked={props.filters["waiting"]} onChange={(event) => onFiltersChange(event)} />
-                                <label htmlFor="waiting">Bookable (Waiting)</label>
-                            </div>
-                            <div class="col-sm">
-                                <div className="legend-square" style={{backgroundColor: colorBookable}}></div>
-                                <input type="checkbox" id="bookable" checked={props.filters["bookable"]} onChange={(event) => onFiltersChange(event)} />
-                                <label htmlFor="bookable">Bookable</label>
-                            </div>
-                            <div class="col-sm">
-                                <div className="legend-square" style={{backgroundColor: colorRemote}}></div>
-                                <input type="checkbox" id="remote" checked={props.filters["remote"]} onChange={(event) => onFiltersChange(event)} />
-                                <label htmlFor="remote">Remote</label>
-                            </div>
+                            <fieldset class="the-fieldset">
+                                <legend class="the-legend">Color Legend</legend>
+                                <span class="col-sm">
+                                    <div className="legend-square div1" style={{backgroundColor: colorBooked}}></div>
+                                    <input type="checkbox" id="booked" checked={props.filters["booked"]} onChange={(event) => onFiltersChange(event)} />
+                                    <label htmlFor="booked">  Booked</label>
+                                </span>
+                                <span class="col-sm">
+                                    <div className="legend-square div1" style={{backgroundColor: colorWaiting}}></div>
+                                    <input type="checkbox" id="waiting" checked={props.filters["waiting"]} onChange={(event) => onFiltersChange(event)} />
+                                    <label htmlFor="waiting">  Bookable (Waiting)</label>
+                                </span>
+                                <span class="col-sm">
+                                    <div className="legend-square div1" style={{backgroundColor: colorBookable}}></div>
+                                    <input type="checkbox" id="bookable" checked={props.filters["bookable"]} onChange={(event) => onFiltersChange(event)} />
+                                    <label htmlFor="bookable">  Bookable</label>
+                                </span>
+                                <span class="col-sm">
+                                    <div className="legend-square div1" style={{backgroundColor: colorRemote}}></div>
+                                    <input type="checkbox" id="remote" checked={props.filters["remote"]} onChange={(event) => onFiltersChange(event)} />
+                                    <label htmlFor="remote">  Remote</label>
+                                </span>
+                            </fieldset>
                         
                     {context.authUser && 
                     <>
