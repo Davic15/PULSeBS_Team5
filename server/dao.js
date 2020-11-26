@@ -1,7 +1,7 @@
 const sqlite=require('sqlite3').verbose();
 const bcrypt=require('bcrypt');
 const emailer=require('./email');
-
+const csvtojson = require('csvtojson');
 
 
 const bookinConfirmationText="<p>Dear %NAME% %SURNAME%,<br/>you were succesfully booked to lecture \"%LECTURE%\"  %TIME%, classroom %CLASSROOM%<p>";
@@ -215,7 +215,8 @@ exports.getLectureInfo=function(lecture_id){
                     CourseId:row.CourseId,
                     CourseName:row.CourseName,
                     ClassroomName:row.ClassroomName,
-                    Start:row.Start
+                    Start:row.Start,
+                    State:row.State
                     });
                 }
             else
@@ -289,6 +290,11 @@ exports.bookLecture=async function(user_id,lecture_id){
                         enqueue=1;
                     
                     const lectureInfo = await this.getLectureInfo(lecture_id);
+
+                    if (lectureInfo.State != 0) {
+                        reject("Lecture not bookable");
+                    }
+
                     const studentInfo = await this.getStudentInfo(user_id);
 
                     const sql="INSERT INTO Booking (StudentId,LectureId,Timestamp,Present,State) "+
@@ -658,6 +664,88 @@ exports.SetEmailSent=function(lecture_id){
             });       
     });
 }
+
+//add teachers to db from csv
+exports.addTeachers=function(data) {
+    return new Promise(async (resolve, reject) => {
+        const users_added = [];
+        let users_to_add = [];
+
+        let csvData = data.toString('utf8');
+        users_to_add = await csvtojson().fromString(csvData);
+
+        users_to_add.forEach(user => {
+            if (user.Email == undefined || user.Password == undefined || user.Name == undefined || user.Surname == undefined || user.Type == undefined) {
+                reject("Make sure the csv is correctly written");
+            }
+
+            if (user.Type != "teacher") {
+                reject("This command is only to add teachers");
+            }
+
+            const sql = "INSERT INTO User(Email, Password, Name, Surname, Type) VALUES (?, ?, ?, ?, ?)"; //id is autoincrement, email is unique
+            db.run(sql, [user.Email, user.Password, user.Name, user.Surname, user.Type],
+                function(err) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        //users_added.push(user);
+                    }
+                });
+        });
+
+        //resolve(users_added);
+    });
+}
+
+//add students to db from csv
+exports.addStudents=function(data) {
+    return new Promise(async (resolve, reject) => {
+        const users_added = [];
+        let users_to_add = [];
+
+        let csvData = data.toString('utf8');
+        users_to_add = await csvtojson().fromString(csvData);
+
+        users_to_add.forEach(user => {
+            if (user.Email == undefined || user.Password == undefined || user.Name == undefined || user.Surname == undefined || user.Type == undefined) {
+                reject("Make sure the csv is correctly written");
+            }
+
+            if (user.Type != "student") {
+                reject("This command is only to add students");
+            }
+
+            const sql = "INSERT INTO User(Email, Password, Name, Surname, Type) VALUES (?, ?, ?, ?, ?)"; //id is autoincrement, email is unique
+            db.run(sql, [user.Email, user.Password, user.Name, user.Surname, user.Type],
+                function(err) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        //users_added.push(user);
+                    }
+                });
+        });
+
+        //resolve(users_added);
+    });
+}
+
+//add courses to db from csv
+exports.addCourses=function(data) {
+    return new Promise(async (resolve, reject) => {
+        const courses_added = [];
+        let courses_to_add = [];
+
+        let csvData = data.toString('utf8');
+        courses_to_add = await csvtojson().fromString(csvData);
+
+        courses_to_add.forEach(async function(course) {
+            if (course.TeacherId == undefined || course.Name == undefined) {
+                reject("Make sure the csv is correctly written");
+            }
 
 
 exports.getStatistics=function(course_id,group_by,date_start,date_end){

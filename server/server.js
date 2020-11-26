@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const jwt=require('express-jwt');
 const jsonwebtoken=require('jsonwebtoken');
 const cookieParser=require('cookie-parser');
+const upload = require('express-fileupload');
 
 
 const jwtSecret = '6xvL4xkAAbG49hcXf5GIYSvkDICiUAR6EdR5dLdwW7hMzUjjMUe9t6M5kSAYxsvX';
@@ -16,6 +17,7 @@ app.disable("x-powered-by");
 
 app.use(morgan('tiny'));
 app.use(express.json());
+app.use(upload());
 
 dao.initializeDBConn('./PULSEeBS_db');
 emaildeamon.startEmailDeamon()
