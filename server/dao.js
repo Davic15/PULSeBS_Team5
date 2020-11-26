@@ -64,6 +64,36 @@ exports.getUserById = function (userid) {
     });
   };
 
+exports.getCourseById = function (courseId) {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM Course WHERE CourseId = ?";
+        db.all(sql, [courseId], (err, rows) => {
+            if (err) 
+                reject(err);
+            else if (rows.length === 0)
+                resolve([]);
+            else{
+                resolve(rows[0]);
+            }
+        });
+    });
+};
+
+exports.getClassRoomById = function (classroomId) {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM Classroom WHERE ClassroomId = ?";
+        db.all(sql, [classroomId], (err, rows) => {
+            if (err) 
+                reject(err);
+            else if (rows.length === 0)
+                resolve([]);
+            else{
+                resolve(rows[0]);
+            }
+        });
+    });
+};
+
 //caompares two crypted passwords
 exports.checkPassword=function(clearpwd,password){
     return bcrypt.compareSync(clearpwd,password);
