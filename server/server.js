@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const jwt=require('express-jwt');
 const jsonwebtoken=require('jsonwebtoken');
 const cookieParser=require('cookie-parser');
+const upload = require('express-fileupload');
 
 
 const jwtSecret = '6xvL4xkAAbG49hcXf5GIYSvkDICiUAR6EdR5dLdwW7hMzUjjMUe9t6M5kSAYxsvX';
@@ -16,6 +17,7 @@ app.disable("x-powered-by");
 
 app.use(morgan('tiny'));
 app.use(express.json());
+app.use(upload());
 
 dao.initializeDBConn('./PULSEeBS_db');
 emaildeamon.startEmailDeamon()
@@ -450,10 +452,141 @@ app.get('/api/courses', async (req,res)=>{
             );
         });
     }
-
-
 });
 
+app.post('/api/uploadcsv/teachers', (req,res) => {
+    const file = req.files.teachers;    //teachers must be the input name in template
+    const role = req.user && req.user.role;
 
+    if(!checkRole(role,['officer'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+        return;
+    }
+
+    if(file == undefined || file.data == undefined) {
+        res.status(400).json(
+            {errors:[{'param':'Server','msg':'File undefined, check the input name and file content'}]}
+        );
+        return;
+    }
+
+    dao.addTeachers(file.data).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':err}]}
+        );
+    });
+});
+
+app.post('/api/uploadcsv/students', (req,res) => {
+    const file = req.files.students;    //students must be the input name in template
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['officer'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+        return;
+    }
+
+    if(file == undefined || file.data == undefined) {
+        res.status(400).json(
+            {errors:[{'param':'Server','msg':'File undefined, check the input name and file content'}]}
+        );
+        return;
+    }
+
+    dao.addStudents(file.data).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':err}]}
+        );
+    });
+});
+
+app.post('/api/uploadcsv/courses', (req,res) => {
+    const file = req.files.courses;    //courses must be the input name in template
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['officer'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+        return;
+    }
+    
+    if(file == undefined || file.data == undefined) {
+        res.status(400).json(
+            {errors:[{'param':'Server','msg':'File undefined, check the input name and file content'}]}
+        );
+        return;
+    }
+
+    dao.addCourses(file.data).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':err}]}
+        );
+    });
+});
+
+app.post('/api/uploadcsv/lectures', (req,res) => {
+    const file = req.files.lectures;    //lectures must be the input name in template
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['officer'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+        return;
+    }
+
+    if(file == undefined || file.data == undefined) {
+        res.status(400).json(
+            {errors:[{'param':'Server','msg':'File undefined, check the input name and file content'}]}
+        );
+        return;
+    }
+
+    dao.addLectures(file.data).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':err}]}
+        );
+    });
+});
+
+app.post('/api/uploadcsv/classrooms', (req,res) => {
+    const file = req.files.classrooms;    //classrooms must be the input name in template
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['officer'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+        return;
+    }
+
+    if(file == undefined || file.data == undefined) {
+        res.status(400).json(
+            {errors:[{'param':'Server','msg':'File undefined, check the input name and file content'}]}
+        );
+        return;
+    }
+
+    dao.addClassrooms(file.data).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':err}]}
+        );
+    });
+});
 
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));
