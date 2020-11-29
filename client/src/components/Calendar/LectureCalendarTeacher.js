@@ -75,10 +75,10 @@ class LectureCalendarTeacher extends React.Component {
             <div>
             <AuthContext.Consumer>
                     {(context)=>(
-                    <div className="div-center">
+                    <div className="div-center text-center">
                         {context.authUser && 
                             <>
-                                <button className="btn btn-lg btn-primary text-uppercase custom-color btn-size-teacher btn-default" type="submit" variant="primary" onClick = {() => {context.logoutUser()}} >Log out</button>
+                                <Button className="btn btn-lg btn-primary text-uppercase custom-color btn-size-teacher btn-default" type="submit" variant="primary" onClick = {() => {context.logoutUser()}} >Log out</Button>
                             </>
                         }
                         {!context.authUser && <Redirect to = "/login"/>} 

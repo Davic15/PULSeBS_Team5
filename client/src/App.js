@@ -3,6 +3,7 @@ import './App.css';
 import {Route,Switch,withRouter, Redirect} from 'react-router-dom';
 import Header from "./components/Header/Header";
 import Login from "./components/Login/Login";
+import Footer from "./components/Footer/Footer";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import API from "../src/API";
 import {AuthContext} from "../src/components/AuthContext/AuthContext";
@@ -107,6 +108,7 @@ class App extends React.Component{
               <Redirect to="/login" />
           </Route>
         </Switch>   
+        <Footer />
       </AuthContext.Provider>
     );
   }
