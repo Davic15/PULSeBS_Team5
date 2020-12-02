@@ -161,7 +161,7 @@
 /* This is what we are focused on */
 .table-wrapper{
     overflow-y: scroll;
-    height: 100px;
+    height: 120px;
 }
   
 .table-wrapper th{

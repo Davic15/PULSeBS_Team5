@@ -154,7 +154,7 @@ class LectureCalendarTeacher extends React.Component {
         
         var minutesLeft = moment.duration(start.diff(moment())).as("minutes");
 
-        return <Modal.Dialog>
+        return <Modal.Dialog scrollable={true}>
             <Modal.Header>
                 <Modal.Title>Booking Options</Modal.Title>
             </Modal.Header>
