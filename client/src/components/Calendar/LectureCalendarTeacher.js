@@ -188,7 +188,7 @@ class StudentList extends React.Component {
         this.props.onLoad();
     }
 
-    render() {
+    /*render() {
         return <table>
             <thead>
                 <tr>
@@ -208,6 +208,30 @@ class StudentList extends React.Component {
             </tbody>
         </table>
         
+    }*/
+    render() {
+        return (
+            <div className="table-wrapper">
+                <table className="table">
+                    <thead className="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Surname</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {this.props.students.map((student) => {
+                        return <tr>
+                            <td>{student.StudentId}</td>
+                            <td>{student.Surname}</td>
+                            <td>{student.Name}</td>
+                        </tr>;
+                    })}
+                    </tbody>
+                </table>
+            </div>
+        );
     }
 }
 

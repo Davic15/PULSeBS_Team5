@@ -8,8 +8,11 @@ import { statistics, statisticMap, normalizeWeek, normalizeMonth } from './Stati
 import {colors } from "../Calendar/CalendarMisc";
 
 import Modal from 'react-bootstrap/Modal';
+import ModalDialog from 'react-bootstrap/ModalDialog'
 import Button from 'react-bootstrap/Button';
 import "./Statistic.css";
+import { useState } from "react";
+
 
 const moment = require('moment');
 
@@ -312,17 +315,17 @@ class StatisticManager extends React.Component {
         const lecture = JSON.parse(props.value);
         const closeModal = () => { props.onSave(props.value); }
 
-        return <Modal.Dialog>
+        return (
+        <Modal.Dialog scrollable={true}>
             <Modal.Header>
                 <Modal.Title>Lecture Statistics</Modal.Title>
+                <Button variant="secondary" onClick={() => closeModal()}>Close</Button>
             </Modal.Header>
             <Modal.Body>
                 <LectureStatistics onLoad={() => this.getLectureStatistics(lecture.LectureId, lecture.Start)} statistics={this.state.lectureStatistics}/>  
             </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={() => closeModal()}>Close</Button>
-            </Modal.Footer>
-        </Modal.Dialog>;
+        </Modal.Dialog>
+        );
     }
 
     LectureComponent = (props) => {

@@ -10,7 +10,7 @@ const LegendFilter = (props) => {
 
     return (
         <div class="container" style={{marginBottom: "40px", marginTop:"5px"}}>
-            <div>
+            <div className="move-bottom">
                 <fieldset class="row the-fieldset">
                     <legend class="the-legend">Color Legend</legend>
                     {props.filters.map((filter, index) => {

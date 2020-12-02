@@ -1,0 +1,13 @@
+.new-line {
+    margin: 2rem;;
+}
+
+.table-container {
+    overflow: auto;
+    max-height: 500px;
+}
+  
+th {
+    position: sticky;
+    top: 0;
+}

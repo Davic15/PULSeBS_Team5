@@ -152,3 +152,38 @@
     margin:10px;
     left: 50%;
 }
+
+
+
+
+
+
+/* This is what we are focused on */
+.table-wrapper{
+    overflow-y: scroll;
+    height: 100px;
+}
+  
+.table-wrapper th{
+    position: sticky;
+    top: 0;
+}
+  
+/* A bit more styling to make it look better */
+.table-wrapper{
+    background: #ffffff;
+}
+  
+table{
+    border-collapse: collapse;
+    width: 100%;
+}
+  
+th{
+      background: #71c9ce;
+}
+  
+td,th{
+    padding: 10px;
+    text-align: center;
+}

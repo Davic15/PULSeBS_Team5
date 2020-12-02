@@ -297,16 +297,14 @@ class StatisticTeacher extends React.Component {
         const lecture = JSON.parse(props.value);
         const closeModal = () => { props.onSave(props.value); }
 
-        return <Modal.Dialog>
+        return <Modal.Dialog scrollable={true}>
             <Modal.Header>
                 <Modal.Title>Lecture Statistics</Modal.Title>
+                <Button variant="secondary" onClick={() => closeModal()}>Close</Button>
             </Modal.Header>
             <Modal.Body>
                 <LectureStatistics onLoad={() => this.getLectureStatistics(lecture.LectureId, lecture.Start)} statistics={this.state.lectureStatistics}/>  
             </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={() => closeModal()}>Close</Button>
-            </Modal.Footer>
         </Modal.Dialog>;
     }
 
