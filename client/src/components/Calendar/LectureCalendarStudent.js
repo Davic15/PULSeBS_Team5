@@ -94,6 +94,7 @@ class LectureCalendarStudent extends React.Component {
         const start = moment(this.state.day);
         start.subtract(start.weekday()-1, 'days');
         return <>
+
             <LegendFilter
                 filters={this.state.filters}
                 onFiltersChange={this.applyFilters}

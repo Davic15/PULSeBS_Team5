@@ -51,10 +51,6 @@ class Login extends React.Component{
                           <label htmlFor="inputPassword">Password</label>
                         </div>
 
-                        <div className="custom-control custom-checkbox mb-3">
-                          <input type="checkbox" className="custom-control-input" id="customCheck1" />
-                          <label className="custom-control-label" htmlFor="customCheck1">Remember password</label>
-                        </div>
                         <button className="btn btn-lg btn-primary btn-block text-uppercase custom-color" type="submit" variant="primary">Sign in</button>
                       </Form>
                       {context.authErr && 

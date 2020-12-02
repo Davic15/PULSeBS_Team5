@@ -16,7 +16,6 @@ function Header() {
                     </a>
                     {context.authUser && (context.authUser.Type === "student" || context.authUser.Type === "teacher") && <Link to="/lectures"><Button variant="primary">Lectures</Button> </Link>}
                     {context.authUser && (context.authUser.Type === "manager" || context.authUser.Type === "teacher") && <Link to="/courses"><Button variant="primary">Courses</Button></Link>}
-                    {!context.authUser && <Link to="/login"><Button variant="primary">Login</Button></Link>}
                     {context.authUser && <Link to="/login" onClick={context.logoutUser}><Button variant="danger">Logout</Button></Link>}
                 </nav>
             </>}
