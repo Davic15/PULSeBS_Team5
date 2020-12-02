@@ -258,16 +258,21 @@ exports.getLectureInfo=function(lecture_id){
 exports.getStudentInfo=function(student_id){
     return new Promise(
         (resolve,reject)=>{
-        const sql="SELECT Name,Surname,Email FROM User where UserId=?";
+        const sql="SELECT Name,Surname,Email,Type FROM User where UserId=?";
         db.get(sql, [student_id], (err, row) => {
             if(err){
                 reject(err);
             }else if(row) {
-                resolve({
-                    Name:row.Name,
-                    Surname:row.Surname,
-                    Email:row.Email
-                    });
+                if (row.Type != "student") {
+                    resolve(undefined);
+                }
+                else {
+                    resolve({
+                        Name:row.Name,
+                        Surname:row.Surname,
+                        Email:row.Email
+                        });
+                }
             }
             else {
                 resolve(undefined);
@@ -322,7 +327,7 @@ exports.bookLecture=async function(user_id,lecture_id){
                     const lectureInfo = await this.getLectureInfo(lecture_id);
 
                     if (lectureInfo.State != 0) {
-                        reject("Lecture not bookable");
+                        resolve({error:"lecture not bookable"});
                     }
 
                     const studentInfo = await this.getStudentInfo(user_id);
@@ -1062,6 +1067,53 @@ exports.addStudents=function(data) {
         };
 
         resolve(users_added);
+    });
+}
+
+exports.addEnrollments=function(data) {
+    return new Promise(async (resolve, reject) => {
+        const enrollments_added = [];
+        let enrollments_to_add = [];    //array of enrollments in the csv
+
+        let csvData = data.toString('utf8');
+        enrollments_to_add = await csvtojson().fromString(csvData);
+
+        for (enrollment of enrollments_to_add) {
+            if (enrollment.UserId == undefined || enrollment.UserId == undefined) {
+                enrollments_added.push({"error":"Make sure the csv is correctly written"});
+                continue;
+            }
+
+            const user = await this.getUserById(enrollment.UserId);
+
+            if (user == undefined) {
+                enrollments_added.push({"error":"Make sure student with id " + enrollment.UserId + " exists"});
+                continue;
+            }
+            else if (user.Type != "student") {
+                enrollments_added.push({"error":"The user with id " + enrollment.UserId + " is not a student"});
+                continue;
+            }
+
+            const course = await this.getCourseById(enrollment.CourseId);
+
+            if (course == undefined) {
+                enrollments_added.push({"error":"Make sure course with id " + enrollment.CourseId + " exists"});
+                continue;
+            }
+
+            const sql = "INSERT INTO StudentCourse(UserId, CourseId) VALUES (?, ?)"; //id is autoincrement
+
+            try {
+                await db.run(sql, [enrollment.UserId, enrollment.CourseId]);
+                enrollments_added.push(enrollment);
+            }
+            catch (ex) {
+                enrollments_added.push({"error":ex});
+            }
+        };
+
+        resolve(enrollments_added);
     });
 }
 
