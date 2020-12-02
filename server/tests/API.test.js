@@ -229,22 +229,28 @@ test('Get bookings for student', async() => {
             expect(bookings).toBeDefined();
             expect(bookings.length).toBe(1);
 
-            //const cancel = await dao.cancelBooking(book.BookingId);
-            //expect(cancel).toBe("OK");
+            const cancel = await dao.cancelBooking(book.BookingId);
+            expect(cancel).toBe("OK");
         });
     });
 });
 
 test('Get next student in line', async() => {
-    dao.bookLecture(8, 2).then(async function(book) {
-        expect(book).toBeDefined();
+    dao.bookLecture(6, 2).then(async function(book1) {
+        expect(book1).toBeDefined();
 
-        dao.getNextInLine(book.BookingId).then(async function(line) {
-            expect(line).toBeDefined();
-            expect(line.StudentId).toBe(8);
+        dao.bookLecture(8, 2).then(async function(book2) {
+            expect(book2).toBeDefined();
 
-            const cancel = await dao.cancelBooking(book.BookingId);
-            expect(cancel).toBe("OK");
+            dao.getNextInLine(book2.BookingId).then(async function(line) {
+                expect(line).toBeDefined();
+                expect(line.StudentId).toBe(8);
+
+                const cancel1 = await dao.cancelBooking(book1.BookingId);
+                expect(cancel1).toBe("OK");
+                const cancel2 = await dao.cancelBooking(book2.BookingId);
+                expect(cancel2).toBe("OK");
+            });
         });
     });
 });
@@ -270,7 +276,7 @@ test('Book canceled lecture for student enrolled', async() => {
     expect(book).toBeDefined();
 });
 
-test('Insert teachers in db', async() => {
+/*test('Insert teachers in db', async() => {
     fs.readFile("teachersCSV.csv", "utf8", async (err, data) => {
         const added = await dao.addTeachers(data);
         expect(added).toBeDefined();
@@ -308,4 +314,36 @@ test('Insert classrooms in db', async() => {
         expect(added).toBeDefined();
         //expect(added.length).toBe(2);
     })
+});*/
+
+test('Get number tot for lectures in week' , async() => {
+    const n = await dao.getStatistics(2, "week", range1, range2);
+    expect(n).toBeDefined();
+    console.log(n)
+    expect(n.SumBooked).toBe(3);
+    expect(n.TotLectures).toBe(2);
+    expect(n.TotHeld).toBe(2);
+});
+
+test('Get number tot for lectures in month' , async() => {
+    const n = await dao.getStatistics(2, "month", range1, range2);
+    expect(n).toBeDefined();
+    expect(n.SumBooked).toBe(3);
+    expect(n.TotLectures).toBe(2);
+    expect(n.TotHeld).toBe(2);
+});
+
+test('Get number tot for lectures in lecture' , async() => {
+    const low = await dao.getLowerDate(1, 0);
+    expect(low).toBeDefined();
+    expect(low.Date).toBe("2020-12-07 08:30:00");
+    const high = await dao.getHigherDate(1, 0);
+    expect(low).toBeDefined();
+    expect(low.Date).toBe("2020-12-07 08:30:00");
+
+    const n = await dao.getStatistics(2, "lecture", range1, range2);
+    expect(n).toBeDefined();
+    expect(n.SumBooked).toBe(1);
+    expect(n.TotLectures).toBe(1);
+    expect(n.TotHeld).toBe(1);
 });

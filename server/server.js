@@ -285,6 +285,7 @@ app.post('/api/changelecture',(req,res)=>{
 
 //sprint 2
 
+//type can be avg or tot, groupby week or month or lecture
 app.post('/api/stats/:type/:groupby', async (req,res)=>{
     const user=req.user && req.user.user;
     const course_id=req.body.course_id;
