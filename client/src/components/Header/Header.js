@@ -4,6 +4,7 @@ import { AuthContext} from "../AuthContext/AuthContext";
 import API from '../../API';
 import "../Header/Header.css";
 import mainLogo from "../../images/favicon.ico";
+import Button from "react-bootstrap/Button";
 
 function Header() {
     return(
@@ -13,10 +14,10 @@ function Header() {
                     <a className="navbar-brand fustify-content-center text-white" href={''}>
                         <img src={mainLogo} width="30" height="30" className="d-inline-block align-top" alt="logo-image"/>PULSeBS Team 5
                     </a>
-                    {context.authUser && (context.authUser.Type === "student" || context.authUser.Type === "teacher") && <Link to="/lectures">Lectures</Link>}
-                    {context.authUser && (context.authUser.Type === "manager" || context.authUser.Type === "teacher") && <Link to="/courses">Courses</Link>}
-                    {!context.authUser && <Link to="/login">Login</Link>}
-                    {context.authUser && <Link to="/login" onClick={context.logoutUser}>Logout</Link>}
+                    {context.authUser && (context.authUser.Type === "student" || context.authUser.Type === "teacher") && <Link to="/lectures"><Button variant="primary">Lectures</Button> </Link>}
+                    {context.authUser && (context.authUser.Type === "manager" || context.authUser.Type === "teacher") && <Link to="/courses"><Button variant="primary">Courses</Button></Link>}
+                    {!context.authUser && <Link to="/login"><Button variant="primary">Login</Button></Link>}
+                    {context.authUser && <Link to="/login" onClick={context.logoutUser}><Button variant="danger">Logout</Button></Link>}
                 </nav>
             </>}
         </AuthContext.Consumer>
