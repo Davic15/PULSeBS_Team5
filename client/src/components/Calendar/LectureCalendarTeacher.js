@@ -1,22 +1,28 @@
 import React from 'react';
-import './Calendar.css';
 import API from '../../API';
 import LectureCalendar from './LectureCalendar';
+import LegendFilter from "../Legend/LegendFilter";
 import {AuthContext} from '../AuthContext/AuthContext';
 import {Redirect} from "react-router-dom";
+import {colors, descriptions} from "./CalendarMisc";
+import {getWeek} from '../../Functions';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
-const moment = require('moment');
+import './Calendar.css';
 
-const colorPresence = "white";
-const colorRemote = "orange";
+const moment = require('moment');
 
 class LectureCalendarTeacher extends React.Component {
 
     constructor(props){
         super(props);
-        this.state = {day: moment(), lectures: [], students: []};
+
+        const filters = [
+            {color: colors.bookable, name: "Presence", checked: true},
+            {color: colors.remote, name: "Remote", checked: true}
+        ];
+        this.state = {day: moment(), lectures: [], students: [], selectedLectures: [], filters: filters};
     }
 
     componentDidMount() { 
@@ -30,11 +36,12 @@ class LectureCalendarTeacher extends React.Component {
     }
 
     getLectures = (day) => {
-        const start = moment(day);
-        start.subtract(start.weekday()-1, 'days');
-        const end = moment(start).add(6, 'days');
-        API.getTeacherLectures(start, end)
-        .then((lectures) => this.setState({lectures: lectures}))
+        const week = getWeek(day);
+        API.getTeacherLectures(week.first, week.last)
+        .then((lectures) => {
+            this.setState({lectures: lectures})
+            this.applyFilters(this.state.filters);
+        })
         .catch((err) => console.log(err));
     }
 
@@ -61,41 +68,48 @@ class LectureCalendarTeacher extends React.Component {
 
     getColorCode = (lecture) => {
         if(this.isPresence(lecture))
-            return colorPresence;
+            return colors.bookable;
         else if(this.isRemote(lecture))
-            return colorRemote;
+            return colors.remote;
         else
             return "";
+    }
+
+    getDescription = (lecture) => {
+        if(this.isPresence(lecture))
+            return descriptions.bookable;
+        else if(this.isRemote(lecture))
+            return descriptions.remote;
+        else
+            return "";
+    }
+
+    applyFilters = (filters) => {
+        const selectedLectures = this.state.lectures.filter((lecture) => {
+            return (filters[0].checked && this.isPresence(lecture)) ||
+                (filters[1].checked && this.isRemote(lecture));
+        });
+        this.setState({filters: filters, selectedLectures: selectedLectures});
     }
 
     render() {
         const start = moment(this.state.day);
         start.subtract(start.weekday()-1, 'days');
-        return <>
+        return <div>
             <div>
-            <AuthContext.Consumer>
-                    {(context)=>(
-                    <div className="div-center text-center">
-                        {context.authUser && 
-                            <>
-                                <Button className="btn btn-lg btn-primary text-uppercase custom-color btn-size-teacher btn-default" type="submit" variant="primary" onClick = {() => {context.logoutUser()}} >Log out</Button>
-                            </>
-                        }
-                        {!context.authUser && <Redirect to = "/login"/>} 
-                    </div>
-                )}
-                </AuthContext.Consumer>
-                <div>
-                    <LectureCalendar
-                        onDateChange={this.onDateChange}
-                        lectures={this.state.lectures}
-                        lectureComponent={this.LectureComponent}
-                        modalComponent={this.Modal}
-                    />
-                </div>
-                
+                <LegendFilter
+                    filters={this.state.filters}
+                    onFiltersChange={this.applyFilters}
+                />
+                <LectureCalendar
+                    onDateChange={this.onDateChange}
+                    lectures={this.state.selectedLectures}
+                    lectureComponent={this.LectureComponent}
+                    modalComponent={this.Modal}
+                />
             </div>
-        </>;
+            
+        </div>;
     }
 
     LectureComponent = (props) => {
@@ -108,11 +122,15 @@ class LectureCalendarTeacher extends React.Component {
             <div className="lecture-tag" style={{backgroundColor:this.getColorCode(lecture)}}>
                 <b>{lecture.CourseName}</b>
             </div>
-            <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
-            {!(this.isRemote(lecture)) && <>
-                {lecture.ClassroomName}<br/>
-                {lecture.BookingCount+"/"+lecture.Seats}<br/>
-            </>}</p>
+            <div className="lecture-body">
+                <p>
+                    {start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
+                    {!(this.isRemote(lecture)) && <>
+                        {lecture.ClassroomName}<br/>
+                        {lecture.BookingCount+"/"+lecture.Seats}<br/>
+                    </>}
+                </p>
+            </div>
         </div>;
     }
     
@@ -136,46 +154,28 @@ class LectureCalendarTeacher extends React.Component {
         
         var minutesLeft = moment.duration(start.diff(moment())).as("minutes");
 
-        /*return <div>
-            <b>{lecture.CourseName}</b>
-            <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
-            {this.isPresence(lecture) && <>
-                <p>{lecture.ClassroomName}</p>
-                <p>{lecture.BookingCount+"/"+lecture.Seats}</p>
-                <StudentList onLoad={() => this.getStudentList(lecture.LectureId)} students={this.state.students}/>
-            </>}
-            
-            {(this.isPresence(lecture) && minutesLeft>=30 ) && <button onClick={changeLecture}>Change to remote lecture</button>}
-            {minutesLeft>=60 && <button onClick={cancelLecture}>Cancel lecture</button>}
-            <button onClick={() => closeModal()}>Close</button>
-        </div>;*/
-
-        return (
-            <Modal.Dialog>
-                <Modal.Header>
-                    <Modal.Title>Booking Option</Modal.Title>
-                </Modal.Header>
-
-                <Modal.Body>
-                    <div>
-                        <p><strong>Subject: </strong>{lecture.CourseName}</p>
-                        <p><strong>Time: </strong>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
-                        {this.isPresence(lecture) && <>
-                            <p><strong>Classroom: </strong>{lecture.ClassroomName}</p>
-                            <p><strong>Seats: </strong>{lecture.BookingCount+"/"+lecture.Seats}</p>
-                            <StudentList onLoad={() => this.getStudentList(lecture.LectureId)} students={this.state.students}/>
-                        </>}
-                    </div>
-                </Modal.Body>
-
-                <Modal.Footer>
-                    {(this.isPresence(lecture) && minutesLeft>=30 ) && <Button variant="primary" onClick={changeLecture}>Change to remote lecture</Button>}
-                    {minutesLeft>=60 && <Button variant="info" onClick={cancelLecture}>Cancel lecture</Button>}
-                    <Button variant="secondary" onClick={() => closeModal()}>Close</Button>
-                </Modal.Footer>
+        return <Modal.Dialog>
+            <Modal.Header>
+                <Modal.Title>Booking Options</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <p>
+                    <strong>Subject: </strong>{lecture.CourseName}<br/>
+                    <strong>Time: </strong>{start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
+                    {!this.isRemote(lecture) && <>
+                        <strong>Classroom: </strong>{lecture.ClassroomName}<br/>
+                        <strong>Seats: </strong>{lecture.BookingCount+"/"+lecture.Seats}<br/>
+                    </>}
+                    <i>{this.getDescription(lecture)}</i>
+                    {!this.isRemote(lecture) && <StudentList onLoad={() => this.getStudentList(lecture.LectureId)} students={this.state.students}/>}
+                </p>
+            </Modal.Body>
+            <Modal.Footer>
+                {(this.isPresence(lecture) && minutesLeft>=30 ) && <Button variant="primary" onClick={changeLecture}>Change to remote lecture</Button>}
+                {minutesLeft>=60 && <Button variant="info" onClick={cancelLecture}>Cancel lecture</Button>}
+                <Button variant="secondary" onClick={() => closeModal()}>Close</Button>
+            </Modal.Footer>
         </Modal.Dialog>
-        
-        );
     }
 }
 

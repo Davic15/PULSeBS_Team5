@@ -1,13 +1,9 @@
 import React from 'react';
 import WeekCalendar from 'react-week-calendar';
-//import HeaderCell from 'react-week-calendar';
-//import 'react-week-calendar/dist/style.less';
-// or import css file
 import 'react-week-calendar/dist/style.css';
 import DatePicker from 'react-date-picker'
 
 import './Calendar.css';
-//import API from '../../API';
 
 const moment = require('moment');
 
@@ -34,7 +30,6 @@ class LectureCalendar extends React.Component {
         <div className="calendar-container">
             <div className="daypick-row">
                 <DatePicker
-                    minDate={moment().toDate()}
                     onChange={this.onDateChange}
                     value={this.state.day.toDate()}
                 />
@@ -51,14 +46,23 @@ class LectureCalendar extends React.Component {
                 showModalCase={["edit"]}
                 eventComponent={this.props.lectureComponent}
                 modalComponent={this.props.modalComponent}
+                headerCellComponent={this.CustomHeaderCell}
                 selectedIntervals={this.props.lectures.map((lecture) => ({start: moment(lecture.Start), end: moment(lecture.End), value: JSON.stringify(lecture)}))}
             />
         </div>
         </>;
     }
+
+    CustomHeaderCell = (props) => {
+        const date = moment(props.date);
+        const displayDate = date.format(props.dayFormat);
+
+        let style = {};
+        if(date.format("DD/MM/YYYY") == moment(this.state.day).format("DD/MM/YYYY"))
+            style = {backgroundColor: "#3f72af", width: "100%", height: "100%", display:"block", borderRadius: "1rem"};
+        return <span style={style}>{displayDate}</span>
+    }
 }
-/*const DayComponent = (props) => {
-    return <HeaderCell className="day" date={props.date} dayFormat={props.dayFormat}/>;
-}*/
+
 
 export default LectureCalendar;

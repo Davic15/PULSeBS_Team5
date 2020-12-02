@@ -1,29 +1,27 @@
 import React from 'react';
-import './Calendar.css';
 import API from '../../API';
 import LectureCalendar from './LectureCalendar';
+import LegendFilter from "../Legend/LegendFilter";
 import {AuthContext} from '../AuthContext/AuthContext';
 import {Redirect} from "react-router-dom";
+import {colors, descriptions} from "./CalendarMisc";
+import {getWeek} from '../../Functions';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import './Calendar.css';
 
 const moment = require('moment');
-
-const colorBookable = "white";
-const colorBooked = "lightgreen";
-const colorWaiting = "yellow";
-const colorRemote = "orange";
 
 class LectureCalendarStudent extends React.Component {
 
     constructor(props){
         super(props);
-        const filters = {
-            bookable: true,
-            booked: true,
-            waiting: true,
-            remote: true
-        }
+        const filters = [
+            {color: colors.bookable, name: "Bookable", checked: true},
+            {color: colors.booked, name: "Booked", checked: true},
+            {color: colors.waiting, name: "Waiting", checked: true},
+            {color: colors.remote, name: "Remote", checked: true}
+        ];
         this.state = {day: moment(), filters: filters, lectures: [], selectedLectures: []};
     }
 
@@ -33,15 +31,14 @@ class LectureCalendarStudent extends React.Component {
 
     onDateChange = (value) => {
         const day = moment(value);
-        this.setState({day: moment(value)});
+        this.setState({day: day});
         this.getLectures(day);
     }
 
     getLectures = (day) => {
-        const start = moment(day);
-        start.subtract(start.weekday()-1, 'days');
-        const end = moment(start).add(6, 'days');
-        API.getStudentLectures(start, end)
+        const week = getWeek(day);
+        console.log(week.first + " " + week.last);
+        API.getStudentLectures(week.first, week.last)
         .then((lectures) => {
             this.setState({lectures: lectures});
             this.applyFilters(this.state.filters);
@@ -54,7 +51,7 @@ class LectureCalendarStudent extends React.Component {
         .catch((err) => console.log(err));
     }
 
-    AcancelBooking = (bookingId) => {
+    cancelBooking = (bookingId) => {
         API.cancelBooking(bookingId)
         .then(() =>{ 
             console.log("OKKKKKK");
@@ -69,13 +66,26 @@ class LectureCalendarStudent extends React.Component {
 
     getColorCode = (lecture) => {
         if(this.isBookable(lecture))
-            return colorBookable;
+            return colors.bookable;
         else if(this.isBooked(lecture))
-            return colorBooked;
+            return colors.booked;
         else if(this.isWaiting(lecture))
-            return colorWaiting;
+            return colors.waiting;
         else if(this.isRemote(lecture))
-            return colorRemote;
+            return colors.remote;
+        else
+            return "";
+    }
+
+    getDescription = (lecture) => {
+        if(this.isBookable(lecture))
+            return descriptions.bookable;
+        else if(this.isBooked(lecture))
+            return descriptions.booked;
+        else if(this.isWaiting(lecture))
+            return descriptions.waiting;
+        else if(this.isRemote(lecture))
+            return descriptions.remote;
         else
             return "";
     }
@@ -84,26 +94,25 @@ class LectureCalendarStudent extends React.Component {
         const start = moment(this.state.day);
         start.subtract(start.weekday()-1, 'days');
         return <>
-                    <this.LegendFilters
-                        filters={this.state.filters}
-                        onFiltersChange={this.applyFilters}
-                    />
-                    <LectureCalendar
-                        onDateChange={this.onDateChange}
-                        lectures={this.state.selectedLectures}
-                        lectureComponent={this.LectureComponent}
-                        modalComponent={this.Modal}
-                    />
-                    
+            <LegendFilter
+                filters={this.state.filters}
+                onFiltersChange={this.applyFilters}
+            />
+            <LectureCalendar
+                onDateChange={this.onDateChange}
+                lectures={this.state.selectedLectures}
+                lectureComponent={this.LectureComponent}
+                modalComponent={this.Modal}
+            />
         </>;
     }
 
     applyFilters = (filters) => {
         const selectedLectures = this.state.lectures.filter((lecture) => {
-            return (filters.booked && this.isBooked(lecture)) ||
-                (filters.bookable && this.isBookable(lecture)) ||
-                (filters.waiting && this.isWaiting(lecture)) ||
-                (filters.remote && this.isRemote(lecture));
+            return (filters[0].checked && this.isBookable(lecture)) ||
+                (filters[1].checked && this.isBooked(lecture)) ||
+                (filters[2].checked && this.isWaiting(lecture)) ||
+                (filters[3].checked && this.isRemote(lecture));
         });
         this.setState({filters: filters, selectedLectures: selectedLectures});
     }
@@ -118,12 +127,14 @@ class LectureCalendarStudent extends React.Component {
             <div className="lecture-tag" style={{backgroundColor:this.getColorCode(lecture)}}>
                 <b>{lecture.CourseName}</b>
             </div>
-            <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
-            {lecture.TeacherName+" "+lecture.TeacherSurname}<br/>
-            {!(this.isRemote(lecture)) && <>
-                {lecture.ClassroomName}<br/>
-                {lecture.BookingCount+"/"+lecture.Seats}<br/>
-            </>}</p>
+            <div className="lecture-body">
+                <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
+                {lecture.TeacherName+" "+lecture.TeacherSurname}<br/>
+                {!(this.isRemote(lecture)) && <>
+                    {lecture.ClassroomName}<br/>
+                    {lecture.BookingCount+"/"+lecture.Seats}<br/>
+                </>}</p>
+            </div>
         </div>;
     }
     
@@ -141,43 +152,28 @@ class LectureCalendarStudent extends React.Component {
         }
 
         const cancelBooking = () => {
-            console.log("CANCEL "+JSON.stringify(lecture));
-            this.AcancelBooking(lecture.BookingId);
+            this.cancelBooking(lecture.BookingId);
             closeModal();
         }
 
         var minutesLeft = moment.duration(start.diff(moment())).as("minutes");
-        console.log("minutes left:"+minutesLeft);
 
-        /*return <div>
-            <b>{lecture.CourseName}</b>
-            <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
-            <p>{lecture.TeacherName+" "+lecture.TeacherSurname}</p>
-            <p>{lecture.ClassroomName}</p>
-            <p>{lecture.BookingCount+"/"+lecture.Seats}</p>
-            {minutesLeft>=0 && <>
-                {this.isBookable(lecture) && <button onClick={book}>Book</button>}
-                {(this.isBooked(lecture) || this.isWaiting(lecture)) && <button onClick={cancelBooking}>Cancel booking</button>}
-            </>}
-            <button onClick={closeModal}>Close</button>
-        </div>;*/
-        return (
-        <Modal.Dialog>
+        return <Modal.Dialog>
             <Modal.Header>
                 <Modal.Title>Booking Options</Modal.Title>
             </Modal.Header>
-
             <Modal.Body>
-                <div>
-                    <p><strong>Subject: </strong>{lecture.CourseName}</p>
-                    <p><strong>Time: </strong>{start.format("HH:mm")+" - "+end.format("HH:mm")}</p>
-                    <p><strong>Professor: </strong>{lecture.TeacherName+" "+lecture.TeacherSurname}</p>
-                    <p><strong>Classroom: </strong>{lecture.ClassroomName}</p>
-                    <p><strong>Seats: </strong>{lecture.BookingCount+"/"+lecture.Seats}</p>
-                    
-                </div>
+                <p>
+                    <strong>Subject: </strong>{lecture.CourseName}<br/>
+                    <strong>Time: </strong>{start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
+                    <strong>Professor: </strong>{lecture.TeacherName+" "+lecture.TeacherSurname}<br/>
+                    {!this.isRemote(lecture) && <>
+                        <strong>Classroom: </strong>{lecture.ClassroomName}<br/>
+                        <strong>Seats: </strong>{lecture.BookingCount+"/"+lecture.Seats}<br/>
+                    </>}
+                    <i>{this.getDescription(lecture)}</i>
+                </p>
             </Modal.Body>
-
             <Modal.Footer>
                 {minutesLeft>=0 && <>
                     {this.isBookable(lecture) && <Button variant="primary" onClick={book}>Book</Button>}
@@ -185,64 +181,7 @@ class LectureCalendarStudent extends React.Component {
                 </>}
                 <Button variant="secondary" onClick={closeModal}>Close</Button>
             </Modal.Footer>
-        </Modal.Dialog>
-        );
-    }
-
-    LegendFilters = (props) => {
-        const onFiltersChange = (event) => {
-            const filters = props.filters;
-            filters[event.target.id] = event.target.checked;
-            props.onFiltersChange(filters);
-        }
-
-        return (
-            <AuthContext.Consumer>
-                {(context)=>(
-                //////////////////////////////
-                <div>
-                    <div class="container" id="chkbox">
-                        <div class="row">
-                            <fieldset class="the-fieldset">
-                                <legend class="the-legend">Color Legend</legend>
-                                <span class="col-sm">
-                                    <div className="legend-square div1" style={{backgroundColor: colorBooked}}></div>
-                                    <input type="checkbox" id="booked" checked={props.filters["booked"]} onChange={(event) => onFiltersChange(event)} />
-                                    <label htmlFor="booked">  Booked</label>
-                                </span>
-                                <span class="col-sm">
-                                    <div className="legend-square div1" style={{backgroundColor: colorWaiting}}></div>
-                                    <input type="checkbox" id="waiting" checked={props.filters["waiting"]} onChange={(event) => onFiltersChange(event)} />
-                                    <label htmlFor="waiting">  Bookable (Waiting)</label>
-                                </span>
-                                <span class="col-sm">
-                                    <div className="legend-square div1" style={{backgroundColor: colorBookable}}></div>
-                                    <input type="checkbox" id="bookable" checked={props.filters["bookable"]} onChange={(event) => onFiltersChange(event)} />
-                                    <label htmlFor="bookable">  Bookable</label>
-                                </span>
-                                <span class="col-sm">
-                                    <div className="legend-square div1" style={{backgroundColor: colorRemote}}></div>
-                                    <input type="checkbox" id="remote" checked={props.filters["remote"]} onChange={(event) => onFiltersChange(event)} />
-                                    <label htmlFor="remote">  Remote</label>
-                                </span>
-                            </fieldset>
-                        
-                    {context.authUser && 
-                    <>
-                                <div class="col text-center col-sm">
-                                    <button className="btn btn-lg btn-primary text-uppercase custom-color btn-size-student btn-default" type="submit" variant="primary" onClick = {() => {context.logoutUser()}}>Log out</button>
-                                    
-                                </div>
-                    </>
-                    
-                    }
-                    </div>
-                    </div>
-                    {!context.authUser && <Redirect to = "/login"/>}                
-                </div>
-                )}
-            </AuthContext.Consumer>
-            );
+        </Modal.Dialog>;
     }
 }
 

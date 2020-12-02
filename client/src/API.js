@@ -215,18 +215,21 @@ async function changeLecture(lectureId) {
     });
 }
 
-/*async function getLectureBookings(lecture_id) {
+async function getWeeklyStatistics(courseId, start, end) {
+    start = moment(start).format("YYYY-MM-DD HH:mm");
+    end = moment(end).format("YYYY-MM-DD HH:mm");
+
     return new Promise((resolve, reject) => {
-        fetch(baseURL + "/lecturebookings", {
+        fetch(baseURL + "/stats/avg/week", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({lecture_id: lectureId}),
+            body: JSON.stringify({course_id: courseId, date_start: start, date_end: end}),
         }).then((response) => {
             if (response.ok){
-                response.json().then((bookings) => {
-                    resolve(bookings);
+                response.json().then((rows) => {
+                    resolve(rows);
                 });
             }else{
                 response.json()
@@ -235,8 +238,113 @@ async function changeLecture(lectureId) {
             }
         }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
     });
-}*/
+}
 
-const API = { userLogin, isAuthenticated, userLogout, getStudentLectures, getTeacherLectures, getStudentList, book, cancelBooking, cancelLecture, changeLecture };
+async function getMonthlyStatistics(courseId, start, end) {
+    start = moment(start).format("YYYY-MM-DD HH:mm");
+    end = moment(end).format("YYYY-MM-DD HH:mm");
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/stats/avg/month", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({course_id: courseId, date_start: start, date_end: end}),
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function getLectureStatistics(lectureId, n) {
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/dailystats", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({lecture_id: lectureId, n_lectures: n}),
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function getCourseLectures(courseId, start, end) {
+    start = moment(start).format("YYYY-MM-DD HH:mm");
+    end = moment(end).format("YYYY-MM-DD HH:mm");
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/courselectures", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({course_id: courseId, date_start: start, date_end: end}),
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function getCourseList() {
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/courses", {
+            method: "GET"
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+const API = { 
+    userLogin, 
+    isAuthenticated, 
+    userLogout, 
+    getStudentLectures, 
+    getTeacherLectures, 
+    getStudentList, 
+    book, 
+    cancelBooking, 
+    cancelLecture, 
+    changeLecture, 
+    getWeeklyStatistics,
+    getMonthlyStatistics,
+    getLectureStatistics,
+    getCourseLectures,
+    getCourseList 
+};
 export default API;
-

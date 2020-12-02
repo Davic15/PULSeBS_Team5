@@ -11,6 +11,9 @@ import {AuthContext} from "../src/components/AuthContext/AuthContext";
 //import LectureCalendar from './components/Calendar/LectureCalendar';
 import LectureCalendarStudent from './components/Calendar/LectureCalendarStudent';
 import LectureCalendarTeacher from './components/Calendar/LectureCalendarTeacher';
+import CourseList from "./components/Courses/CourseList";
+import StatisticManager from "./components/Statistics/StatisticManager";
+import StatisticTeacher from "./components/Statistics/StatisticTeacher";
 
 class App extends React.Component{
 
@@ -92,24 +95,33 @@ class App extends React.Component{
       logoutUser: this.logout
     }
     return (
-      <AuthContext.Provider value={value}>
-        <Header />
-        <Switch>
-          <Route path="/login"> 
-            <Login />
-          </Route>
-          <Route path="/lectures">
-              <LectureCalendarStudent />
-          </Route>
-          <Route path="/teacher">
-              <LectureCalendarTeacher />
-          </Route>
-          <Route path="/">
-              <Redirect to="/login" />
-          </Route>
-        </Switch>   
-        <Footer />
-      </AuthContext.Provider>
+        <AuthContext.Provider value={value}>
+            <Header />
+            <Switch>
+                <Route path="/login"> 
+                    <Login />
+                </Route>
+                <Route path="/lectures">
+                    {!this.state.authUser && <Redirect to="/login" />}
+                    {this.state.authUser && this.state.authUser.Type === "student" && <LectureCalendarStudent />}
+                    {this.state.authUser && this.state.authUser.Type === "teacher" && <LectureCalendarTeacher/>}
+                </Route>
+                <Route path="/courses">
+                    {!this.state.authUser && <Redirect to="/login" />}
+                    {this.state.authUser && this.state.authUser.Type === "student" && <Redirect to="/courses" />}
+                    {this.state.authUser && (this.state.authUser.Type === "teacher" || this.state.authUser.Type === "booking-manager") && <CourseList />}
+                </Route>
+                <Route path='/statistics/:courseId' render={(props) => (<>
+                    {this.state.authUser && this.state.authUser.Type === "student" && <Redirect to="/courses" />}
+                    {this.state.authUser && this.state.authUser.Type === "teacher" && <StatisticTeacher courseId={props.match.params.courseId}/>}
+                    {this.state.authUser && this.state.authUser.Type === "booking-manager" && <StatisticManager courseId={props.match.params.courseId}/>}
+                </>)}/>
+                <Route path="/">
+                    <Redirect to="/login" />
+                </Route>
+            </Switch>   
+            <Footer />
+        </AuthContext.Provider>
     );
   }
 }

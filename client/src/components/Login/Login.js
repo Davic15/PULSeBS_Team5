@@ -31,8 +31,8 @@ class Login extends React.Component{
       <AuthContext.Consumer>
         {(context) => (
         <>
-            {context.authUser && context.authUser.Type.localeCompare("student")==0 && <Redirect to="/lectures" />}
-            {context.authUser && context.authUser.Type.localeCompare("teacher")==0 && <Redirect to="/teacher" />}
+            {context.authUser && (context.authUser.Type === "student" || context.authUser.Type === "teacher") && <Redirect to="/lectures" />}
+            {context.authUser && context.authUser.Type === "booking-manager" && <Redirect to="/courses" />}
             {!(context.authUser) &&
             <div className="container">
               <div className="row">

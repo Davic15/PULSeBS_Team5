@@ -750,7 +750,6 @@ exports.getStatistics=function(course_id,group_by,date_start,date_end){
                 else if(rows.length===0){
                     resolve([])
                 }else {
-                    console.log(JSON.stringify(rows));
                     let ret_array=[];
                     var obj={LectureId:undefined,CourseId:0,Start:undefined,Week:undefined,Year:0,SumBooked:0,SumQueue:0,SumCancelled:0,SumPresent:0,TotHeld:0,TotCancelled:0,TotOnline:0,TotLectures:0};
                     for (let row of rows){
@@ -845,6 +844,7 @@ exports.getCourseLecture=function(course_id, date_start,date_end){
 
                 db.all(sql,[course_id,date_start,date_end],(err,rows)=>{
                     if (err){
+                        console.log(err);
                         reject(err);
                     }
                     else if(rows.length===0){

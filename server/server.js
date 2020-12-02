@@ -109,7 +109,11 @@ app.post('/api/user', (req,res) => {
 
     dao.getUserById(userid)
         .then((user) => {
-            res.json({Email: user.Email});
+            res.json({UserId:user.UserId,
+                Email:user.Email,
+                Name:user.Name,
+                Surname:user.Surname,
+                Type:user.Type});
         }).catch(
         (err) => {
             res.status(401).json(authErrorObj);
@@ -296,7 +300,7 @@ app.post('/api/stats/:type/:groupby', async (req,res)=>{
             {errors:[{'param':'Server','msg':'Bad Request'}]}
     );
 
-    if(!checkRole(role,['teacher','booking-manager']) ){
+    /*if(!checkRole(role,['teacher','booking-manager']) ){
         res.status(401).json(
             {errors:[{'param':'Server','msg':'Unauthorized'}]}
         );
@@ -307,7 +311,7 @@ app.post('/api/stats/:type/:groupby', async (req,res)=>{
                     {errors:[{'param':'Server','msg':'Unauthorized'}]}
                 );
             }
-    }
+    }*/
 
     dao.getStatistics(course_id,groupby,date_start,date_end).then((rows)=>{
         let ret_array=[];
@@ -350,18 +354,23 @@ app.post('/api/courselectures', async (req,res)=>{
     const date_end=req.body.date_end;
     const role = req.user && req.user.role;
 
-    if(!checkRole(role,['teacher','booking-manager']) ){
+    /*if(!checkRole(role,['teacher','booking-manager']) ){
+        console.log("COURSES DEBUG 1");
         res.status(401).json(
             {errors:[{'param':'Server','msg':'Unauthorized'}]}
         );
     }else if (checkRole(role,['teacher'])){
             let courselist= (await dao.getTeacherCourses(user)).map(obj=>{return obj.CourseId});
+            console.log(course_id+ " IN " + courselist+" "+courselist.constructor.name);
+            console.log([1,2,3]);
+            console.log(courselist.includes(course_id));
             if(!courselist.includes(course_id)){
+                console.log("COURSES DEBUG 3");
                 res.status(401).json(
                     {errors:[{'param':'Server','msg':'Unauthorized'}]}
                 );
             }
-    }
+    }*/
 
     dao.getCourseLecture(course_id,date_start,date_end).then((obj)=>{
         res.json(obj);
@@ -380,7 +389,6 @@ app.post('/api/dailystats', async (req,res)=>{
     const n_lectures=parseInt(req.body.n_lectures);
     const role = req.user && req.user.role;
     
-
     if(!checkRole(role,['teacher','booking-manager']) ){
         res.status(401).json(
             {errors:[{'param':'Server','msg':'Unauthorized'}]}
@@ -389,14 +397,14 @@ app.post('/api/dailystats', async (req,res)=>{
 
     console.log("OK"+ lecture_id);
     let lectObj= await dao.getLectureInfo(lecture_id);
-    if (checkRole(role,['teacher'])){
+    /*if (checkRole(role,['teacher'])){
             let courselist= (await dao.getTeacherCourses(user)).map(obj=>{return obj.CourseId});
             if(!courselist.includes(lectObj.CourseId)){
                 res.status(401).json(
                     {errors:[{'param':'Server','msg':'Unauthorized'}]}
                 );
             }
-    }
+    }*/
     let start = await dao.getLowerDate(lecture_id,n_lectures+1);
     let end = await dao.getHigherDate(lecture_id,n_lectures+1);
     console.log(JSON.stringify(end));
