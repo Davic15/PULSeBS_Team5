@@ -10,7 +10,7 @@ const subject="LECTURE BOOKING INFO";
 let deamon;
 
 exports.startEmailDeamon=function(){
-     deamon=schedule.scheduleJob('30 23 * * *', async function(){
+     deamon=schedule.scheduleJob('50 11 * * *', async function(){
         console.log("starting scheduled job");
         lecture_list=await dao.getAllLecturesForEmail();
         console.log(JSON.stringify(lecture_list));
