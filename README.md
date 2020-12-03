@@ -264,13 +264,14 @@ The best way to launch the app from docker is to retreive the image from Docker 
 Simply run the following commands:
 
 * ### docker pull jackgorga/pulsebs_team5:release1
-* ### docker run jackgorga/pulsebs_team5:release1
+* ### docker run -p 3000:3000 -p 3001:3001 jackgorga/pulsebs_team5:release1
 
 The alternative is to download the code form Github, open the terminal in the main root and launch the following commands:
 
 * ### docker-compose build
 * ### docker-compose run
 
+For this alternative, you have to change the proxy in package.json in client folder to "http://pulsebs-server:3001".
 
 
 
