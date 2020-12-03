@@ -260,7 +260,13 @@
 
 #Docker
 
-In order to run the application with docker, download the code form Github, open the terminal in the main root and launch the following commands:
+The best way to launch the app from docker is to retreive the image from Docker Hub and launch it.
+Simply run the following commands:
+
+* ### docker pull jackgorga/pulsebs_team5:release1
+* ### docker run jackgorga/pulsebs_team5:release1
+
+The alternative is to download the code form Github, open the terminal in the main root and launch the following commands:
 
 * ### docker-compose build
 * ### docker-compose run
