@@ -4,7 +4,7 @@
   "description": "PULSeBS",
   "main": "server.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
     "start": "node server.js"
   },
   "author": "Team 5 SoftEng2",
