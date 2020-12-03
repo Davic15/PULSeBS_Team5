@@ -8,10 +8,10 @@ import { statistics, statisticMap, normalizeWeek, normalizeMonth } from './Stati
 import {colors } from "../Calendar/CalendarMisc";
 
 import Modal from 'react-bootstrap/Modal';
-import ModalDialog from 'react-bootstrap/ModalDialog'
+//import ModalDialog from 'react-bootstrap/ModalDialog'
 import Button from 'react-bootstrap/Button';
 import "./Statistic.css";
-import { useState } from "react";
+//import { useState } from "react";
 
 
 const moment = require('moment');

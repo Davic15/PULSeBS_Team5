@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { AuthContext} from "../AuthContext/AuthContext";
-import API from '../../API';
+//import API from '../../API';
 import "../Header/Header.css";
 import mainLogo from "../../images/favicon.ico";
 import Button from "react-bootstrap/Button";

@@ -30,34 +30,34 @@ beforeAll(() => {
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (3, 3, '${start3}', '${end3}', 0, 4)`,
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (4, 3, '${start4}', '${end4}', 0, 3)`];
 
-    db.run(stats[0], (err, rows) => {
+    db.run(stats[0], (err1, rows1) => {
         if (err) {
-            console.log(err);
+            console.log(err1);
         }
 
-        db.run(stats[1], (err, rows) => {
+        db.run(stats[1], (err2, rows2) => {
             if (err) {
-                console.log(err);
+                console.log(err3);
             }
 
-            db.run(stats[2], (err, rows) => {
+            db.run(stats[2], (err3, rows3) => {
                 if (err) {
-                    console.log(err);
+                    console.log(err3);
                 }
 
-                db.run(stats[3], (err, rows) => {
+                db.run(stats[3], (err4, rows4) => {
                     if (err) {
-                        console.log(err);
+                        console.log(err4);
                     }
 
-                    db.run(stats[4], (err, rows) => {
+                    db.run(stats[4], (err5, rows5) => {
                         if (err) {
-                            console.log(err);
+                            console.log(err5);
                         }
 
-                        db.run(stats[5], (err, rows) => {
+                        db.run(stats[5], (err6, rows6) => {
                             if (err) {
-                                console.log(err);
+                                console.log(err6);
                             }
                         });
                     });
@@ -339,7 +339,7 @@ test('Get tot for lectures in lecture' , async() => {
     expect(low).toBeDefined();
     //expect(low.Date).toBe("2020-12-07 08:30:00");
     const high = await dao.getHigherDate(1, 0);
-    expect(low).toBeDefined();
+    expect(high).toBeDefined();
     //expect(low.Date).toBe("2020-12-07 08:30:00");
 
     /*dao.getStatistics(2, "lecture", range1, range2).then(() => {

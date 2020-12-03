@@ -287,13 +287,13 @@ app.post('/api/changelecture',(req,res)=>{
 
 //type can be avg or tot, groupby week or month or lecture
 app.post('/api/stats/:type/:groupby', async (req,res)=>{
-    const user=req.user && req.user.user;
+    //const user=req.user && req.user.user;
     const course_id=req.body.course_id;
     const date_start=req.body.date_start;
     const date_end=req.body.date_end;
     const type = req.params.type;
     const groupby= req.params.groupby;
-    const role = req.user && req.user.role;
+    //const role = req.user && req.user.role; REMEMBER TO UNCOMMENT WHEN SOLVING THE BUG
 
 
     if((type!="avg" && type !="tot") || (groupby!="week" && groupby !="month" ))
@@ -349,11 +349,11 @@ app.post('/api/stats/:type/:groupby', async (req,res)=>{
 
 
 app.post('/api/courselectures', async (req,res)=>{
-    const user=req.user && req.user.user;
+    //const user=req.user && req.user.user;
     const course_id=req.body.course_id;
     const date_start=req.body.date_start;
     const date_end=req.body.date_end;
-    const role = req.user && req.user.role;
+    //const role = req.user && req.user.role; REMEMBER TO UNCOMMENT WHEN SOLVING THE BUG
 
     /*if(!checkRole(role,['teacher','booking-manager']) ){
         console.log("COURSES DEBUG 1");
@@ -385,7 +385,7 @@ app.post('/api/courselectures', async (req,res)=>{
 
 
 app.post('/api/dailystats', async (req,res)=>{
-    const user=req.user && req.user.user;
+    //const user=req.user && req.user.user;
     const lecture_id=req.body.lecture_id;
     const n_lectures=parseInt(req.body.n_lectures);
     const role = req.user && req.user.role;

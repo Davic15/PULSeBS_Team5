@@ -14,7 +14,7 @@ exports.replacePlaceHolders=function(str,replacements){
 exports.send=async function(recepient,subject,text,replacements) {
 
 
-  let testAccount = await nodemailer.createTestAccount();
+  //let testAccount = await nodemailer.createTestAccount();
 
   // create reusable transporter object using the default SMTP transport
   
@@ -42,7 +42,7 @@ exports.send=async function(recepient,subject,text,replacements) {
 
   recepient = "pulsebs.softeng2@gmail.com"; //force send to our email
   // send mail with defined transport object
-  let info = await transporter.sendMail({
+  await transporter.sendMail({
     from: '"PULSeBs platform" <pulsebs.softeng2@gmail.com>', // sender address
     to: recepient, // list of receivers
     subject: subject, // Subject line

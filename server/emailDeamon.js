@@ -12,7 +12,7 @@ let deamon;
 exports.startEmailDeamon=function(){
      deamon=schedule.scheduleJob('50 11 * * *', async function(){
         console.log("starting scheduled job");
-        lecture_list=await dao.getAllLecturesForEmail();
+        let lecture_list=await dao.getAllLecturesForEmail();
         console.log(JSON.stringify(lecture_list));
         for (let lecture of lecture_list){
             const emailReplacements={"%NAME%":lecture.TeacherName,

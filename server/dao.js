@@ -1009,7 +1009,7 @@ exports.addTeachers=function(data) {
         let csvData = data.toString('utf8');
         users_to_add = await csvtojson().fromString(csvData);
 
-        for (user of users_to_add) {
+        for (let user of users_to_add) {
             if (user.Email == undefined || user.Password == undefined || user.Name == undefined || user.Surname == undefined || user.Type == undefined) {
                 users_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
@@ -1029,7 +1029,7 @@ exports.addTeachers=function(data) {
             catch (ex) {
                 users_added.push({"error": ex});
             }
-        };
+        }
 
         resolve(users_added);
     });
@@ -1067,7 +1067,7 @@ exports.addStudents=function(data) {
         };
 
         resolve(users_added);
-    });
+    })
 }
 
 exports.addEnrollments=function(data) {
@@ -1078,7 +1078,7 @@ exports.addEnrollments=function(data) {
         let csvData = data.toString('utf8');
         enrollments_to_add = await csvtojson().fromString(csvData);
 
-        for (enrollment of enrollments_to_add) {
+        for (let enrollment of enrollments_to_add) {
             if (enrollment.UserId == undefined || enrollment.CourseId == undefined) {
                 enrollments_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
@@ -1111,7 +1111,7 @@ exports.addEnrollments=function(data) {
             catch (ex) {
                 enrollments_added.push({"error":ex});
             }
-        };
+        }
 
         resolve(enrollments_added);
     });
@@ -1126,7 +1126,7 @@ exports.addCourses=function(data) {
         let csvData = data.toString('utf8');
         courses_to_add = await csvtojson().fromString(csvData);
 
-        for (course of courses_to_add) {
+        for (let course of courses_to_add) {
             if (course.TeacherId == undefined || course.Name == undefined) {
                 courses_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
@@ -1152,7 +1152,7 @@ exports.addCourses=function(data) {
             catch (ex) {
                 courses_added.push({"error":ex});
             }
-        };
+        }
 
         resolve(courses_added);
     });
@@ -1167,7 +1167,7 @@ exports.addLectures=function(data) {
         let csvData = data.toString('utf8');
         lectures_to_add = await csvtojson().fromString(csvData);
 
-        for (lecture of lectures_to_add) {
+        for (let lecture of lectures_to_add) {
             if (lecture.CourseId == undefined || lecture.Start == undefined || lecture.End == undefined || lecture.State == undefined || lecture.ClassRoomId == undefined) {
                 lectures_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
@@ -1196,7 +1196,7 @@ exports.addLectures=function(data) {
             catch (ex) {
                 lectures_added.push({"error":ex});
             }
-        };
+        }
 
         resolve(lectures_added);
     });
@@ -1211,7 +1211,7 @@ exports.addClassrooms=function(data) {
         let csvData = data.toString('utf8');
         classrooms_to_add = await csvtojson().fromString(csvData);
 
-        for (classroom of classrooms_to_add) {
+        for (let classroom of classrooms_to_add) {
             if (classroom.Seats == undefined || classroom.Name == undefined) {
                 classrooms_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
@@ -1226,7 +1226,7 @@ exports.addClassrooms=function(data) {
             catch (ex) {
                 classrooms_added.push({"error":ex});
             }
-        };
+        }
 
         resolve(classrooms_added);
     });

@@ -159,9 +159,12 @@
 
 
 /* This is what we are focused on */
+/* A bit more styling to make it look better */
 .table-wrapper{
     overflow-y: scroll;
     height: 120px;
+    background: #ffffff;
+
 }
   
 .table-wrapper th{
@@ -169,10 +172,7 @@
     top: 0;
 }
   
-/* A bit more styling to make it look better */
-.table-wrapper{
-    background: #ffffff;
-}
+
   
 table{
     border-collapse: collapse;
