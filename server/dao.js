@@ -1044,7 +1044,7 @@ exports.addStudents=function(data) {
         let csvData = data.toString('utf8');
         users_to_add = await csvtojson().fromString(csvData);
 
-        for (user of users_to_add) {
+        for (let user of users_to_add) {
             if (user.Email == undefined || user.Password == undefined || user.Name == undefined || user.Surname == undefined || user.Type == undefined) {
                 users_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
@@ -1064,7 +1064,7 @@ exports.addStudents=function(data) {
             catch (ex) {
                 users_added.push({"error": ex});
             }
-        };
+        }
 
         resolve(users_added);
     })
