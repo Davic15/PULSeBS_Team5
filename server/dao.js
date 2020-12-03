@@ -761,9 +761,9 @@ exports.getStatistics=function(course_id,group_by,date_start,date_end){
                         obj.LectureId=row.LectureId; 
                         obj.CourseId=row.CourseId;
                         obj.Start=row.Start;
-                        group_by=="lecture" ? obj.LectureId=row.LectureId : undefined;
-                        group_by=="week" ?  obj.Week=row.Week : undefined;
-                        group_by=="month" ? obj.Month=row.Month : undefined;
+                        group_by=="lecture" ? obj.LectureId=row.LectureId : obj.LectureId=undefined;
+                        group_by=="week" ?  obj.Week=row.Week : obj.LectureId=undefined;
+                        group_by=="month" ? obj.Month=row.Month : obj.LectureId=undefined;
                         obj.Year=row.Year;
                         obj.SumBooked=row.SumBooked;            //number of bookings, refers only to held and cancelled lectures
                         obj.SumQueue=row.SumQueue;              //number of people in queue, refers only to held and cancelled lectures
@@ -1079,7 +1079,7 @@ exports.addEnrollments=function(data) {
         enrollments_to_add = await csvtojson().fromString(csvData);
 
         for (enrollment of enrollments_to_add) {
-            if (enrollment.UserId == undefined || enrollment.UserId == undefined) {
+            if (enrollment.UserId == undefined || enrollment.CourseId == undefined) {
                 enrollments_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
             }
