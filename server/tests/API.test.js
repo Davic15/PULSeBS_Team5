@@ -302,7 +302,7 @@ test('Insert teachers in db', () => {
 
 test('Insert students in db', () => {
     fs.readFile("studentsCSV.csv", "utf8", (err, data) => {
-        dao.addStudents(data).then((data) => {
+        dao.addStudents(data).then((added) => {
             expect(added).toBeDefined();
             expect(added.length).toBe(2);
         });
