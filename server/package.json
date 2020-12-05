@@ -4,7 +4,7 @@
   "description": "PULSeBS",
   "main": "server.js",
   "scripts": {
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --coverage",
     "start": "node server.js"
   },
   "author": "Team 5 SoftEng2",
@@ -33,6 +33,8 @@
     "react-test-renderer": "^17.0.1"
   },
   "jest": {
-    "testResultsProcessor": "jest-sonar-reporter"
+    "testResultsProcessor": "jest-sonar-reporter",
+    "collectCoverage": true,
+    "coverageReporters": ["json", "lcov"]
   }
 }

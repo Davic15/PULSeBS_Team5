@@ -6,39 +6,39 @@
     <testCase name="User by id is defined" duration="1"/>
     <testCase name="User by id is empty" duration="0"/>
     <testCase name="Get lectures for student 6" duration="1"/>
-    <testCase name="Get lectures for student 8" duration="0"/>
-    <testCase name="Check course for student 6" duration="1"/>
+    <testCase name="Get lectures for student 8" duration="1"/>
+    <testCase name="Check course for student 6" duration="0"/>
     <testCase name="Check course for student 8" duration="0"/>
     <testCase name="Check course for teacher 7" duration="0"/>
-    <testCase name="Get lecture info" duration="1"/>
+    <testCase name="Get lecture info" duration="0"/>
     <testCase name="Get student info fulfilled" duration="1"/>
-    <testCase name="Get student info empty" duration="1"/>
-    <testCase name="Book lecture for student enrolled" duration="2"/>
+    <testCase name="Get student info empty" duration="0"/>
+    <testCase name="Book lecture for student enrolled" duration="1"/>
     <testCase name="Book lecture for student not enrolled" duration="0"/>
-    <testCase name="Check bookings for students enrolled" duration="1"/>
-    <testCase name="Check bookings for students not enrolled" duration="1"/>
-    <testCase name="Book lecture for student already booked" duration="1"/>
-    <testCase name="Get seats count for lecture" duration="2"/>
-    <testCase name="Get lectures for teacher" duration="2"/>
-    <testCase name="Get students for lecture" duration="1"/>
-    <testCase name="Get bookings for student" duration="3"/>
-    <testCase name="Get next student in line" duration="4"/>
-    <testCase name="Cancel lecture for teacher" duration="10"/>
-    <testCase name="Move lecture to remote for teacher" duration="0"/>
-    <testCase name="Book canceled lecture for student enrolled" duration="1"/>
+    <testCase name="Check bookings for students enrolled" duration="0"/>
+    <testCase name="Check bookings for students not enrolled" duration="0"/>
+    <testCase name="Book lecture for student already booked" duration="0"/>
+    <testCase name="Get seats count for lecture" duration="1"/>
+    <testCase name="Get lectures for teacher" duration="0"/>
+    <testCase name="Get students for lecture" duration="0"/>
+    <testCase name="Get bookings for student" duration="1"/>
+    <testCase name="Get next student in line" duration="0"/>
+    <testCase name="Cancel lecture for teacher" duration="0"/>
+    <testCase name="Move lecture to remote for teacher" duration="1"/>
+    <testCase name="Book canceled lecture for student enrolled" duration="0"/>
     <testCase name="Insert teachers in db" duration="1"/>
     <testCase name="Insert students in db" duration="0"/>
     <testCase name="Insert courses in db" duration="0"/>
-    <testCase name="Insert enrollments in db" duration="2"/>
-    <testCase name="Insert lectures in db" duration="0"/>
-    <testCase name="Insert classrooms in db" duration="1"/>
+    <testCase name="Insert enrollments in db" duration="0"/>
+    <testCase name="Insert lectures in db" duration="1"/>
+    <testCase name="Insert classrooms in db" duration="0"/>
     <testCase name="Get lectures for course in time range" duration="0"/>
     <testCase name="Get courses of teacher" duration="1"/>
     <testCase name="Get all courses" duration="0"/>
     <testCase name="Get lecture lower date between lectures" duration="0"/>
-    <testCase name="Get lecture higher date between lectures" duration="44"/>
+    <testCase name="Get lecture higher date between lectures" duration="41"/>
     <testCase name="Get tot for lectures in week" duration="1"/>
-    <testCase name="Get tot for lectures in month" duration="1"/>
+    <testCase name="Get tot for lectures in month" duration="0"/>
     <testCase name="Get tot for lectures in lecture" duration="2"/>
   </file>
 </testExecutions>
