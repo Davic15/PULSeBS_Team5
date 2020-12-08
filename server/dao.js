@@ -35,13 +35,7 @@ exports.getUser=function(username){
                     else if(rows.length===0){
                         resolve(undefined)
                     }else {
-                        const user={UserId:rows[0].UserId,
-                                    Email:rows[0].Email,
-                                    Password:rows[0].Password,
-                                    Name:rows[0].Name,
-                                    Surname:rows[0].Surname,
-                                    Type:rows[0].Type};
-                        resolve(user);
+                        resolve(rows[0]);
                     }
                 }
             );
@@ -1010,20 +1004,15 @@ exports.addTeachers=function(data) {
         users_to_add = await csvtojson().fromString(csvData);
 
         for (let user of users_to_add) {
-            if (user.Email == undefined || user.Password == undefined || user.Name == undefined || user.Surname == undefined || user.Type == undefined) {
+            if (user.Number == undefined || user.GivenName == undefined || user.Surname == undefined || user.OfficialEmail == undefined || user.SSN == undefined) {
                 users_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
             }
 
-            if (user.Type != "teacher") {
-                users_added.push({"error":"This command is only to add teachers"});
-                continue;
-            }
-
-            const sql = "INSERT INTO User(Email, Password, Name, Surname, Type) VALUES (?, ?, ?, ?, ?)"; //id is autoincrement, email is unique
+            const sql = "INSERT INTO User(UserId, Email, Password, Name, Surname, City, Birthday, SSN, Type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
             
             try {
-                await db.run(sql, [user.Email, user.Password, user.Name, user.Surname, user.Type]);
+                await db.run(sql, [user.Number, user.OfficialEmail, 'password', user.GivenName, user.Surname, 'NULL', 'NULL', user.SSN, 'teacher']);
                 users_added.push(user);
             }
             catch (ex) {
@@ -1045,20 +1034,15 @@ exports.addStudents=function(data) {
         users_to_add = await csvtojson().fromString(csvData);
 
         for (let user of users_to_add) {
-            if (user.Email == undefined || user.Password == undefined || user.Name == undefined || user.Surname == undefined || user.Type == undefined) {
+            if (user.Id == undefined || user.Name == undefined || user.Surname == undefined || user.City == undefined || user.OfficialEmail == undefined || user.Birthday == undefined || user.SSN == undefined) {
                 users_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
             }
 
-            if (user.Type != "student") {
-                users_added.push({"error":"This command is only to add students"});
-                continue;
-            }
-
-            const sql = "INSERT INTO User(Email, Password, Name, Surname, Type) VALUES (?, ?, ?, ?, ?)"; //id is autoincrement, email is unique
+            const sql = "INSERT INTO User(UserId, Email, Password, Name, Surname, City, Birthday, SSN, Type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
             
             try {
-                await db.run(sql, [user.Email, user.Password, user.Name, user.Surname, user.Type]);
+                await db.run(sql, [user.Id, user.OfficialEmail, 'password', user.Name, user.Surname, user.City, user.Birthday, user.SSN, 'student']);
                 users_added.push(user);
             }
             catch (ex) {
@@ -1079,33 +1063,33 @@ exports.addEnrollments=function(data) {
         enrollments_to_add = await csvtojson().fromString(csvData);
 
         for (let enrollment of enrollments_to_add) {
-            if (enrollment.UserId == undefined || enrollment.CourseId == undefined) {
+            if (enrollment.Code == undefined || enrollment.Student == undefined) {
                 enrollments_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
             }
 
-            const user = await this.getUserById(enrollment.UserId);
+            const user = await this.getUserById(enrollment.Student);
 
             if (user == undefined) {
-                enrollments_added.push({"error":"Make sure student with id " + enrollment.UserId + " exists"});
+                enrollments_added.push({"error":"Make sure student with id " + enrollment.Student + " exists"});
                 continue;
             }
             else if (user.Type != "student") {
-                enrollments_added.push({"error":"The user with id " + enrollment.UserId + " is not a student"});
+                enrollments_added.push({"error":"The user with id " + enrollment.Student + " is not a student"});
                 continue;
             }
 
-            const course = await this.getCourseById(enrollment.CourseId);
+            const course = await this.getCourseById(enrollment.Code);
 
             if (course == undefined) {
-                enrollments_added.push({"error":"Make sure course with id " + enrollment.CourseId + " exists"});
+                enrollments_added.push({"error":"Make sure course with id " + enrollment.Code + " exists"});
                 continue;
             }
 
-            const sql = "INSERT INTO StudentCourse(UserId, CourseId) VALUES (?, ?)"; //id is autoincrement
+            const sql = "INSERT INTO StudentCourse(UserId, CourseId) VALUES (?, ?)";
 
             try {
-                await db.run(sql, [enrollment.UserId, enrollment.CourseId]);
+                await db.run(sql, [enrollment.Student, enrollment.Code]);
                 enrollments_added.push(enrollment);
             }
             catch (ex) {
@@ -1127,26 +1111,26 @@ exports.addCourses=function(data) {
         courses_to_add = await csvtojson().fromString(csvData);
 
         for (let course of courses_to_add) {
-            if (course.TeacherId == undefined || course.Name == undefined) {
+            if (course.Code == undefined || course.Year == undefined || course.Semester == undefined || course.Course == undefined || course.Teacher == undefined) {
                 courses_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
             }
 
-            const user = await this.getUserById(course.TeacherId);
+            const user = await this.getUserById(course.Teacher);
 
             if (user == undefined) {
-                courses_added.push({"error":"Make sure teacher with id " + course.TeacherId + " exists"});
+                courses_added.push({"error":"Make sure teacher with id " + course.Teacher + " exists"});
                 continue;
             }
             else if (user.Type != "teacher") {
-                courses_added.push({"error":"The user with id " + course.TeacherId + " is not a teacher"});
+                courses_added.push({"error":"The user with id " + course.Teacher + " is not a teacher"});
                 continue;
             }
 
-            const sql = "INSERT INTO Course(TeacherId, Name) VALUES (?, ?)"; //id is autoincrement
+            const sql = "INSERT INTO Course(CourseId, TeacherId, Name, Year, Semester) VALUES (?, ?, ?, ?, ?)";
 
             try {
-                await db.run(sql, [course.TeacherId, course.Name]);
+                await db.run(sql, [course.Code, course.Teacher, course.Course, course.Year, course.Semester]);
                 courses_added.push(course);
             }
             catch (ex) {
@@ -1168,29 +1152,71 @@ exports.addLectures=function(data) {
         lectures_to_add = await csvtojson().fromString(csvData);
 
         for (let lecture of lectures_to_add) {
-            if (lecture.CourseId == undefined || lecture.Start == undefined || lecture.End == undefined || lecture.State == undefined || lecture.ClassRoomId == undefined) {
+            if (lecture.Code == undefined || lecture.Room == undefined || lecture.Day == undefined || lecture.Seats == undefined || lecture.Time == undefined) {
                 lectures_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
             }
 
-            const course = await this.getCourseById(lecture.CourseId);
+            const course = await this.getCourseById(lecture.Code);
 
             if (course == undefined) {
-                courses_added.push({"error":"Make sure course with id " + lecture.CourseId + " exists"});
+                courses_added.push({"error":"Make sure course with id " + lecture.Code + " exists"});
                 continue;
             }
             
-            const classroom = await this.getClassRoomById(lecture.ClassRoomId);
+            const classroom = await this.getClassRoomById(lecture.Room);
 
             if (classroom == undefined) {
-                courses_added.push({"error":"Make sure classroom with id " + lecture.ClassRoomId+ " exists"});
-                continue;
+                //courses_added.push({"error":"Make sure classroom with id " + lecture.Room + " exists"});
+                //continue;
+                const sql1 = "INSERT INTO Classroom(ClassroomId, Seats, Name) VALUES (?, ?, ?)";
+
+                try {
+                    await db.run(sql1, [lecture.Room, lecture.Seats, '']);
+                }
+                catch (ex) {
+                    lectures_added.push({"error":ex});
+                }
             }
 
-            const sql = "INSERT INTO Lecture(CourseId, Start, End, State, ClassRoomId) VALUES (?, ?, ?, ?, ?)"; //id is autoincrement
+            const start = lecture.Time.split('-')[0];
+            const end = lecture.Time.split('-')[1];
+            const hh1 = start.split(':')[0];
+            const hh2 = start.split(':')[1];
+            const mm1 = end.split(':')[0];
+            const mm2 = end.split(':')[1];
+            let day = 0;
+
+            switch(lecture.Day) {
+                case "Mon":
+                    day = 0;
+                    break;
+                case "Tue":
+                    day = 1;
+                    break;
+                case "Wed":
+                    day = 2;
+                    break;
+                case "Thu":
+                    day = 3;
+                    break;
+                case "Fri":
+                    day = 4;
+                    break;
+                case "Sat":
+                    day = 5;
+                    break;
+                case "Sun":
+                    day = 6;
+                    break;
+            }
+
+            //work in progress...
+
+            const sql2 = "INSERT INTO Lecture(CourseId, Start, End, State, ClassRoomId) VALUES (?, ?, ?, ?, ?)";
             
             try {
-                await db.run(sql, [lecture.CourseId, lecture.Start, lecture.End, lecture.State, lecture.ClassRoomId]);
+                await db.run(sql2, [lecture.Code, lecture.Start, lecture.End, 0, lecture.Room]);
                 lectures_added.push(lecture);
             }
             catch (ex) {

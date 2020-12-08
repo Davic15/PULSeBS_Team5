@@ -544,6 +544,33 @@ app.post('/api/uploadcsv/courses', (req,res) => {
     });
 });
 
+app.post('/api/uploadcsv/enrollments', (req,res) => {
+    const file = req.files.enrollments;    //enrollments must be the input name in template
+    const role = req.user && req.user.role;
+
+    if(!checkRole(role,['officer'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+        return;
+    }
+    
+    if(file == undefined || file.data == undefined) {
+        res.status(400).json(
+            {errors:[{'param':'Server','msg':'File undefined, check the input name and file content'}]}
+        );
+        return;
+    }
+
+    dao.addEnrollments(file.data).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':err}]}
+        );
+    });
+});
+
 app.post('/api/uploadcsv/lectures', (req,res) => {
     const file = req.files.lectures;    //lectures must be the input name in template
     const role = req.user && req.user.role;
