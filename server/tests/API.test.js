@@ -1,6 +1,7 @@
 const moment = require('moment');
 const fs = require('fs');
 const dao = require('../dao');
+const { doesNotMatch } = require('assert');
 
 let today = new Date();
 const monday = new Date(today.setDate(today.getDate() - today.getDay() + 8));
@@ -22,172 +23,122 @@ const range2 = moment(friday.setHours(23, 59, 59, 0)).format("YYYY-MM-DD");
 
 const db = dao.initializeDBConn('./PULSEeBS_db_TEST');
 
-beforeAll(() => {
-    const stats = ["DELETE FROM Booking", 
+const stats = ["DELETE FROM Booking", 
             "DELETE FROM Lecture",
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (1, 2, '${start1}', '${end1}', 0, 3)`,
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (2, 2, '${start2}', '${end2}', 0, 5)`,
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (3, 3, '${start3}', '${end3}', 0, 4)`,
             `INSERT INTO Lecture(LectureId, CourseId, Start, End, State, ClassRoomId) VALUES (4, 3, '${start4}', '${end4}', 0, 3)`];
 
-    db.run(stats[0], (err1, rows1) => {
-        if (err) {
-            console.log(err1);
+beforeAll(async() => {
+    for (stat of stats) {
+        try {
+            //console.log(stat)
+            await db.run(stat);
         }
-
-        db.run(stats[1], (err2, rows2) => {
-            if (err) {
-                console.log(err3);
-            }
-
-            db.run(stats[2], (err3, rows3) => {
-                if (err) {
-                    console.log(err3);
-                }
-
-                db.run(stats[3], (err4, rows4) => {
-                    if (err) {
-                        console.log(err4);
-                    }
-
-                    db.run(stats[4], (err5, rows5) => {
-                        if (err) {
-                            console.log(err5);
-                        }
-
-                        db.run(stats[5], (err6, rows6) => {
-                            if (err) {
-                                console.log(err6);
-                            }
-                        });
-                    });
-                });
-            });
-        });
-    });
+        catch(e) {
+            console.log(e);
+        }
+    }
 });
 
-beforeEach(() => jest.resetAllMocks());
-
-test('User is defined', () => {
-    dao.getUser("teacher1@gmail.com").then((user) => {
-        expect(user).toBeDefined();
-        expect(user.UserId).toBe(7);
-    });
+test('User is defined', async() => {
+    const user = await dao.getUser("teacher1@gmail.com");
+    expect(user).toBeDefined();
+    expect(user.UserId).toBe(7);
 });
 
-test('User is undefined', () => {
-    dao.getUser("tea1@gmail.com").then((user) => {
-        expect(user).toBeUndefined();
-    });
+test('User is undefined', async() => {
+    const user = await dao.getUser("tea1@gmail.com");
+    expect(user).toBeUndefined();
 });
 
-test('User by id is defined', () => {
-    dao.getUserById(7).then((user) => {
-        expect(user).toBeDefined();
-        expect(user.Email).toBe("teacher1@gmail.com");
-    });
+test('User by id is defined', async() => {
+    const user = await dao.getUserById(7);
+    expect(user).toBeDefined();
+    expect(user.Email).toBe("teacher1@gmail.com");
 });
 
-test('User by id is empty', () => {
-    dao.getUser(0).then((user) => {
-        expect(user).toBeUndefined;
-    });
+test('User by id is empty', async() => {
+    const user = await dao.getUser(0);
+    expect(user).toBeUndefined;
 });
 
-test('Get lectures for student 6', () => {
-    dao.getLectures(6, range1, range2).then((lectures) => {
-        expect(lectures).toBeDefined();
-        console.log(lectures.length)
-        expect(lectures.length).toBe(4);
-    });
+test('Get lectures for student 6', async() => {
+    const lectures = await dao.getLectures(6, range1, range2);
+    expect(lectures).toBeDefined();
+    expect(lectures.length).toBe(4);
 });
 
-test('Get lectures for student 8', () => {
-    dao.getLectures(8, range1, range2).then((lectures) => {
-        expect(lectures).toBeDefined();
-        expect(lectures.length).toBe(2);
-    });
+test('Get lectures for student 8', async() => {
+    const lectures = await dao.getLectures(8, range1, range2);
+    expect(lectures).toBeDefined();
+    expect(lectures.length).toBe(2);
 });
 
-test('Check course for student 6', () => {
-    dao.checkStudentCourses(6, 3).then((course) => {
-        expect(course.ok).toBeTruthy();
-    });
+test('Check course for student 6', async() => {
+    const course = await dao.checkStudentCourses(6, 3);
+    expect(course.ok).toBeTruthy();
 });
 
-test('Check course for student 8', () => {
-    dao.checkStudentCourses(8, 3).then((course) => {
-        expect(course.ok).toBeFalsy();
-    });
+test('Check course for student 8', async() => {
+    const course = await dao.checkStudentCourses(8, 3);
+    expect(course.ok).toBeFalsy();
 });
 
-test('Check course for teacher 7', () => {
-    dao.checkTeacherCourses(7, 1).then((course) => {
-        expect(course.ok).toBeTruthy();
-    });
+test('Check course for teacher 7', async() => {
+    const course = await dao.checkTeacherCourses(7, 1);
+    expect(course.ok).toBeTruthy();
 });
 
-test('Get lecture info', () => {
-    dao.getLectureInfo(3).then((info) => {
-        expect(info).toBeDefined();
-        expect(info.CourseName).toBe("Web Applications");
-    });
+test('Get lecture info', async() => {
+    const info = await dao.getLectureInfo(3);
+    expect(info).toBeDefined();
+    expect(info.CourseName).toBe("Web Applications");
 });
 
-test('Get student info fulfilled', () => {
-    dao.getStudentInfo(6).then((student) => {
-        expect(student).toBeDefined();
-        expect(student.Email).toBe("student1@gmail.com");
-    });
+test('Get student info fulfilled', async() => {
+    const student = await dao.getStudentInfo(6);
+    expect(student).toBeDefined();
+    expect(student.Email).toBe("student1@gmail.com");
 });
 
-test('Get student info empty', () => {
-    dao.getStudentInfo(0).then((student) => {
-        expect(student).toBeUndefined();
-    });
+test('Get student info empty', async() => {
+    const student = await dao.getStudentInfo(0);
+    expect(student).toBeUndefined();
 });
 
-test('Book lecture for student enrolled', () => {
-    dao.bookLecture(6, 3).then((book) => {
-        expect(book).toBeDefined();
-    });
+test('Book lecture for student enrolled', async() => {
+    const book = await dao.bookLecture(6, 3);
+    expect(book).toBeDefined();
 });
 
-test('Book lecture for student not enrolled', () => {
-    dao.bookLecture(8, 3).then((book) => {
-        expect(book.error).toBe("student not enrolled");
-    });
+test('Book lecture for student not enrolled', async() => {
+    const book = await dao.bookLecture(8, 3);
+    expect(book.error).toBe("student not enrolled");
 });
 
-test('Check bookings for students enrolled', () => {
-    dao.checkBooking(6, 3).then((booking) => {
-        expect(booking.ok).toBeFalsy();
-        
-        dao.checkBooking(8, 1).then((booking2) => {
-            expect(booking2.ok).toBeTruthy();
-        });
-    });
+test('Check bookings for students enrolled', async() => {
+    const booking = await dao.checkBooking(6, 3);
+    expect(booking.ok).toBeFalsy();
+    const booking2 = await dao.checkBooking(8, 1);
+    expect(booking2.ok).toBeTruthy();
 });
 
-test('Check bookings for students not enrolled', () => {
-    dao.checkBooking(8, 3).then((booking) => {
-        expect(booking.error).toBe("student not enrolled");
-    });
+test('Check bookings for students not enrolled', async() => {
+    const booking = await dao.checkBooking(8, 3);
+    expect(booking.error).toBe("student not enrolled");
 });
 
-test('Book lecture for student already booked', () => {
-    dao.bookLecture(6, 3).then(function(book) {
-        expect(book).toBeDefined();
-        expect(book.error).toBe("already booked");
-
-        dao.cancelBooking(book.BookingId).then((cancel) => {
-            expect(cancel).toBe("OK");
-        });
-    });
+test('Book lecture for student already booked', async() => {
+    const book = await dao.bookLecture(6, 3);
+    expect(book).toBeDefined();
+    expect(book.error).toBe("already booked");
+    const cancel = await dao.cancelBooking(book.BookingId);
+    expect(cancel).toBe("OK");
 });
 
-test('Get seats count for lecture', () => {
+test('Get seats count for lecture', async() => {
     dao.getSeatsCount(1).then((seats) => {
         expect(seats).toBeDefined();
         expect(seats.BookedSeats).toBe(0);
@@ -209,14 +160,14 @@ test('Get seats count for lecture', () => {
     });
 });
 
-test('Get lectures for teacher', () => {
+test('Get lectures for teacher', async() => {
     dao.getTeacherLectures(7, range1, range2).then((lectures) => {
         expect(lectures).toBeDefined();
         expect(lectures.length).toBe(4);
     });
 });
 
-test('Get students for lecture', () => {
+test('Get students for lecture', async() => {
     dao.bookLecture(6, 2).then(function(book) {
         expect(book).toBeDefined();
 
@@ -233,7 +184,7 @@ test('Get students for lecture', () => {
     });
 });
 
-test('Get bookings for student', () => {
+test('Get bookings for student', async() => {
     dao.bookLecture(6, 2).then(function(book) {
         expect(book).toBeDefined();
 
@@ -248,7 +199,7 @@ test('Get bookings for student', () => {
     });
 });
 
-test('Get next student in line', () => {
+test('Get next student in line', async() => {
     dao.bookLecture(6, 2).then(function(book1) {
         expect(book1).toBeDefined();
 
@@ -271,27 +222,27 @@ test('Get next student in line', () => {
     });
 });
 
-test('Cancel lecture for teacher', () => {
+test('Cancel lecture for teacher', async() => {
     dao.changeLecture(7, 3, 1).then((cancel) => {
         expect(cancel).toBe("OK");
         //await dao.changeLecture(7, 3, 0);
     });
 });
 
-test('Move lecture to remote for teacher', () => {
+test('Move lecture to remote for teacher', async() => {
     dao.changeLecture(7, 4, 2).then((move) => {
         expect(move).toBe("OK");
         //await dao.changeLecture(7, 4, 0);
     });
 });
 
-test('Book canceled lecture for student enrolled', () => {
+test('Book canceled lecture for student enrolled', async() => {
     dao.bookLecture(6, 3).then((book) => {
         expect(book).toBeDefined();
     });
 });
 
-test('Insert teachers in db', () => {
+test('Insert teachers in db', async() => {
     fs.readFile("teachersCSV.csv", "utf8", (err, data) => {
         dao.addTeachers(data).then((added) => {
             expect(added).toBeDefined();
@@ -300,7 +251,7 @@ test('Insert teachers in db', () => {
     });
 });
 
-test('Insert students in db', () => {
+test('Insert students in db', async() => {
     fs.readFile("studentsCSV.csv", "utf8", (err, data) => {
         dao.addStudents(data).then((added) => {
             expect(added).toBeDefined();
@@ -309,7 +260,7 @@ test('Insert students in db', () => {
     });
 });
 
-test('Insert courses in db', () => {
+test('Insert courses in db', async() => {
     fs.readFile("coursesCSV.csv", "utf8", (err, data) => {
         dao.addCourses(data).then((added) => {
             expect(added).toBeDefined();
@@ -318,7 +269,7 @@ test('Insert courses in db', () => {
     });
 });
 
-test('Insert enrollments in db', () => {
+test('Insert enrollments in db', async() => {
     fs.readFile("enrollmentsCSV.csv", "utf8", (err, data) => {
         dao.addEnrollments(data).then((added) => {
             expect(added).toBeDefined();
@@ -327,7 +278,7 @@ test('Insert enrollments in db', () => {
     });
 });
 
-test('Insert lectures in db', () => {
+test('Insert lectures in db', async() => {
     fs.readFile("lecturesCSV.csv", "utf8", (err, data) => {
         dao.addLectures(data).then((added) => {
             expect(added).toBeDefined();
@@ -336,7 +287,7 @@ test('Insert lectures in db', () => {
     });
 });
 
-test('Insert classrooms in db', () => {
+test('Insert classrooms in db', async() => {
     fs.readFile("classroomsCSV.csv", "utf8", (err, data) => {
         dao.addClassrooms(data).then((added) => {
             expect(added).toBeDefined();
@@ -345,42 +296,42 @@ test('Insert classrooms in db', () => {
     });
 });
 
-test('Get lectures for course in time range', () => {
+test('Get lectures for course in time range', async() => {
     dao.getCourseLecture(2, range1, range2).then((lectures) => {
         expect(lectures).toBeDefined();
         expect(lectures.length).toBe(2);
     });
 });
 
-test('Get courses of teacher', () => {
+test('Get courses of teacher', async() => {
     dao.getTeacherCourses(7).then((nc) => {
         expect(nc).toBeDefined();
         expect(nc.length).toBe(3);
     });
 });
 
-test('Get all courses', () => {
+test('Get all courses', async() => {
     dao.getAllCourses().then((courses) => {
         expect(courses).toBeDefined();
         expect(courses.length).toBe(3);
     });
 });
 
-test('Get lecture lower date between lectures', () => {
+test('Get lecture lower date between lectures', async() => {
     dao.getLowerDate(1, 0).then((low) => {
         expect(low).toBeDefined();
         //expect(high.Date).toBe("2020-12-07 08:30:00");;
     });
 });
 
-test('Get lecture higher date between lectures', () => {
+test('Get lecture higher date between lectures', async() => {
     dao.getHigherDate(1, 0).then((high) => {
         expect(high).toBeDefined();
         //expect(high.Date).toBe("2020-12-07 08:30:00");;
     });
 });
 
-test('Get tot for lectures in week' , () => {
+test('Get tot for lectures in week' , async() => {
     dao.getStatistics(2, "week", range1, range2).then((week) => {
         expect(week).toBeDefined();
         expect(week.SumBooked).toBe(3);
@@ -389,7 +340,7 @@ test('Get tot for lectures in week' , () => {
     });
 });
 
-test('Get tot for lectures in month' , () => {
+test('Get tot for lectures in month' , async() => {
     dao.getStatistics(2, "month", range1, range2).then((month) => {
         expect(month).toBeDefined();
         expect(month.SumBooked).toBe(4);
@@ -398,7 +349,7 @@ test('Get tot for lectures in month' , () => {
     });   
 });
 
-test('Get tot for lectures in lecture' , () => {
+test('Get tot for lectures in lecture' , async() => {
     dao.getLowerDate(1, 0).then((low) => {
         expect(low).toBeDefined();
         //expect(high.Date).toBe("2020-12-07 08:30:00");;

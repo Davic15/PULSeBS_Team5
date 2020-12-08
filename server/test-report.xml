@@ -1,44 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
   <file path="D:\Documenti\PULSeBS_Team5\server\tests\API.test.js">
-    <testCase name="User is defined" duration="2"/>
-    <testCase name="User is undefined" duration="0"/>
+    <testCase name="User is defined" duration="702"/>
+    <testCase name="User is undefined" duration="220"/>
     <testCase name="User by id is defined" duration="1"/>
-    <testCase name="User by id is empty" duration="0"/>
-    <testCase name="Get lectures for student 6" duration="1"/>
-    <testCase name="Get lectures for student 8" duration="0"/>
-    <testCase name="Check course for student 6" duration="1"/>
-    <testCase name="Check course for student 8" duration="0"/>
+    <testCase name="User by id is empty" duration="1"/>
+    <testCase name="Get lectures for student 6" duration="3">
+      <failure message="Error: expect(received).toBe(expected) // Object.is equality"><![CDATA[Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 4
+Received: 3
+    at Object.<anonymous> (D:\Documenti\PULSeBS_Team5\server\tests\API.test.js:70:29)]]></failure>
+    </testCase>
+    <testCase name="Get lectures for student 8" duration="1"/>
+    <testCase name="Check course for student 6" duration="4">
+      <failure message="Error: expect(received).toBeTruthy()"><![CDATA[Error: expect(received).toBeTruthy()
+
+Received: false
+    at Object.<anonymous> (D:\Documenti\PULSeBS_Team5\server\tests\API.test.js:81:23)]]></failure>
+    </testCase>
+    <testCase name="Check course for student 8" duration="1"/>
     <testCase name="Check course for teacher 7" duration="1"/>
-    <testCase name="Get lecture info" duration="0"/>
+    <testCase name="Get lecture info" duration="1">
+      <failure message="Error: expect(received).toBe(expected) // Object.is equality"><![CDATA[Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "Web Applications"
+Received: undefined
+    at Object.<anonymous> (D:\Documenti\PULSeBS_Team5\server\tests\API.test.js:97:29)]]></failure>
+    </testCase>
     <testCase name="Get student info fulfilled" duration="1"/>
-    <testCase name="Get student info empty" duration="0"/>
-    <testCase name="Book lecture for student enrolled" duration="1"/>
+    <testCase name="Get student info empty" duration="1"/>
+    <testCase name="Book lecture for student enrolled" duration="2"/>
     <testCase name="Book lecture for student not enrolled" duration="1"/>
-    <testCase name="Check bookings for students enrolled" duration="0"/>
+    <testCase name="Check bookings for students enrolled" duration="2"/>
     <testCase name="Check bookings for students not enrolled" duration="0"/>
-    <testCase name="Book lecture for student already booked" duration="1"/>
+    <testCase name="Book lecture for student already booked" duration="4">
+      <failure message="Error: expect(received).toBe(expected) // Object.is equality"><![CDATA[Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "already booked"
+Received: "student not enrolled"
+    at Object.<anonymous> (D:\Documenti\PULSeBS_Team5\server\tests\API.test.js:136:24)]]></failure>
+    </testCase>
     <testCase name="Get seats count for lecture" duration="0"/>
-    <testCase name="Get lectures for teacher" duration="1"/>
+    <testCase name="Get lectures for teacher" duration="0"/>
     <testCase name="Get students for lecture" duration="1"/>
     <testCase name="Get bookings for student" duration="0"/>
     <testCase name="Get next student in line" duration="0"/>
     <testCase name="Cancel lecture for teacher" duration="1"/>
     <testCase name="Move lecture to remote for teacher" duration="0"/>
-    <testCase name="Book canceled lecture for student enrolled" duration="1"/>
+    <testCase name="Book canceled lecture for student enrolled" duration="0"/>
     <testCase name="Insert teachers in db" duration="0"/>
     <testCase name="Insert students in db" duration="1"/>
     <testCase name="Insert courses in db" duration="0"/>
     <testCase name="Insert enrollments in db" duration="0"/>
     <testCase name="Insert lectures in db" duration="0"/>
-    <testCase name="Insert classrooms in db" duration="1"/>
+    <testCase name="Insert classrooms in db" duration="0"/>
     <testCase name="Get lectures for course in time range" duration="0"/>
     <testCase name="Get courses of teacher" duration="1"/>
     <testCase name="Get all courses" duration="0"/>
-    <testCase name="Get lecture lower date between lectures" duration="1"/>
-    <testCase name="Get lecture higher date between lectures" duration="52"/>
-    <testCase name="Get tot for lectures in week" duration="1"/>
-    <testCase name="Get tot for lectures in month" duration="0"/>
-    <testCase name="Get tot for lectures in lecture" duration="2"/>
+    <testCase name="Get lecture lower date between lectures" duration="0"/>
+    <testCase name="Get lecture higher date between lectures" duration="37"/>
+    <testCase name="Get tot for lectures in week" duration="0"/>
+    <testCase name="Get tot for lectures in month" duration="1"/>
+    <testCase name="Get tot for lectures in lecture" duration="1"/>
   </file>
 </testExecutions>
