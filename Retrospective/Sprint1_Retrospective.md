@@ -9,7 +9,6 @@ TEAM 5 Retrospective
 - Number of stories done :8 
 - Total points committed : 29
 - Total points done : 26 
-- Nr of hours planned vs spent (as a team) 
 - Unit Tests passing: 22
 - Code review completed
 - Code present on VCS
@@ -32,7 +31,7 @@ TEAM 5 Retrospective
 | _tot_  |    49     |   29     |      63h 10m      |    54h 30m       |
    
 
-- Averae hours per task : 1h 10m
+- Average hours per task : 1h 10m
 - Standard deviation per task : 5h 5m
 - Total task estimation error ratio: sum of total hours estimation / sum of total hours spent from previous table= 1.16
 
