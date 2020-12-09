@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <mate charest="utf-8" />
+        <title>Contact Tracing Report</title>
+    </head>
+    <body>
+        <h1>User List</h1>
+        <table style="font-size:30px" cellspacing="10">
+            <thead>
+                <th>
+                    Id
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Surname
+                </th>
+                <th>
+                    Email
+                </th>
+                <th>
+                    Type
+                </th>
+            </thead>
+            <tbody>
+                {{#each users}}
+                <tr>
+                <td>{{this.UserId}}</td>
+                <td>{{this.Name}}</td>
+                <td>{{this.Surname}}</td>
+                <td>{{this.Email}}</td>
+                <td>{{this.Type}}</td>
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
+    </body>
+</html>

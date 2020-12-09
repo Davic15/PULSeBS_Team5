@@ -6,6 +6,8 @@ const jwt=require('express-jwt');
 const jsonwebtoken=require('jsonwebtoken');
 const cookieParser=require('cookie-parser');
 const upload = require('express-fileupload');
+const pdf = require("pdf-creator-node");
+const fs = require('fs');
 
 
 const jwtSecret = '6xvL4xkAAbG49hcXf5GIYSvkDICiUAR6EdR5dLdwW7hMzUjjMUe9t6M5kSAYxsvX';
@@ -23,7 +25,7 @@ dao.initializeDBConn('./PULSEeBS_db');
 emaildeamon.startEmailDeamon()
 
 //public API
-
+app.use(express.static('files'));
 
 //WARNING TO BE REMOVED IN FINAL VERSION!!!!!
 app.post('/api/hash',(req,res)=>{
@@ -621,6 +623,134 @@ app.post('/api/uploadcsv/classrooms', (req,res) => {
     }).catch((err)=>{
         res.status(500).json(
             {errors:[{'param':'Server','msg':err}]}
+        );
+    });
+});
+
+app.post('/api/generateContactTracingReport/JSON',(req,res)=>{
+    const user=req.user && req.user.user;
+    const student_id=req.body.student_id;
+    const date=req.body.date;
+    const role = req.user && req.user.role;
+
+
+    if(!checkRole(role,['booking-manager'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    dao.generateContactTracingReport(student_id,date).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
+app.post('/api/generateContactTracingReport/PDF',(req,res)=>{
+    const user=req.user && req.user.user;
+    const student_id=req.body.student_id;
+    const date=req.body.date;
+    const role = req.user && req.user.role;
+
+
+    if(!checkRole(role,['booking-manager'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    dao.generateContactTracingReport(student_id,date).then((obj)=>{
+       /* try {
+            fs.unlinkSync("./report.pdf")
+            //file removed
+          } catch(err) {
+            res.status(500).json(
+                {errors:[{'param':'Server','msg':'Error deleting pdf'}]}
+            );
+          }*/
+          
+        let html = fs.readFileSync('template.html', 'utf8');
+        let users=obj;
+        var document = {
+            html: html,
+            data: {
+                users: users
+            },
+            path: "./files/report.pdf"
+        };
+
+        var options = {
+            format: "A4",
+            orientation: "portrait",
+            border: "10mm",
+            header: {
+                height: "45mm",
+                contents: '<div style="text-align: center;font-size:30px"><h1>Contact Tracing</h1></div>'
+            },
+            "footer": {
+                "height": "28mm",
+                "contents": {
+                first: 'Politecnico di Torino',
+                2: 'Second page', // Any page number is working. 1-based index
+                default: '<span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
+                last: 'Last Page'
+            }
+        }};
+        console.log("OK");
+        pdf.create(document, options)
+        .then(r => {
+            console.log("ok")
+            res.json({"path":"http://localhost:3001/report.pdf"});
+            })
+            .catch(error => {
+                res.status(500).json(
+                    {errors:[{'param':'Server','msg':'Error creating pdf'}]}
+                );
+        });
+        }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
+app.post('/api/generateContactTracingReport/CSV',(req,res)=>{
+    const user=req.user && req.user.user;
+    const student_id=req.body.student_id;
+    const date=req.body.date;
+    const role = req.user && req.user.role;
+
+
+    if(!checkRole(role,['booking-manager'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    dao.generateContactTracingReport(student_id,date).then((obj)=>{
+        let str="Id,Name,Surname,Email,Type\n"
+        for(o of obj){
+            str+=o.UserId+","
+            str+=o.Name+","
+            str+=o.Surname+","
+            str+=o.Email+","
+            str+=o.Type+"\n"
+        }
+        fs.writeFile('./files/report.csv', str, function (err) {
+            if (err) {
+                res.status(500).json(
+                    {errors:[{'param':'Server','msg':'Error creating file'}]}
+                );
+            }
+            res.json({"path":"http://localhost:3001/report.csv"});
+          });
+
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
         );
     });
 });

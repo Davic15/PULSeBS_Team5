@@ -1257,3 +1257,49 @@ exports.addClassrooms=function(data) {
         resolve(classrooms_added);
     });
 }
+
+
+exports.generateContactTracingReport=function(student_id,date){
+
+    return new Promise(
+        (resolve,reject)=>{
+            const sql = "SELECT User.UserId,Email,Name,Surname,Type FROM User,(SELECT DISTINCT(StudentId) as UserId FROM Booking where "+
+                        "Present=1 and not StudentId=? and "+
+                        "LectureId IN(SELECT Booking.LectureId FROM Booking,Lecture where Booking.LectureId=Lecture.LectureId and StudentId=? "+
+                        "and Present=1 and date(Start)> date(?,'-14 day') and date(Start)< date(?,'+14 day')) "+
+                        "UNION "+
+                        "SELECT Course.TeacherId as UserId FROM Course,Lecture where Course.CourseId=Lecture.CourseId "+
+                        "and Lecture.LectureId in (SELECT Booking.LectureId FROM Booking,Lecture where Booking.LectureId=Lecture.LectureId and StudentId=? "+
+                        "and Present=1 and date(Start)> date(?,'-14 day') and date(Start)< date(?,'+14 day'))) as T "+
+                        "WHERE T.UserId=User.UserId"
+
+                db.all(sql,[student_id,student_id,date,date,student_id,date,date],(err,rows)=>{
+                    if (err){
+                        console.log(err);
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        
+                        resolve([])
+                    }else {
+                        let ret_array=[];
+                        
+                        for (let row of rows){
+                            ret_array.push(
+                                {
+                                    UserId:row.UserId,
+                                    Email:row.Email,
+                                    Name:row.Name,
+                                    Surname:row.Surname,
+                                    Type:row.Type
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
+
