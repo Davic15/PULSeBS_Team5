@@ -336,7 +336,7 @@ app.post('/api/stats/:type/:groupby', async (req,res)=>{
                 obj.AvgBooked=row.SumBooked/(row.TotHeld+row.TotCancelled);            
                 obj.AvgQueue=row.SumQueue/(row.TotHeld+row.TotCancelled);              
                 obj.AvgCancelled=row.SumCancelled/row.TotLectures;      
-                obj.AvgPresent=row.SumPresent/row.TotHeld;          
+                obj.AvgPresent=row.SumPresent/(row.TotHeld+row.TotCancelled);          
             }
             ret_array.push(Object.assign({},obj));        
         }
