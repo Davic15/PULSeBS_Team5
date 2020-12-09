@@ -755,4 +755,45 @@ app.post('/api/generateContactTracingReport/CSV',(req,res)=>{
     });
 });
 
+app.post('/api/putRestrictions',(req,res)=>{
+    //const user=req.user && req.user.user;
+    const role = req.user && req.user.role;
+    const year=req.body.year
+    const date=req.body.date
+    if(!checkRole(role,['officer'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    dao.putRestrictions(year,date).then((obj)=>{
+        console.log(obj);
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
+app.post('/api/liftRestrictions',(req,res)=>{
+    //const user=req.user && req.user.user;
+    const role = req.user && req.user.role;
+    const year=req.body.year
+    const date=req.body.date
+    if(!checkRole(role,['officer'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+
+    dao.liftRestrictions(year,date).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));

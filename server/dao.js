@@ -1303,3 +1303,46 @@ exports.generateContactTracingReport=function(student_id,date){
     );
 }
 
+exports.putRestrictions=function(year,date){
+    return new Promise((resolve,reject)=>{      
+        const sql="UPDATE Lecture "+
+                "Set "+
+                "State=1,"+
+                "Restricted=1 "+
+                "where "+
+                "State=0 and Restricted=0 "+
+                "and date(Start)>=date(?) "+
+                "and CourseId in (SELECT CourseId from Course where Year>=?)";
+        db.run(sql,[date,year],
+            function(err){ 
+                if(err){
+                    console.log(err)
+                    reject(err);
+                }else
+                    resolve("OK");
+                
+            });       
+    });
+}
+
+exports.liftRestrictions=function(year,date){
+    return new Promise((resolve,reject)=>{      
+        const sql="UPDATE Lecture "+
+                "Set "+
+                "State=0,"+
+                "Restricted=0 "+
+                "where "+
+                "State=1 and Restricted=1 "+
+                "and date(Start)>=date(?) "+
+                "and CourseId in (SELECT CourseId from Course where Year>=?)";
+        db.run(sql,[date,year],
+            function(err){ 
+                if(err){
+                    reject(err);
+                }else
+                    resolve("OK");
+                
+            });       
+    });
+}
+
