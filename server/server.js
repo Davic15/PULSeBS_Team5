@@ -573,9 +573,12 @@ app.post('/api/uploadcsv/enrollments', (req,res) => {
     });
 });
 
-app.post('/api/uploadcsv/lectures', (req,res) => {
+app.post('/api/uploadcsv/lectures/:datestart/:dateend', (req,res) => {
     const file = req.files.lectures;    //lectures must be the input name in template
     const role = req.user && req.user.role;
+    const date_start=req.params.datestart;
+    const date_end=req.params.dateend;
+
 
     if(!checkRole(role,['officer'])){
         res.status(401).json(
@@ -590,8 +593,7 @@ app.post('/api/uploadcsv/lectures', (req,res) => {
         );
         return;
     }
-
-    dao.addLectures(file.data).then((obj)=>{
+    dao.addLectures(file.data,date_start,date_end).then((obj)=>{
         res.json(obj);
     }).catch((err)=>{
         res.status(500).json(

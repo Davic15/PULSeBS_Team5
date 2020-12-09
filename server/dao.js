@@ -2,6 +2,8 @@ const sqlite=require('sqlite3').verbose();
 const bcrypt=require('bcrypt');
 const emailer=require('./email');
 const csvtojson = require('csvtojson');
+const moment=require('moment');
+const { ftruncateSync } = require('fs');
 
 
 const bookinConfirmationText="<p>Dear %NAME% %SURNAME%,<br/>you were succesfully booked to lecture \"%LECTURE%\"  %TIME%, classroom %CLASSROOM%<p>";
@@ -1012,7 +1014,7 @@ exports.addTeachers=function(data) {
             const sql = "INSERT INTO User(UserId, Email, Password, Name, Surname, City, Birthday, SSN, Type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
             
             try {
-                await db.run(sql, [user.Number, user.OfficialEmail, 'password', user.GivenName, user.Surname, 'NULL', 'NULL', user.SSN, 'teacher']);
+                await db.run(sql, [user.Number, user.OfficialEmail, '$2b$10$E60Ykpqvvi.Bt4ZJnCRDKuJcfRN/dQg4sbq5aBjPWnyd/C7xofOlO', user.GivenName, user.Surname, 'NULL', 'NULL', user.SSN, 'teacher']);
                 users_added.push(user);
             }
             catch (ex) {
@@ -1042,7 +1044,7 @@ exports.addStudents=function(data) {
             const sql = "INSERT INTO User(UserId, Email, Password, Name, Surname, City, Birthday, SSN, Type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
             
             try {
-                await db.run(sql, [user.Id, user.OfficialEmail, 'password', user.Name, user.Surname, user.City, user.Birthday, user.SSN, 'student']);
+                await db.run(sql, [user.Id, user.OfficialEmail, '$2b$10$E60Ykpqvvi.Bt4ZJnCRDKuJcfRN/dQg4sbq5aBjPWnyd/C7xofOlO', user.Name, user.Surname, user.City, user.Birthday, user.SSN, 'student']);
                 users_added.push(user);
             }
             catch (ex) {
@@ -1143,14 +1145,13 @@ exports.addCourses=function(data) {
 }
 
 //add lectures to db from csv
-exports.addLectures=function(data) {
+exports.addLectures=function(data,date_start,date_end) {
     return new Promise(async (resolve, reject) => {
         const lectures_added = [];
         let lectures_to_add = [];
 
         let csvData = data.toString('utf8');
         lectures_to_add = await csvtojson().fromString(csvData);
-
         for (let lecture of lectures_to_add) {
             if (lecture.Code == undefined || lecture.Room == undefined || lecture.Day == undefined || lecture.Seats == undefined || lecture.Time == undefined) {
                 lectures_added.push({"error":"Make sure the csv is correctly written"});
@@ -1163,28 +1164,20 @@ exports.addLectures=function(data) {
                 courses_added.push({"error":"Make sure course with id " + lecture.Code + " exists"});
                 continue;
             }
-            
             const classroom = await this.getClassRoomById(lecture.Room);
-
-            if (classroom == undefined) {
-                //courses_added.push({"error":"Make sure classroom with id " + lecture.Room + " exists"});
-                //continue;
+            if (classroom.length===0) {
                 const sql1 = "INSERT INTO Classroom(ClassroomId, Seats, Name) VALUES (?, ?, ?)";
 
                 try {
-                    await db.run(sql1, [lecture.Room, lecture.Seats, '']);
+                    await db.run(sql1, [lecture.Room, lecture.Seats, lecture.Room]);
                 }
                 catch (ex) {
                     lectures_added.push({"error":ex});
                 }
             }
 
-            const start = lecture.Time.split('-')[0];
-            const end = lecture.Time.split('-')[1];
-            const hh1 = start.split(':')[0];
-            const hh2 = start.split(':')[1];
-            const mm1 = end.split(':')[0];
-            const mm2 = end.split(':')[1];
+            const start_time = lecture.Time.split('-')[0];
+            const end_time = lecture.Time.split('-')[1];
             let day = 0;
 
             switch(lecture.Day) {
@@ -1210,23 +1203,35 @@ exports.addLectures=function(data) {
                     day = 6;
                     break;
             }
-
-            //work in progress...
-
-            const sql2 = "INSERT INTO Lecture(CourseId, Start, End, State, ClassRoomId) VALUES (?, ?, ?, ?, ?)";
-            
-            try {
-                await db.run(sql2, [lecture.Code, lecture.Start, lecture.End, 0, lecture.Room]);
-                lectures_added.push(lecture);
+            curDate=moment(date_start);
+            endDate=moment(date_end).add(1,'days');
+            while(curDate.day()!=day){
+                curDate=curDate.add(1,'days');
             }
-            catch (ex) {
-                lectures_added.push({"error":ex});
+            let sql2;
+            let Start="";
+            let End="";
+            while(endDate.isAfter(curDate)){
+                sql2= "INSERT INTO Lecture(CourseId, Start, End, State, ClassRoomId) VALUES (?, ?, ?, ?, ?)";
+                Start=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+start_time
+                End=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+end_time
+                try {
+                    ret=await db.run(sql2, [lecture.Code,Start, End, 0, lecture.Room]);
+                    lectures_added.push(lecture);
+                }
+                catch (ex) {
+                    lectures_added.push({"error":ex});
+                }
+                curDate=curDate.add(7,'days');
             }
+           
         }
 
         resolve(lectures_added);
     });
 }
+
+
 
 //add classrooms to db from csv
 exports.addClassrooms=function(data) {
