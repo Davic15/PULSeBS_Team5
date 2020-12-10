@@ -243,7 +243,7 @@ test('Book canceled lecture for student enrolled', async() => {
 });
 
 test('Insert teachers in db', async() => {
-    fs.readFile("teachersCSV.csv", "utf8", (err, data) => {
+    fs.readFile("Professors.csv", "utf8", (err, data) => {
         dao.addTeachers(data).then((added) => {
             expect(added).toBeDefined();
             expect(added.length).toBe(2);
@@ -252,7 +252,7 @@ test('Insert teachers in db', async() => {
 });
 
 test('Insert students in db', async() => {
-    fs.readFile("studentsCSV.csv", "utf8", (err, data) => {
+    fs.readFile("Students.csv", "utf8", (err, data) => {
         dao.addStudents(data).then((added) => {
             expect(added).toBeDefined();
             expect(added.length).toBe(2);
@@ -261,7 +261,7 @@ test('Insert students in db', async() => {
 });
 
 test('Insert courses in db', async() => {
-    fs.readFile("coursesCSV.csv", "utf8", (err, data) => {
+    fs.readFile("Courses.csv", "utf8", (err, data) => {
         dao.addCourses(data).then((added) => {
             expect(added).toBeDefined();
             expect(added.length).toBe(2);
@@ -270,7 +270,7 @@ test('Insert courses in db', async() => {
 });
 
 test('Insert enrollments in db', async() => {
-    fs.readFile("enrollmentsCSV.csv", "utf8", (err, data) => {
+    fs.readFile("Enrollment.csv", "utf8", (err, data) => {
         dao.addEnrollments(data).then((added) => {
             expect(added).toBeDefined();
             expect(added.length).toBe(2);
@@ -279,17 +279,8 @@ test('Insert enrollments in db', async() => {
 });
 
 test('Insert lectures in db', async() => {
-    fs.readFile("lecturesCSV.csv", "utf8", (err, data) => {
+    fs.readFile("Schedule.csv", "utf8", (err, data) => {
         dao.addLectures(data).then((added) => {
-            expect(added).toBeDefined();
-            expect(added.length).toBe(4);
-        });
-    });
-});
-
-test('Insert classrooms in db', async() => {
-    fs.readFile("classroomsCSV.csv", "utf8", (err, data) => {
-        dao.addClassrooms(data).then((added) => {
             expect(added).toBeDefined();
             expect(added.length).toBe(4);
         });

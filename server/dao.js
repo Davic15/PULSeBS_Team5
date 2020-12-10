@@ -1064,26 +1064,48 @@ exports.addEnrollments=function(data) {
         let csvData = data.toString('utf8');
         enrollments_to_add = await csvtojson().fromString(csvData);
 
+        let checkedIds = [];
+        let skippedIds = [];
+        let checkedCourses = [];
+        let skippedCourses = [];
+
         for (let enrollment of enrollments_to_add) {
             if (enrollment.Code == undefined || enrollment.Student == undefined) {
                 enrollments_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
             }
 
-            const user = await this.getUserById(enrollment.Student);
+            let id = enrollment.Student;
+            if (!checkedIds.includes(id)) {
+                const user = await this.getUserById(id);
+                checkedIds.push(id);
 
-            if (user == undefined) {
-                enrollments_added.push({"error":"Make sure student with id " + enrollment.Student + " exists"});
+                if (user == undefined) {
+                    enrollments_added.push({"error":"Make sure student with id " + id + " exists"});
+                    skippedIds.push(id);
+                    continue;
+                }
+                else if (user.Type != "student") {
+                    enrollments_added.push({"error":"The user with id " + id + " is not a student"});
+                    skippedIds.push(id);
+                    continue;
+                }
+            }
+            else if (skippedIds.includes(id)) {
                 continue;
             }
-            else if (user.Type != "student") {
-                enrollments_added.push({"error":"The user with id " + enrollment.Student + " is not a student"});
-                continue;
+
+            if (!checkedCourses.includes(enrollment.Code)) {
+                const course = await this.getCourseById(enrollment.Code);
+                checkedCourses.push(enrollment.Code);
+
+                if (course == undefined) {
+                    enrollments_added.push({"error":"Make sure course with id " + enrollment.Code + " exists"});
+                    skippedCourses.push(enrollment.Code);
+                    continue;
+                }
             }
-
-            const course = await this.getCourseById(enrollment.Code);
-
-            if (course == undefined) {
+            else if (skippedCourses.includes(enrollment.Code)) {
                 enrollments_added.push({"error":"Make sure course with id " + enrollment.Code + " exists"});
                 continue;
             }
@@ -1112,20 +1134,32 @@ exports.addCourses=function(data) {
         let csvData = data.toString('utf8');
         courses_to_add = await csvtojson().fromString(csvData);
 
+        let checkedIds = [];
+        let skippedIds = [];
+
         for (let course of courses_to_add) {
             if (course.Code == undefined || course.Year == undefined || course.Semester == undefined || course.Course == undefined || course.Teacher == undefined) {
                 courses_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
             }
 
-            const user = await this.getUserById(course.Teacher);
+            let id = course.Teacher;
+            if (!checkedIds.includes(id)) {
+                const user = await this.getUserById(id);
+                checkedIds.push(id);
 
-            if (user == undefined) {
-                courses_added.push({"error":"Make sure teacher with id " + course.Teacher + " exists"});
-                continue;
+                if (user == undefined) {
+                    courses_added.push({"error":"Make sure teacher with id " + id + " exists"});
+                    skippedIds.push(id);
+                    continue;
+                }
+                else if (user.Type != "teacher") {
+                    courses_added.push({"error":"The user with id " + id + " is not a teacher"});
+                    skippedIds.push(id);
+                    continue;
+                }
             }
-            else if (user.Type != "teacher") {
-                courses_added.push({"error":"The user with id " + course.Teacher + " is not a teacher"});
+            else if (skippedIds.includes(id)) {
                 continue;
             }
 
@@ -1152,27 +1186,45 @@ exports.addLectures=function(data,date_start,date_end) {
 
         let csvData = data.toString('utf8');
         lectures_to_add = await csvtojson().fromString(csvData);
+
+        let checkedCourses = [];
+        let skippedCourses = [];
+        let checkedClasses = [];
+
         for (let lecture of lectures_to_add) {
             if (lecture.Code == undefined || lecture.Room == undefined || lecture.Day == undefined || lecture.Seats == undefined || lecture.Time == undefined) {
                 lectures_added.push({"error":"Make sure the csv is correctly written"});
                 continue;
             }
 
-            const course = await this.getCourseById(lecture.Code);
+            if (!checkedCourses.includes(lecture.Code)) {
+                const course = await this.getCourseById(lecture.Code);
+                checkedCourses.push(lecture.Code);
 
-            if (course == undefined) {
+                if (course == undefined) {
+                    courses_added.push({"error":"Make sure course with id " + lecture.Code + " exists"});
+                    skippedCourses.push(lecture.Code);
+                    continue;
+                }
+            }
+            else if (skippedCourses.includes(lecture.Code)) {
                 courses_added.push({"error":"Make sure course with id " + lecture.Code + " exists"});
                 continue;
             }
-            const classroom = await this.getClassRoomById(lecture.Room);
-            if (classroom.length===0) {
-                const sql1 = "INSERT INTO Classroom(ClassroomId, Seats, Name) VALUES (?, ?, ?)";
 
-                try {
-                    await db.run(sql1, [lecture.Room, lecture.Seats, lecture.Room]);
-                }
-                catch (ex) {
-                    lectures_added.push({"error":ex});
+            if (!checkedClasses.includes(lecture.Room)) {
+                const classroom = await this.getClassRoomById(lecture.Room);
+                checkedClasses.push(lecture.Room);
+
+                if (classroom.length===0) {
+                    const sql1 = "INSERT INTO Classroom(ClassroomId, Seats, Name) VALUES (?, ?, ?)";
+
+                    try {
+                        await db.run(sql1, [lecture.Room, lecture.Seats, lecture.Room]);
+                    }
+                    catch (ex) {
+                        lectures_added.push({"error":ex});
+                    }
                 }
             }
 
@@ -1230,39 +1282,6 @@ exports.addLectures=function(data,date_start,date_end) {
         resolve(lectures_added);
     });
 }
-
-
-
-//add classrooms to db from csv
-exports.addClassrooms=function(data) {
-    return new Promise(async (resolve, reject) => {
-        const classrooms_added = [];
-        let classrooms_to_add = [];
-
-        let csvData = data.toString('utf8');
-        classrooms_to_add = await csvtojson().fromString(csvData);
-
-        for (let classroom of classrooms_to_add) {
-            if (classroom.Seats == undefined || classroom.Name == undefined) {
-                classrooms_added.push({"error":"Make sure the csv is correctly written"});
-                continue;
-            }
-
-            const sql = "INSERT INTO Classroom(Seats, Name) VALUES (?, ?)"; //id is autoincrement
-
-            try {
-                await db.run(sql, [classroom.Seats, classroom.Name]);
-                classrooms_added.push(classroom);
-            }
-            catch (ex) {
-                classrooms_added.push({"error":ex});
-            }
-        }
-
-        resolve(classrooms_added);
-    });
-}
-
 
 exports.generateContactTracingReport=function(student_id,date){
 
