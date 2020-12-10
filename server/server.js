@@ -681,7 +681,7 @@ app.post('/api/generateContactTracingReport/PDF',(req,res)=>{
             data: {
                 users: users
             },
-            path: "./files/report.pdf"
+            path: "./files/report_"+student_id+".pdf"
         };
 
         var options = {
@@ -705,7 +705,7 @@ app.post('/api/generateContactTracingReport/PDF',(req,res)=>{
         pdf.create(document, options)
         .then(r => {
             console.log("ok")
-            res.json({"path":"http://localhost:3001/report.pdf"});
+            res.json({"path":"http://localhost:3001/report_"+student_id+".pdf"});
             })
             .catch(error => {
                 res.status(500).json(
@@ -741,13 +741,13 @@ app.post('/api/generateContactTracingReport/CSV',(req,res)=>{
             str+=o.Email+","
             str+=o.Type+"\n"
         }
-        fs.writeFile('./files/report.csv', str, function (err) {
+        fs.writeFile('./files/report_'+student_id+'.csv', str, function (err) {
             if (err) {
                 res.status(500).json(
                     {errors:[{'param':'Server','msg':'Error creating file'}]}
                 );
             }
-            res.json({"path":"http://localhost:3001/report.csv"});
+            res.json({"path":"http://localhost:3001/report_"+student_id+".csv"});
           });
 
     }).catch((err)=>{
