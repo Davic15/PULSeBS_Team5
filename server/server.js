@@ -609,7 +609,7 @@ app.post('/api/uploadcsv/lectures/:datestart/:dateend', (req,res) => {
     });
 });
 
-app.post('/api/generateContactTracingReport/JSON',(req,res)=>{
+app.post('/api/generateContactTracingReport', (req,res)=>{
     const user=req.user && req.user.user;
     const student_id=req.body.student_id;
     const date=req.body.date;
@@ -623,37 +623,8 @@ app.post('/api/generateContactTracingReport/JSON',(req,res)=>{
     }
 
     dao.generateContactTracingReport(student_id,date).then((obj)=>{
-        res.json(obj);
-    }).catch((err)=>{
-        res.status(500).json(
-            {errors:[{'param':'Server','msg':'Server error'}]}
-        );
-    });
-});
 
-app.post('/api/generateContactTracingReport/PDF',(req,res)=>{
-    const user=req.user && req.user.user;
-    const student_id=req.body.student_id;
-    const date=req.body.date;
-    const role = req.user && req.user.role;
-
-
-    if(!checkRole(role,['booking-manager'])){
-        res.status(401).json(
-            {errors:[{'param':'Server','msg':'Unauthorized'}]}
-        );
-    }
-
-    dao.generateContactTracingReport(student_id,date).then((obj)=>{
-       /* try {
-            fs.unlinkSync("./report.pdf")
-            //file removed
-          } catch(err) {
-            res.status(500).json(
-                {errors:[{'param':'Server','msg':'Error deleting pdf'}]}
-            );
-          }*/
-          
+        /////////////////
         let html = fs.readFileSync('template.html', 'utf8');
         let users=obj;
         var document = {
@@ -661,7 +632,7 @@ app.post('/api/generateContactTracingReport/PDF',(req,res)=>{
             data: {
                 users: users
             },
-            path: "./files/report_"+student_id+".pdf"
+            path: "./files/report_"+student_id+"_"+date+".pdf"
         };
 
         var options = {
@@ -681,59 +652,72 @@ app.post('/api/generateContactTracingReport/PDF',(req,res)=>{
                 last: 'Last Page'
             }
         }};
-        console.log("OK");
         pdf.create(document, options)
         .then(r => {
-            console.log("ok")
-            res.json({"path":"http://localhost:3001/report_"+student_id+".pdf"});
+            //res.json({"path":"http://localhost:3001/report_"+student_id+"_"+date+".pdf"});
+
+            /************ */
+            let str="Id,Name,Surname,Email,Type\n"
+                for(o of obj){
+                    str+=o.UserId+","
+                    str+=o.Name+","
+                    str+=o.Surname+","
+                    str+=o.Email+","
+                    str+=o.Type+"\n"
+                }
+                fs.writeFile('./files/report_'+student_id+'_'+date+'.csv', str, function (err) {
+                    if (err) {
+                        res.status(500).json(
+                            {errors:[{'param':'Server','msg':'Error creating file'}]}
+                        );
+                    }
+                    
+                    const pathPDF="http://localhost:3001/report_"+student_id+"_"+date+".pdf";
+                    const pathCSV="http://localhost:3001/report_"+student_id+"_"+date+".csv";
+                    if(dao.insertReport(student_id,date,pathPDF,pathCSV)==0){
+                        res.status(500).json(
+                            {errors:[{'param':'Server','msg':'Error storing report'}]}
+                        );
+                    }
+
+                    res.json({
+                        "JSON":obj,
+                        "PathPDF":pathPDF,
+                        "PathCSV":pathCSV
+                    });
+                });
+            /************* */
+
             })
             .catch(error => {
                 res.status(500).json(
                     {errors:[{'param':'Server','msg':'Error creating pdf'}]}
                 );
         });
-        }).catch((err)=>{
+        ///////////////
+
+
+
+        //res.json(obj);
+    }).catch((err)=>{
         res.status(500).json(
             {errors:[{'param':'Server','msg':'Server error'}]}
         );
     });
 });
 
-app.post('/api/generateContactTracingReport/CSV',(req,res)=>{
-    const user=req.user && req.user.user;
-    const student_id=req.body.student_id;
-    const date=req.body.date;
+
+app.get('/api/reports',(req,res)=>{
     const role = req.user && req.user.role;
-
-
     if(!checkRole(role,['booking-manager'])){
         res.status(401).json(
             {errors:[{'param':'Server','msg':'Unauthorized'}]}
         );
     }
-
-    dao.generateContactTracingReport(student_id,date).then((obj)=>{
-        let str="Id,Name,Surname,Email,Type\n"
-        for(o of obj){
-            str+=o.UserId+","
-            str+=o.Name+","
-            str+=o.Surname+","
-            str+=o.Email+","
-            str+=o.Type+"\n"
-        }
-        fs.writeFile('./files/report_'+student_id+'.csv', str, function (err) {
-            if (err) {
-                res.status(500).json(
-                    {errors:[{'param':'Server','msg':'Error creating file'}]}
-                );
-            }
-            res.json({"path":"http://localhost:3001/report_"+student_id+".csv"});
-          });
-
-    }).catch((err)=>{
-        res.status(500).json(
-            {errors:[{'param':'Server','msg':'Server error'}]}
-        );
+    dao.getReports().then((obj)=>{
+        res.json(obj);
+    }).catch((e)=>{
+        res.status(400).json({errors:[{'param':'Server','msg':e}]});
     });
 });
 

@@ -1327,6 +1327,51 @@ exports.generateContactTracingReport=function(student_id,date){
     );
 }
 
+exports.insertReport=async function(student_id,date,pathPDF,pathCSV){
+    const sql = "INSERT INTO Report(StudentId,Date,PathPDF,PathCSV) VALUES (?, ?,?,?)"; 
+    
+    await db.run(sql, [student_id,date,pathPDF,pathCSV]);     
+            try {
+                return 1
+            }
+            catch (ex) {
+                return 0
+            }
+}
+
+exports.getReports=function(){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql="SELECT * FROM Report";
+                db.all(sql,(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        resolve([])
+                    }else {
+                       let ret_array=[];
+                        for (let row of rows){
+                            ret_array.push(
+                                {
+                                    StudentId:row.StudentId,
+                                    Date:row.Date,
+                                    PathPDF:row.PathPDF,
+                                    pathCSV:row.PathCSV
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
+
+
+
+
 exports.putYearRestrictions=function(year){
     return new Promise((resolve,reject)=>{      
         const sql="UPDATE RestrictedYear "+
