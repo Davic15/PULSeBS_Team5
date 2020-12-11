@@ -36,6 +36,13 @@ app.post('/api/hash',(req,res)=>{
     res.json(hash);
 });
 /////////////////////////////
+app.get('/api/years',(req,res)=>{
+    dao.getRestrictedYears().then((obj)=>{
+        res.json(obj);
+    }).catch((e)=>{
+        res.status(400).json({errors:[{'param':'Server','msg':e}]});
+    });
+});
 
 app.get('/api/seats/:lecture_id',(req,res)=>{
     dao.getSeatsCount(req.params.lecture_id).then((obj)=>{
@@ -770,5 +777,7 @@ app.post('/api/liftRestrictions',(req,res)=>{
         );
     });
 });
+
+
 
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));

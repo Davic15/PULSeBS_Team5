@@ -1327,8 +1327,27 @@ exports.generateContactTracingReport=function(student_id,date){
     );
 }
 
-exports.putRestrictions=function(year,date){
+exports.putYearRestrictions=function(year){
     return new Promise((resolve,reject)=>{      
+        const sql="UPDATE RestrictedYear "+
+                "Set "+
+                "Restricted=1 "+
+                "where "+
+                "Year>=? "
+        db.run(sql,[year],
+            function(err){ 
+                if(err){
+                    console.log(err)
+                    reject(err);
+                }else
+                    resolve("OK");
+                
+            });       
+    });
+}
+exports.putRestrictions=  function(year,date){
+    return new Promise(async (resolve,reject)=>{      
+        await this.putYearRestrictions(year)
         const sql="UPDATE Lecture "+
                 "Set "+
                 "State=1,"+
@@ -1349,8 +1368,28 @@ exports.putRestrictions=function(year,date){
     });
 }
 
-exports.liftRestrictions=function(year,date){
+exports.liftYearRestrictions=function(year){
     return new Promise((resolve,reject)=>{      
+        const sql="UPDATE RestrictedYear "+
+                "Set "+
+                "Restricted=0 "+
+                "where "+
+                "Year>=? "
+        db.run(sql,[year],
+            function(err){ 
+                if(err){
+                    console.log(err)
+                    reject(err);
+                }else
+                    resolve("OK");
+                
+            });       
+    });
+}
+
+exports.liftRestrictions=function(year,date){
+    return new Promise(async(resolve,reject)=>{  
+        await this.liftYearRestrictions(year)    
         const sql="UPDATE Lecture "+
                 "Set "+
                 "State=0,"+
@@ -1370,3 +1409,30 @@ exports.liftRestrictions=function(year,date){
     });
 }
 
+exports.getRestrictedYears=function(student_id){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql="SELECT * FROM RestrictedYear";
+                db.all(sql,[student_id],(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        resolve([])
+                    }else {
+                       let ret_array=[];
+                        for (let row of rows){
+                            ret_array.push(
+                                {
+                                    Year:row.Year,
+                                    Restricted:row.Restricted
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
