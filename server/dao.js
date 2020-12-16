@@ -1,9 +1,11 @@
-const sqlite=require('sqlite3').verbose();
+const sqlite=require('sqlite3');
 const bcrypt=require('bcrypt');
 const emailer=require('./email');
 const csvtojson = require('csvtojson');
 const moment=require('moment');
 const { ftruncateSync } = require('fs');
+const { open } = require('sqlite');
+const Database = require('sqlite-async');
 
 
 const bookinConfirmationText="<p>Dear %NAME% %SURNAME%,<br/>you were succesfully booked to lecture \"%LECTURE%\"  %TIME%, classroom %CLASSROOM%<p>";
@@ -25,6 +27,15 @@ exports.initializeDBConn = function(dbName) {
 
     return db;
 }
+
+/*exports.initializeDBConn = async function(dbName) {
+    try {
+        db = await Database.open(dbName);
+    } 
+    catch (error) {
+        throw Error('can not access sqlite database');
+    }
+}*/
 
 exports.getUser=function(username){
     return new Promise(
@@ -1148,7 +1159,7 @@ exports.addCourses=function(data) {
                 const user = await this.getUserById(id);
                 checkedIds.push(id);
 
-                if (user == undefined) {
+                if (user.length === 0) {
                     courses_added.push({"error":"Make sure teacher with id " + id + " exists"});
                     skippedIds.push(id);
                     continue;
