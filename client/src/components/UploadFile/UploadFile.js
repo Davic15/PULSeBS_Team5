@@ -80,25 +80,25 @@ class UploadFile extends React.Component {
             <div>
                 <h2>Data upload</h2>
                 <div class="row">
-                    <div className="col-4"><UploadBar onSubmit={this.uploadTeachers} title="Teachers"/></div>
-                    <div className="col-4"><UploadBar onSubmit={this.uploadCourses} title="Courses"/></div>
-                    <div className="col-4"><UploadBar onSubmit={this.uploadStudents} title="Students"/></div>
-                    <div className="col-4"><UploadBar onSubmit={this.uploadEnrollments} title="Enrollments"/></div>
-                    <div className="col-4">
-                        <UploadBar onSubmit={this.uploadLectures} title="Lectures"/>
-                        <label>Start </label>
-                        <DatePicker
-                            minDate={moment().add(1,'days').toDate()}
-                            onChange={this.onStartDateChange}
-                            value={this.state.startDate.toDate()}
-                        /><br/>
-                        <label>End </label>
-                        <DatePicker
-                            minDate={moment().add(1,'days').toDate()}
-                            onChange={this.onEndDateChange}
-                            value={this.state.endDate.toDate()}
-                        />
-                    </div>
+                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadTeachers} title="Teachers"/></div>
+                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadCourses} title="Courses"/></div>
+                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadStudents} title="Students"/></div>
+                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadEnrollments} title="Enrollments"/></div>
+                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadLectures} title="Lectures"/></div>
+                        <div className="col-12 center-box">
+                            <label className="move-label">Start </label>
+                            <DatePicker
+                                minDate={moment().add(1,'days').toDate()}
+                                onChange={this.onStartDateChange}
+                                value={this.state.startDate.toDate()}
+                            /><br/>
+                            <label className="move-label">End</label>
+                            <DatePicker
+                                minDate={moment().add(1,'days').toDate()}
+                                onChange={this.onEndDateChange}
+                                value={this.state.endDate.toDate()}
+                            />
+                        </div>
                 </div>
             </div>
         </>;
@@ -128,7 +128,9 @@ class UploadBar extends React.Component {
                     <div className="form-group text-center">
                         <h4>{this.props.title}</h4>
                         <div className="input-group input-file">
-                            <input type="file"
+                            <input type="file" 
+                                className="file-style"
+                                lang="en"
                                 accept=".csv"
                                 onChange={this.onChange}></input>
                             <span className="input-group-btn">

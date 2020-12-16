@@ -6,3 +6,16 @@
     z-index: 9999;
     text-align: center;
 }
+
+.border-box{
+    border-style: groove;
+}
+
+.center-box{
+    text-align: center;
+}
+
+.move-label{
+    display:inline-block; 
+    width: 60px;
+}
