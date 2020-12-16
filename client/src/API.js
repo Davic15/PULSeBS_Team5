@@ -330,6 +330,221 @@ async function getCourseList() {
     });
 }
 
+async function generateContactTracingReport(studentId, date) {
+    date = moment(date).format("YYYY-MM-DD");
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/generateContactTracingReport", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({student_id: studentId, date: date}),
+        }).then((response) => {
+            if (response.ok){
+                resolve({});
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function getReportList() {
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/reports", {
+            method: "GET"
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((reports) => {
+                    resolve(reports);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function putRestrictions(year, date) {
+    date = moment(date).format("YYYY-MM-DD");
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/putRestrictions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({year: year, date: date}),
+        }).then((response) => {
+            if (response.ok){
+                resolve({});
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function liftRestrictions(year, date) {
+    date = moment(date).format("YYYY-MM-DD HH:mm");
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/liftRestrictions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({year: year, date: date}),
+        }).then((response) => {
+            if (response.ok){
+                resolve({});
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function getRestrictedYears() {
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/years", {
+            method: "GET"
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((years) => {
+                    resolve(years);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function uploadTeachers(file) {
+    const data = new FormData();
+    data.append("teachers", file);
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/uploadcsv/teachers", {
+            method: "POST",
+            body: data
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function uploadStudents(file) {
+    const data = new FormData();
+    data.append("students", file);
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/uploadcsv/students", {
+            method: "POST",
+            body: data
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function uploadCourses(file) {
+    const data = new FormData();
+    data.append("courses", file);
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/uploadcsv/courses", {
+            method: "POST",
+            body: data
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function uploadEnrollments(file) {
+    const data = new FormData();
+    data.append("enrollments", file);
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/uploadcsv/enrollments", {
+            method: "POST",
+            body: data
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function uploadLectures(file, start, end) {
+    const data = new FormData();
+    data.append("lectures", file);
+
+    start = moment(start).format("YYYY-MM-DD");
+    end = moment(end).format("YYYY-MM-DD");
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/uploadcsv/lectures/" + start + "/" + end , {
+            method: "POST",
+            body: data
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
 const API = { 
     userLogin, 
     isAuthenticated, 
@@ -345,6 +560,16 @@ const API = {
     getMonthlyStatistics,
     getLectureStatistics,
     getCourseLectures,
-    getCourseList 
+    getCourseList,
+    generateContactTracingReport,
+    getReportList,
+    putRestrictions,
+    liftRestrictions,
+    getRestrictedYears,
+    uploadTeachers,
+    uploadStudents,
+    uploadCourses,
+    uploadEnrollments,
+    uploadLectures 
 };
 export default API;

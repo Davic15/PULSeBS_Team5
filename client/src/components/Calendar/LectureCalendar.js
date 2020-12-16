@@ -1,7 +1,7 @@
 import React from 'react';
 import WeekCalendar from 'react-week-calendar';
 import 'react-week-calendar/dist/style.css';
-import DatePicker from 'react-date-picker'
+import DatePicker from 'react-date-picker';
 
 import './Calendar.css';
 
@@ -36,7 +36,7 @@ class LectureCalendar extends React.Component {
             </div>
             <WeekCalendar 
                 firstDay={start} 
-                numberOfDays={5} 
+                numberOfDays={6} 
                 startTime={moment({h: 8, m: 0})} 
                 endTime={moment({h: 20, m: 0})} 
                 scaleUnit={30} 

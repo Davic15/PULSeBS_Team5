@@ -14,6 +14,9 @@ import LectureCalendarTeacher from './components/Calendar/LectureCalendarTeacher
 import CourseList from "./components/Courses/CourseList";
 import StatisticManager from "./components/Statistics/StatisticManager";
 import StatisticTeacher from "./components/Statistics/StatisticTeacher";
+import ContactTracingList from "./components/ContactTracing/ContactTracingList";
+import UpdateBooking from "./components/UpdateBooking/UpdateBooking";
+import UploadFile from "./components/UploadFile/UploadFile";
 
 class App extends React.Component{
 
@@ -116,6 +119,18 @@ class App extends React.Component{
                     {this.state.authUser && this.state.authUser.Type === "teacher" && <StatisticTeacher courseId={props.match.params.courseId}/>}
                     {this.state.authUser && this.state.authUser.Type === "booking-manager" && <StatisticManager courseId={props.match.params.courseId}/>}
                 </>)}/>
+                <Route path="/reports">
+                    
+                    <ContactTracingList />
+                </Route>
+                <Route path="/restrictions">
+                   
+                    <UpdateBooking />
+                </Route>
+                <Route path="/upload">
+                    
+                    <UploadFile />
+                </Route>
                 <Route path="/">
                     <Redirect to="/login" />
                 </Route>

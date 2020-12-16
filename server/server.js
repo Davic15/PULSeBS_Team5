@@ -476,6 +476,7 @@ app.post('/api/uploadcsv/teachers', (req,res) => {
     const file = req.files.teachers;    //teachers must be the input name in template
     const role = req.user && req.user.role;
 
+    console.log(JSON.stringify(req.files));
     if(!checkRole(role,['officer'])){
         res.status(401).json(
             {errors:[{'param':'Server','msg':'Unauthorized'}]}
@@ -641,7 +642,7 @@ app.post('/api/generateContactTracingReport', (req,res)=>{
             border: "10mm",
             header: {
                 height: "45mm",
-                contents: '<div style="text-align: center;font-size:30px"><h1>Contact Tracing</h1></div>'
+                contents: '<div style="text-align: center;font-size:15px"><h1>Contact Tracing</h1></div>'
             },
             "footer": {
                 "height": "28mm",
@@ -724,8 +725,9 @@ app.get('/api/reports',(req,res)=>{
 app.post('/api/putRestrictions',(req,res)=>{
     //const user=req.user && req.user.user;
     const role = req.user && req.user.role;
-    const year=req.body.year
-    const date=req.body.date
+    const year=req.body.year;
+    const date=req.body.date;
+    console.log("Year: "+year + " Date: "+date);
     if(!checkRole(role,['officer'])){
         res.status(401).json(
             {errors:[{'param':'Server','msg':'Unauthorized'}]}
@@ -745,8 +747,8 @@ app.post('/api/putRestrictions',(req,res)=>{
 app.post('/api/liftRestrictions',(req,res)=>{
     //const user=req.user && req.user.user;
     const role = req.user && req.user.role;
-    const year=req.body.year
-    const date=req.body.date
+    const year=req.body.year;
+    const date=req.body.date;
     if(!checkRole(role,['officer'])){
         res.status(401).json(
             {errors:[{'param':'Server','msg':'Unauthorized'}]}

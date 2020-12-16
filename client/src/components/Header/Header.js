@@ -16,6 +16,9 @@ function Header() {
                     </a>
                     {context.authUser && (/*context.authUser.Type === "student" ||*/ context.authUser.Type === "teacher") && <Link to="/lectures"><Button variant="primary">Lectures</Button> </Link>}
                     {context.authUser && (context.authUser.Type === "booking-manager" || context.authUser.Type === "teacher") && <Link to="/courses"><Button variant="primary">Courses</Button></Link>}
+                    {context.authUser && (context.authUser.Type === "booking-manager") && <Link to="/reports"><Button variant="primary">Reports</Button></Link>}
+                    {context.authUser && (context.authUser.Type === "officer") && <Link to="/restrictions"><Button variant="primary">Restrictions</Button></Link>}
+                    {context.authUser && (context.authUser.Type === "officer") && <Link to="/upload"><Button variant="primary">Upload</Button></Link>}
                     {context.authUser && <Link to="/login" onClick={context.logoutUser}><Button variant="danger">Logout</Button></Link>}
                 </nav>
                 {context.authUser && <div><br/><h1>Welcome {context.authUser.Name} {context.authUser.Surname}</h1><br/></div>}

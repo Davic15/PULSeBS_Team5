@@ -1378,9 +1378,10 @@ exports.putYearRestrictions=function(year){
                 "Set "+
                 "Restricted=1 "+
                 "where "+
-                "Year>=? "
+                "Year=? "
         db.run(sql,[year],
             function(err){ 
+                console.log("IT WORKS");
                 if(err){
                     console.log(err)
                     reject(err);
@@ -1400,7 +1401,7 @@ exports.putRestrictions=  function(year,date){
                 "where "+
                 "State=0 and Restricted=0 "+
                 "and date(Start)>=date(?) "+
-                "and CourseId in (SELECT CourseId from Course where Year>=?)";
+                "and CourseId in (SELECT CourseId from Course where Year=?)";
         db.run(sql,[date,year],
             function(err){ 
                 if(err){
@@ -1419,7 +1420,7 @@ exports.liftYearRestrictions=function(year){
                 "Set "+
                 "Restricted=0 "+
                 "where "+
-                "Year>=? "
+                "Year=? "
         db.run(sql,[year],
             function(err){ 
                 if(err){
@@ -1442,7 +1443,7 @@ exports.liftRestrictions=function(year,date){
                 "where "+
                 "State=1 and Restricted=1 "+
                 "and date(Start)>=date(?) "+
-                "and CourseId in (SELECT CourseId from Course where Year>=?)";
+                "and CourseId in (SELECT CourseId from Course where Year=?)";
         db.run(sql,[date,year],
             function(err){ 
                 if(err){
