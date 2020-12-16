@@ -4,9 +4,6 @@ const emailer=require('./email');
 const csvtojson = require('csvtojson');
 const moment=require('moment');
 const { ftruncateSync } = require('fs');
-const { open } = require('sqlite');
-const Database = require('sqlite-async');
-
 
 const bookinConfirmationText="<p>Dear %NAME% %SURNAME%,<br/>you were succesfully booked to lecture \"%LECTURE%\"  %TIME%, classroom %CLASSROOM%<p>";
 const bookinEnqueueText="<p>Dear %NAME% %SURNAME%,<br/>the lecture you were trying to book (lecture %LECTURE% at %TIME%, classroom %CLASSROOM%) is full </br> you will be notified if a seats will be available <p>";
@@ -27,15 +24,6 @@ exports.initializeDBConn = function(dbName) {
 
     return db;
 }
-
-/*exports.initializeDBConn = async function(dbName) {
-    try {
-        db = await Database.open(dbName);
-    } 
-    catch (error) {
-        throw Error('can not access sqlite database');
-    }
-}*/
 
 exports.getUser=function(username){
     return new Promise(
@@ -895,7 +883,7 @@ exports.getLowerDate=function(lecture_id, n_lectures){
         (resolve,reject)=>{
         const sql="SELECT Start from(SELECT Lecture.LectureId AS LectureId, Lecture.Start AS Start,Lecture.State AS State "+
                     "FROM Lecture "+
-                    "where date(Start) <= (select date(Start) From lecture where LectureId=?) "+
+                    "where date(Start) < (select date(Start) From lecture where LectureId=?) "+
                     "and CourseId=(select CourseId From lecture where LectureId=?) "+
                     "order by Start DESC "+
                     "limit ?) as T "+
@@ -921,7 +909,7 @@ exports.getHigherDate=function(lecture_id, n_lectures){
         (resolve,reject)=>{
         const sql="SELECT Start from(SELECT Lecture.LectureId AS LectureId, Lecture.Start AS Start,Lecture.State AS State "+
                     "FROM Lecture "+
-                    "where date(Start) >= (select date(Start) From lecture where LectureId=?) "+
+                    "where date(Start) > (select date(Start) From lecture where LectureId=?) "+
                     "and CourseId=(select CourseId From lecture where LectureId=?) "+
                     "order by Start "+
                     "limit ?) as T "+
@@ -1271,13 +1259,16 @@ exports.addLectures=function(data,date_start,date_end) {
             while(curDate.day()!=day){
                 curDate=curDate.add(1,'days');
             }
+            curDate=curDate.add(1,'days');
             let sql2;
             let Start="";
             let End="";
             while(endDate.isAfter(curDate)){
                 sql2= "INSERT INTO Lecture(CourseId, Start, End, State, ClassRoomId) VALUES (?, ?, ?, ?, ?)";
-                Start=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+start_time
-                End=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+end_time
+                //Start=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+start_time
+                Start=curDate.format("YYYY-MM-DD")+' '+start_time;
+                //End=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+end_time
+                End=curDate.format("YYYY-MM-DD")+' '+end_time;
                 try {
                     ret=await db.run(sql2, [lecture.Code,Start, End, 0, lecture.Room]);
                     lectures_added.push(lecture);
@@ -1341,13 +1332,13 @@ exports.generateContactTracingReport=function(student_id,date){
 exports.insertReport=async function(student_id,date,pathPDF,pathCSV){
     const sql = "INSERT INTO Report(StudentId,Date,PathPDF,PathCSV) VALUES (?, ?,?,?)"; 
     
-    await db.run(sql, [student_id,date,pathPDF,pathCSV]);     
-            try {
-                return 1
-            }
-            catch (ex) {
-                return 0
-            }
+    try {
+        await db.run(sql, [student_id,date,pathPDF,pathCSV]);     
+        return 1;
+    }
+    catch (ex) {
+        return 0;
+    }
 }
 
 exports.getReports=function(){
@@ -1380,9 +1371,6 @@ exports.getReports=function(){
     );
 }
 
-
-
-
 exports.putYearRestrictions=function(year){
     return new Promise((resolve,reject)=>{      
         const sql="UPDATE RestrictedYear "+
@@ -1402,7 +1390,8 @@ exports.putYearRestrictions=function(year){
             });       
     });
 }
-exports.putRestrictions=  function(year,date){
+
+exports.putRestrictions=function(year,date){
     return new Promise(async (resolve,reject)=>{      
         await this.putYearRestrictions(year)
         const sql="UPDATE Lecture "+
@@ -1466,11 +1455,11 @@ exports.liftRestrictions=function(year,date){
     });
 }
 
-exports.getRestrictedYears=function(student_id){
+exports.getRestrictedYears=function(){
     return new Promise(
         (resolve,reject)=>{
             const sql="SELECT * FROM RestrictedYear";
-                db.all(sql,[student_id],(err,rows)=>{
+                db.all(sql,(err,rows)=>{
                     if (err){
                         reject(err);
                     }

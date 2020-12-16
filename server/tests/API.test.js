@@ -23,6 +23,8 @@ const range1 = moment(monday.setHours(0, 0, 0, 0)).format("YYYY-MM-DD");
 const range2 = moment(friday.setHours(23, 59, 59, 0)).format("YYYY-MM-DD");
 
 const stats = ["DELETE FROM sqlite_sequence",
+            "DELETE FROM Report",
+            "DELETE FROM RestrictedYear",
             "DELETE FROM Booking", 
             "DELETE FROM Classroom",
             "DELETE FROM Lecture",
@@ -207,7 +209,7 @@ test('Book lecture for student already booked', async() => {
 });
 
 test('Get seats count for lecture', async() => {
-    const seats = await dao.getSeatsCount(28);  //controllare funzione
+    const seats = await dao.getSeatsCount(28);
     expect(seats).toBeDefined();
     expect(seats.BookedSeats).toBe(0);
     expect(seats.TotalSeats).toBe(120);
@@ -249,7 +251,6 @@ test('Get bookings for student 900000', async() => {
     expect(book).toBeDefined();
 
     const bookings = await dao.getBookings("900000");
-    //console.log(bookings)
     expect(bookings).toBeDefined();
     //expect(bookings.length).toBe(1);
 
@@ -323,58 +324,97 @@ test('Get all courses', async() => {
 test('Get lecture lower date between lectures', async() => {
     const low = await dao.getLowerDate(25, 2);
     expect(low).toBeDefined();
-    expect(low.Date).toBe("2020-12-21 11:30");
+    expect(low.Date).toBe("2020-12-15 16:00");
 });
 
 test('Get lecture higher date between lectures', async() => {
     const high = await dao.getHigherDate(25, 2);
     expect(high).toBeDefined();
-    expect(high.Date).toBe("2020-12-28 11:30");
+    expect(high.Date).toBe("2020-12-29 16:00");
 });
 
 test('Get tot for lectures in week' , async() => {
-    const week = await dao.getStatistics("XY1211", "week", range1, range2);
+    const book = await dao.bookLecture("900000", 29);
+    expect(book).toBeDefined();
+    const week = await dao.getStatistics("XY1211", "week", "2020-10-12", "2020-10-16");
     expect(week).toBeDefined();
-    console.log(week)
-    expect(week.SumBooked).toBe(3);
-    expect(week.TotLectures).toBe(2);
-    expect(week.TotHeld).toBe(2);
+    expect(week.length).toBe(1);
+    expect(week[0].SumBooked).toBe(1);
+    expect(week[0].SumCancelled).toBe(2);
+    expect(week[0].TotLectures).toBe(2);
+    expect(week[0].TotHeld).toBe(2);
 });
 
 test('Get tot for lectures in month' , async() => {
-    const month = await dao.getStatistics("XY1211", "month", range1, range2);
+    const month = await dao.getStatistics("XY1211", "month", "2020-10-01", "2020-10-31");
     expect(month).toBeDefined();
-    expect(month.SumBooked).toBe(4);
-    expect(month.TotLectures).toBe(2);
-    expect(month.TotHeld).toBe(2);
+    expect(month.length).toBe(1);
+    expect(month[0].SumBooked).toBe(1);
+    expect(month[0].SumCancelled).toBe(2);
+    expect(month[0].TotLectures).toBe(2);
+    expect(month[0].TotHeld).toBe(2);
 });
 
 test('Get tot for lectures in lecture' , async() => {
-    const low = await dao.getLowerDate(25, 2);
+    const low = await dao.getLowerDate(13, 2);
     expect(low).toBeDefined();
-    expect(low.Date).toBe("2020-12-06 08:30:00");
+    expect(low.Date).toBe("2020-10-05 11:30");
 
-    const high = await dao.getHigherDate(25, 2);
+    const high = await dao.getHigherDate(13, 2);
     expect(high).toBeDefined();
-    expect(high.Date).toBe("2020-12-06 08:30:00");
+    expect(high.Date).toBe("2020-10-19 11:30");
 
-    const stat = await dao.getStatistics("XY1211", "lecture", range1, range2);
-    expect(stat).toBeDefined();
-    expect(stat.SumBooked).toBe(1);
-    expect(stat.TotLectures).toBe(1);
-    expect(stat.TotHeld).toBe(1);
+    const lec = await dao.getStatistics("XY1211", "lecture", low.Date, high.Date);
+    expect(lec).toBeDefined();
+    expect(lec.length).toBe(2);
+    expect(lec[0].SumBooked).toBe(0);
+    expect(lec[0].SumCancelled).toBe(2);
+    expect(lec[0].TotLectures).toBe(1);
+    expect(lec[0].TotHeld).toBe(1);
 });
 
 test('Contact tracing for student "900001', async() => {
-    const tracing = await dao.generateContactTracingReport("900001", range1);
+    const book1 = await dao.bookLecture("900000", 13);
+    expect(book1).toBeDefined();
+    const book2 = await dao.bookLecture("900001", 13);
+    expect(book2).toBeDefined();
+    const tracing = await dao.generateContactTracingReport("900001", "2020-10-20");
+    expect(tracing).toBeDefined();
+    expect(tracing.length).toBe(2);
+});
+
+test('Insert report for student "900001"', async() => {
+    const pathPDF="http://localhost:3001/report_900001"+ "_" + "2020-10-20" + ".pdf";
+    const pathCSV="http://localhost:3001/report_900001"+ "_" + "2020-10-20" + ".csv";
+    const report = await dao.insertReport("900001", "2020-10-20", pathPDF, pathCSV);
+    expect(report).toBeDefined();
+    expect(report).toBe(1);
 });
 
 test('Put restrictions', async() => {
     const res = await dao.putRestrictions(1, range2);
+    expect(res).toBeDefined();
+    expect(res).toBe("OK");
+});
+
+test('Get restricted years with restrictions', async() => {
+    const res = await dao.getRestrictedYears();
+    expect(res).toBeDefined();
+    expect(res.length).toBe(5);
+    expect(res[0].Restricted).toBe(1);
 });
 
 test('Lift restrictions', async() => {
     const lift = await dao.liftRestrictions(1, range2);
+    expect(lift).toBeDefined();
+    expect(lift).toBe("OK");
+});
+
+test('Get restricted years with no restrictions', async() => {
+    const res = await dao.getRestrictedYears();
+    expect(res).toBeDefined();
+    expect(res.length).toBe(5);
+    expect(res[0].Restricted).toBe(0);
 });
 
 /*afterAll(async() => {
