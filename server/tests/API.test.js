@@ -246,18 +246,6 @@ test('Get students for lecture', async() => {
     expect(cancel).toBe("OK");
 });
 
-test('Get bookings for student 900000', async() => {
-    const book = await dao.bookLecture("900000", 28);
-    expect(book).toBeDefined();
-
-    const bookings = await dao.getBookings("900000");
-    expect(bookings).toBeDefined();
-    //expect(bookings.length).toBe(1);
-
-    const cancel = await dao.cancelBooking(book.BookingId);
-    expect(cancel).toBe("OK");
-});
-
 test('Get next student in line', async() => {
     const book1 = await dao.bookLecture("900000", 13);
     expect(book1).toBeDefined();
@@ -274,6 +262,18 @@ test('Get next student in line', async() => {
 
     const cancel2 = await dao.cancelBooking(book2.BookingId);
     expect(cancel2).toBe("OK");
+});
+
+test('Get bookings for student 900000', async() => {
+    const book = await dao.bookLecture("900000", 28);
+    expect(book).toBeDefined();
+
+    const bookings = await dao.getBookings("900000");
+    expect(bookings).toBeDefined();
+    //expect(bookings.length).toBe(1);
+
+    const cancel = await dao.cancelBooking(book.BookingId);
+    expect(cancel).toBe("OK");
 });
 
 test('Cancel lecture for authorized teacher', async() => {
@@ -417,13 +417,20 @@ test('Get restricted years with no restrictions', async() => {
     expect(res[0].Restricted).toBe(0);
 });
 
-/*afterAll(async() => {
-    for (stat of stats) {
+afterAll(async() => {
+    /*for (stat of stats) {
         try {
             await db.run(stat);
         }
         catch(e) {
             console.log(e);
         }
+    }*/
+
+    try {
+        await db.run(stats[3]);
     }
-});*/
+    catch(e) {
+        console.log(e);
+    }
+});

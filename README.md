@@ -263,8 +263,8 @@
 The best way to launch the app from docker is to retreive the image from Docker Hub and launch it.
 Simply run the following commands:
 
-* ### docker pull jackgorga/pulsebs_team5:release1
-* ### docker run -p 3000:3000 -p 3001:3001 jackgorga/pulsebs_team5:release1
+* ### docker pull jackgorga/pulsebs_team5:release2
+* ### docker run -p 3000:3000 -p 3001:3001 jackgorga/pulsebs_team5:release2
 
 The alternative is to download the code form Github, open the terminal in the main root and launch the following commands:
 
