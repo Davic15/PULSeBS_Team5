@@ -1396,7 +1396,7 @@ exports.putRestrictions=function(year,date){
         await this.putYearRestrictions(year)
         const sql="UPDATE Lecture "+
                 "Set "+
-                "State=1,"+
+                "State=2,"+
                 "Restricted=1 "+
                 "where "+
                 "State=0 and Restricted=0 "+
@@ -1441,7 +1441,7 @@ exports.liftRestrictions=function(year,date){
                 "State=0,"+
                 "Restricted=0 "+
                 "where "+
-                "State=1 and Restricted=1 "+
+                "State=2 and Restricted=1 "+
                 "and date(Start)>=date(?) "+
                 "and CourseId in (SELECT CourseId from Course where Year=?)";
         db.run(sql,[date,year],
