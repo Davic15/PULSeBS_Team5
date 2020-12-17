@@ -11,37 +11,37 @@
     <testCase name="Check course for student &quot;900001&quot;" duration="1"/>
     <testCase name="Check course for teacher &quot;d0000&quot;" duration="1"/>
     <testCase name="Check course for teacher &quot;d0001&quot;" duration="0"/>
-    <testCase name="Get lecture info" duration="0"/>
+    <testCase name="Get lecture info" duration="1"/>
     <testCase name="Get student info fulfilled" duration="1"/>
     <testCase name="Get student info empty" duration="1"/>
-    <testCase name="Book lecture for student enrolled" duration="145"/>
+    <testCase name="Book lecture for student enrolled" duration="125"/>
     <testCase name="Book lecture for student not enrolled" duration="1"/>
     <testCase name="Check bookings for students enrolled" duration="2"/>
     <testCase name="Check bookings for students not enrolled" duration="1"/>
-    <testCase name="Book lecture for student already booked" duration="1"/>
-    <testCase name="Get seats count for lecture" duration="217"/>
+    <testCase name="Book lecture for student already booked" duration="2"/>
+    <testCase name="Get seats count for lecture" duration="239"/>
     <testCase name="Get lectures for teacher" duration="1"/>
-    <testCase name="Get students for lecture" duration="221"/>
-    <testCase name="Get bookings for student 900000" duration="234"/>
-    <testCase name="Get next student in line" duration="610"/>
+    <testCase name="Get students for lecture" duration="199"/>
+    <testCase name="Get next student in line" duration="499"/>
+    <testCase name="Get bookings for student 900000" duration="201"/>
     <testCase name="Cancel lecture for authorized teacher" duration="2"/>
     <testCase name="Move lecture to remote for authorized teacher" duration="1"/>
     <testCase name="Move lecture to remote for unauthorized teacher" duration="1"/>
     <testCase name="Book canceled lecture for student enrolled" duration="2"/>
     <testCase name="Get lectures for course in time range" duration="1"/>
-    <testCase name="Get courses of teacher d9000" duration="116"/>
+    <testCase name="Get courses of teacher d9000" duration="83"/>
     <testCase name="Get courses of teacher d9001" duration="1"/>
     <testCase name="Get all courses" duration="1"/>
     <testCase name="Get lecture lower date between lectures" duration="1"/>
-    <testCase name="Get lecture higher date between lectures" duration="46"/>
-    <testCase name="Get tot for lectures in week" duration="130"/>
+    <testCase name="Get lecture higher date between lectures" duration="38"/>
+    <testCase name="Get tot for lectures in week" duration="104"/>
     <testCase name="Get tot for lectures in month" duration="1"/>
-    <testCase name="Get tot for lectures in lecture" duration="4"/>
-    <testCase name="Contact tracing for student &quot;900001" duration="250"/>
-    <testCase name="Insert report for student &quot;900001&quot;" duration="0"/>
-    <testCase name="Put restrictions" duration="444"/>
-    <testCase name="Get restricted years with restrictions" duration="1"/>
-    <testCase name="Lift restrictions" duration="243"/>
+    <testCase name="Get tot for lectures in lecture" duration="3"/>
+    <testCase name="Contact tracing for student &quot;900001" duration="184"/>
+    <testCase name="Insert report for student &quot;900001&quot;" duration="1"/>
+    <testCase name="Put restrictions" duration="343"/>
+    <testCase name="Get restricted years with restrictions" duration="7"/>
+    <testCase name="Lift restrictions" duration="181"/>
     <testCase name="Get restricted years with no restrictions" duration="1"/>
   </file>
 </testExecutions>
