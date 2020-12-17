@@ -6,58 +6,79 @@ import API from '../../API';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactLoading from 'react-loading';
 import DatePicker from 'react-date-picker';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 
 const moment = require("moment");
 
 class UploadFile extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {loading: false, startDate: moment().add(1,'days'), endDate: moment().add(1,'days')};
+        const tomorrow = moment().add(1,'days').hour(0).minute(0).second(0).millisecond(0);
+        this.state = {loading: false, startDate: tomorrow, endDate: moment(tomorrow).add(1,'days'), showModal: false, results: {added: 0, errors: 0}};
     }
 
     uploadTeachers = (file) => {
         this.setState({loading: true});
+        this.openModal();
         API.uploadTeachers(file)
-        .then(() => {
-            console.log("OK");
+        .then((obj) => {
+            this.setResults(obj);
             this.setState({loading: false});
         }).catch((err) => console.log(err));
     }
 
     uploadStudents = (file) => {
         this.setState({loading: true});
+        this.openModal();
         API.uploadStudents(file)
-        .then(() => {
-            console.log("OK");
+        .then((obj) => {
+            this.setResults(obj);
             this.setState({loading: false});
         }).catch((err) => console.log(err));
     }
 
     uploadCourses = (file) => {
         this.setState({loading: true});
+        this.openModal();
         API.uploadCourses(file)
-        .then(() => {
-            console.log("OK");
+        .then((obj) => {
+            this.setResults(obj);
             this.setState({loading: false});
         }).catch((err) => console.log(err));
     }
 
     uploadEnrollments = (file) => {
         this.setState({loading: true});
+        this.openModal();
         API.uploadEnrollments(file)
-        .then(() => {
-            console.log("OK");
+        .then((obj) => {
+            this.setResults(obj);
             this.setState({loading: false});
         }).catch((err) => console.log(err));
     }
 
     uploadLectures = (file) => {
         this.setState({loading: true});
-        API.uploadLectures(file)
-        .then(() => {
-            console.log("OK");
+        this.openModal();
+        API.uploadLectures(file, this.state.startDate, this.state.endDate)
+        .then((obj) => {
+            this.setResults(obj);
             this.setState({loading: false});
         }).catch((err) => console.log(err));
+    }
+
+    setResults = (obj) => {
+        let added = 0;
+        let errors = 0;
+
+        for(let row of obj) {
+            if(row.error === undefined)
+                added++;
+            else
+                errors++;
+        }
+        this.setState({results: {added: added, errors: errors}});
     }
 
     onStartDateChange = (value) => {
@@ -68,37 +89,65 @@ class UploadFile extends React.Component {
         this.setState({endDate: moment(value)});
     }
 
+    /*{this.state.loading && <div className="whitescreen">
+    <div style={{margin: "auto", height: 667, width:375}}>
+        <ReactLoading type={"spinningBubbles"} color={"gray"} height={667} width={375}/>
+        <h4>Loading</h4>
+    </div>
+    
+    </div>}*/
+
+    closeModal = () => this.setState({ showModal: false});
+    openModal = () => this.setState({ showModal: true});
+
     render() {
         return <>
-            {this.state.loading && <div className="whitescreen">
-                <div style={{margin: "auto", height: 667, width:375}}>
-                    <ReactLoading type={"spinningBubbles"} color={"gray"} height={667} width={375}/>
-                    <h4>Loading</h4>
-                </div>
-                
-            </div>}
             <div>
+                <Modal show={this.state.showModal} onHide={() => {}}>
+                    <Modal.Dialog scrollable={true} style={{width:"500px", height: "500px"}}>
+                        <Modal.Header>
+                            <Modal.Title>Data upload</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            {this.state.loading && <>
+                                <ReactLoading type={"spinningBubbles"} color={"gray"} height={222} width={125}/>
+                                <h4>Loading...</h4> 
+                            </>}
+                            {!(this.state.loading) && <>
+                                <h4>Upload complete</h4>
+                                <p>{this.state.results.added +" records added"}</p>
+                                <p>{this.state.results.errors +" errors"}</p>
+                            </>}
+                        </Modal.Body>
+                        <Modal.Footer>
+                            {!this.state.loading && <Button variant="secondary" onClick={this.closeModal}>Close</Button>}
+                        </Modal.Footer>
+                    </Modal.Dialog>
+                </Modal>
                 <h2>Data upload</h2>
                 <div class="row">
-                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadTeachers} title="Teachers"/></div>
-                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadCourses} title="Courses"/></div>
-                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadStudents} title="Students"/></div>
-                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadEnrollments} title="Enrollments"/></div>
-                    <div className="col-4 border-box"><UploadBar onSubmit={this.uploadLectures} title="Lectures"/></div>
-                        <div className="col-12 center-box">
+                    <div className="col-4 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadTeachers} title="Teachers"/></div></div>
+                    <div className="col-4 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadCourses} title="Courses"/></div></div>
+                    <div className="col-4 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadStudents} title="Students"/></div></div>
+                    <div className="col-4 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadEnrollments} title="Enrollments"/></div></div>
+                    <div className="col-4 mpad"><div className="border-box">
+                        <UploadBar onSubmit={this.uploadLectures} title="Lectures"/>
+                        <div className="center-box">
                             <label className="move-label">Start </label>
                             <DatePicker
-                                minDate={moment().add(1,'days').toDate()}
+                                minDate={moment().hour(0).minute(0).second(0).millisecond(0).toDate()}
                                 onChange={this.onStartDateChange}
                                 value={this.state.startDate.toDate()}
                             /><br/>
                             <label className="move-label">End</label>
                             <DatePicker
-                                minDate={moment().add(1,'days').toDate()}
+                                minDate={moment().add(1,'days').hour(0).minute(0).second(0).millisecond(0).toDate()}
                                 onChange={this.onEndDateChange}
                                 value={this.state.endDate.toDate()}
                             />
                         </div>
+                    </div></div>
+  
                 </div>
             </div>
         </>;

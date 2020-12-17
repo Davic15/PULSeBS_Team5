@@ -115,20 +115,21 @@ class App extends React.Component{
                     {this.state.authUser && (this.state.authUser.Type === "teacher" || this.state.authUser.Type === "booking-manager") && <CourseList />}
                 </Route>
                 <Route path='/statistics/:courseId' render={(props) => (<>
+                    {!this.state.authUser && <Redirect to="/login" />}
                     {this.state.authUser && this.state.authUser.Type === "student" && <Redirect to="/courses" />}
                     {this.state.authUser && this.state.authUser.Type === "teacher" && <StatisticTeacher courseId={props.match.params.courseId}/>}
                     {this.state.authUser && this.state.authUser.Type === "booking-manager" && <StatisticManager courseId={props.match.params.courseId}/>}
                 </>)}/>
                 <Route path="/reports">
-                    
+                    {!this.state.authUser && <Redirect to="/login" />}  
                     <ContactTracingList />
                 </Route>
                 <Route path="/restrictions">
-                   
+                    {!this.state.authUser && <Redirect to="/login" />}
                     <UpdateBooking />
                 </Route>
                 <Route path="/upload">
-                    
+                    {!this.state.authUser && <Redirect to="/login" />}
                     <UploadFile />
                 </Route>
                 <Route path="/">

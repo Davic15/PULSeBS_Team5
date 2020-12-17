@@ -8,7 +8,7 @@ import {colors, descriptions} from "./CalendarMisc";
 import {getWeek} from '../../Functions';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-
+import ReactTooltip from 'react-tooltip';
 
 import './Calendar.css';
 
@@ -119,20 +119,23 @@ class LectureCalendarTeacher extends React.Component {
         const value = props.value;
         const lecture = JSON.parse(value);
     
-        return <div className="lecture">
-            <div className="lecture-tag" style={{backgroundColor:this.getColorCode(lecture)}}>
-                <b>{lecture.CourseName}</b>
+        return <>
+            <div className="lecture" data-tip={this.getDescription(lecture)}>
+                <div className="lecture-tag" style={{backgroundColor:this.getColorCode(lecture)}}>
+                    <b>{lecture.CourseName}</b>
+                </div>
+                <div className="lecture-body">
+                    <p>
+                        {start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
+                        {!(this.isRemote(lecture)) && <>
+                            {lecture.ClassroomName}<br/>
+                            {lecture.BookingCount+"/"+lecture.Seats}<br/>
+                        </>}
+                    </p>
+                </div>
             </div>
-            <div className="lecture-body">
-                <p>
-                    {start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
-                    {!(this.isRemote(lecture)) && <>
-                        {lecture.ClassroomName}<br/>
-                        {lecture.BookingCount+"/"+lecture.Seats}<br/>
-                    </>}
-                </p>
-            </div>
-        </div>;
+            <ReactTooltip place="top" type="dark" effect="solid"/>
+        </>;
     }
     
     Modal = (props) => {

@@ -11,7 +11,8 @@ const moment = require('moment');
 class UpdateBooking extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {suspended: [], active: [], date: moment().add(1,'days')};
+        const tomorrow = moment().add(1,'days').hour(0).minute(0).second(0).millisecond(0);
+        this.state = {suspended: [], active: [], date: tomorrow, showModal: false};
     }
 
     componentDidMount() {
@@ -58,17 +59,18 @@ class UpdateBooking extends React.Component {
         this.setState({active: this.state.active, suspended: this.state.suspended});
     }
 
-    onDateChange = (value) => {
+    /*onDateChange = (value) => {
         this.setState({date: moment(value)});
     }
 
+    <DatePicker
+        minDate={moment().add(1,'days').toDate()}
+        onChange={this.onDateChange}
+        value={this.state.date.toDate()}
+    />*/
+
     render() {
         return(<>
-            <DatePicker
-                minDate={moment().add(1,'days').toDate()}
-                onChange={this.onDateChange}
-                value={this.state.date.toDate()}
-            />
             <div class="container center-button">
                 <h3>Active Courses</h3>
                 <div class="row">
@@ -113,7 +115,7 @@ class UpdateBooking extends React.Component {
                                         <input type="checkbox" id="customCheck1" checked={year.checked} onChange={() => this.selectYear(year)}/>
                                     </td>
                                     <td>{year.Year}</td>
-                                    <td>Active</td>
+                                    <td>Suspended</td>
                                 </tr>)}
                             </tbody>
                         </table>

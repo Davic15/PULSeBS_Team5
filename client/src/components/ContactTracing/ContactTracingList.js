@@ -21,8 +21,13 @@ class ContactTracingList extends React.Component{
 
     getReports = () => {
         API.getReportList()
-        .then((reports) => this.setState({reports: reports}))
-        .catch((err) => console.log(err));
+        .then((reports) => {
+            reports.reverse();
+            reports.sort((r1, r2) => {
+                return r2.Date.localeCompare(r1.Date);
+            });
+            this.setState({reports: reports})
+        }).catch((err) => console.log(err));
     }
 
     createReport = () => {
@@ -89,7 +94,7 @@ class ContactTracingList extends React.Component{
                             <tbody>
                                 {this.state.reports.map((report) => <tr>
                                     <td>{report.StudentId}</td>
-                                    <td>{report.Date}</td>
+                                    <td>{moment(report.Date).format("DD/MM/YYYY")}</td>
                                     <td>
                                         <a href={report.PathPDF}>PDF </a>
                                         <a href={report.pathCSV}>CSV</a>

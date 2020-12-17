@@ -33,6 +33,7 @@ class Login extends React.Component{
         <>
             {context.authUser && (context.authUser.Type === "student" || context.authUser.Type === "teacher") && <Redirect to="/lectures" />}
             {context.authUser && context.authUser.Type === "booking-manager" && <Redirect to="/courses" />}
+            {context.authUser && context.authUser.Type === "officer" && <Redirect to="/restrictions" />}
             {!(context.authUser) &&
             <div className="container">
               <div className="row">
