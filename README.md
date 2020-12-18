@@ -256,6 +256,99 @@
                     }]
     Description: returns all courses for techer if authenticated as teacher and all existing courses if authentictated as booking-manager
 
+* ### /api/year
+    Access:public
+    type: GET
+    Body:None
+    Response 200:  [{ **Year**:Integer,
+                        **Restricted**:Integer
+                    }]
+    Description: returns a list of all the years with their state (Restricted or not restricted)
+
+* ### /api/uploadcsv/teachers
+    Access:authenticated /officer
+    type: POST
+    Body:req.files.teachers in formdata
+    Response 200:  an array with added teacher if the insert for that row of the file was successful or an error object if it wasn't
+    Description: insert teacher info contained in the file
+
+* ### /api/uploadcsv/students
+    Access:authenticated /officer
+    type: POST
+    Body:req.files.students in formdata
+    Response 200:  an array with added students if the insert for that row of the file was successful or an error object if it wasn't
+    Description: insert students info contained in the file
+
+* ### /api/uploadcsv/courses
+    Access:authenticated /officer
+    type: POST
+    Body:req.files.courses in formdata
+    Response 200:  an array with added courses if the insert for that row of the file was successful or an error object if it wasn't
+    Description: insert courses and classrooms info contained in the file
+
+* ### /api/uploadcsv/enrollments
+    Access:authenticated /officer
+    type: POST
+    Body:req.files.enrollments in formdata
+    Response 200:  an array with added enrollmentseacher if the insert for that row of the file was successful or an error object if it wasn't
+    Description: insert enrollments info contained in the file (consistency check on courseId and studentId)
+
+* ### /api/uploadcsv/lectures/:datestart/:dateend
+    Access:authenticated /officer
+    type: POST
+    Body:req.files.lectures in formdata
+    Response 200:  an array with added lecture if the insert for that row of the file was successful or an error object if it wasn't
+    Description: insert lectures starting from a weekly schedule in the time range :datedtart-:dateend
+
+* ### /api/generateContactTracingReport
+    Access:authenticated booking-manager
+    type: POST
+    Body:{
+        **student_id**:Integer',
+        **date**:String AAAA-MM-DD}
+    Response 200:  {
+                        "JSON":[
+                             {
+                                UserId:Integer,
+                                Email:String,
+                                Name:String,
+                                Surname:String,
+                                Type:String
+                            }
+                        ],
+                        "PathPDF":String,
+                        "PathCSV":String
+                    }
+    Description: generates contact tracing report starting from a student id and the date he tested positive, returns a list of people who came into contact with him and path ro a pdf and a csv file containig the same information
+
+
+* ### /api/reports
+    Access:authenticated booking-manager
+    type: GET
+    Body:None
+    Response 200:  [{
+                        StudentId:Integer,
+                        Date:String,
+                        PathPDF:String,
+                        pathCSV:String
+                    }]
+    Description: returns a list of all previously generated contact tracing report
+
+* ### /api/putRestrictions
+    Access:authenticated /students
+    type: POST
+    Body:{**year**:Integer,
+        **date**: String AAAA-MM-DD}
+    Response 200: "OK"
+    Description: change lecture state from 'in-presence' to 'remote' for all lectures of courses of the specified year starting from the specified date
+
+* ### /api/liftRestrictions
+    Access:authenticated /students
+    type: POST
+    Body:{**year**:Integer,
+        **date**: String AAAA-MM-DD}
+    Response 200: "OK"
+    Description: change lecture state from 'remotee' to 'remon-lineote' for all lectures of courses of the specified year starting from the specified date (only if they were previously restricted by the officer, it doesn't change lecture set to remote by the teacher )
 
 
 #Docker
