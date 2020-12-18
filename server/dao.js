@@ -1229,7 +1229,7 @@ exports.addLectures=function(data,date_start,date_end) {
 
             const start_time = lecture.Time.split('-')[0];
             const end_time = lecture.Time.split('-')[1];
-            let day = 0;
+            let day = -1;
 
             switch(lecture.Day) {
                 case "Mon":
@@ -1254,12 +1254,13 @@ exports.addLectures=function(data,date_start,date_end) {
                     day = 6;
                     break;
             }
-            curDate=moment(date_start);
-            endDate=moment(date_end).add(1,'days');
+            let curDate=moment(date_start);
+            let endDate=moment(date_end).add(1,'days');
             while(curDate.day()!=day){
                 curDate=curDate.add(1,'days');
             }
             curDate=curDate.add(1,'days');
+
             let sql2;
             let Start="";
             let End="";
@@ -1270,7 +1271,7 @@ exports.addLectures=function(data,date_start,date_end) {
                 //End=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+end_time
                 End=curDate.format("YYYY-MM-DD")+' '+end_time;
                 try {
-                    ret=await db.run(sql2, [lecture.Code,Start, End, 0, lecture.Room]);
+                    let ret=await db.run(sql2, [lecture.Code,Start, End, 0, lecture.Room]);
                     lectures_added.push(lecture);
                 }
                 catch (ex) {

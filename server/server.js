@@ -611,7 +611,7 @@ app.post('/api/uploadcsv/lectures/:datestart/:dateend', (req,res) => {
 });
 
 app.post('/api/generateContactTracingReport', (req,res)=>{
-    const user=req.user && req.user.user;
+    //const user=req.user && req.user.user;
     const student_id=req.body.student_id;
     const date=req.body.date;
     const role = req.user && req.user.role;
@@ -659,7 +659,7 @@ app.post('/api/generateContactTracingReport', (req,res)=>{
 
             /************ */
             let str="Id,Name,Surname,Email,Type\n"
-                for(o of obj){
+                for(let o of obj){
                     str+=o.UserId+","
                     str+=o.Name+","
                     str+=o.Surname+","

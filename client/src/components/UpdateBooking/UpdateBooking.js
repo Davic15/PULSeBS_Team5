@@ -4,7 +4,7 @@ import "./UpdateBooking.css";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Button from 'react-bootstrap/Button';
-import DatePicker from 'react-date-picker';
+//import DatePicker from 'react-date-picker';
 
 const moment = require('moment');
 
