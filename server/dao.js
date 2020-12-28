@@ -1182,7 +1182,7 @@ exports.addLectures=function(data,date_start,date_end) {
     return new Promise(async (resolve, reject) => {
         const lectures_added = [];
         let lectures_to_add = [];
-
+        let schedule_id=null;
         let csvData = data.toString('utf8');
         lectures_to_add = await csvtojson().fromString(csvData);
 
@@ -1227,6 +1227,21 @@ exports.addLectures=function(data,date_start,date_end) {
                 }
             }
 
+            ////
+            
+            let insertSch=function(){
+                return new Promise((res,rej)=>{
+                    const sqlSch = "INSERT INTO Schedule(DayOfWeek,Time,CourseId,ClassRoomId) VALUES (?,?,?,?)";
+                    db.run(sqlSch, [lecture.Day, lecture.Time, lecture.Code,lecture.Room],function (err)  {
+                 
+                        res(this.lastID);
+                        
+                    });
+                });
+            }
+            
+            schedule_id=await insertSch();
+            console.log(JSON.stringify(schedule_id));
             const start_time = lecture.Time.split('-')[0];
             const end_time = lecture.Time.split('-')[1];
             let day = -1;
@@ -1265,13 +1280,13 @@ exports.addLectures=function(data,date_start,date_end) {
             let Start="";
             let End="";
             while(endDate.isAfter(curDate)){
-                sql2= "INSERT INTO Lecture(CourseId, Start, End, State, ClassRoomId) VALUES (?, ?, ?, ?, ?)";
+                sql2= "INSERT INTO Lecture(CourseId, Start, End, State, ClassRoomId,ScheduleId) VALUES (?, ?, ?, ?, ?,?)";
                 //Start=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+start_time
                 Start=curDate.format("YYYY-MM-DD")+' '+start_time;
                 //End=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+end_time
                 End=curDate.format("YYYY-MM-DD")+' '+end_time;
                 try {
-                    await db.run(sql2, [lecture.Code,Start, End, 0, lecture.Room]);
+                    await db.run(sql2, [lecture.Code,Start, End, 0, lecture.Room,schedule_id]);
                     lectures_added.push(lecture);
                 }
                 catch (ex) {
