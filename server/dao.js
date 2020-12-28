@@ -1483,3 +1483,24 @@ exports.getRestrictedYears=function(){
         }
     );
 }
+
+exports.updatePresence=function(flag,booking_id,teacher_id){
+    return new Promise((resolve,reject)=>{      
+        const sql="UPDATE Booking "+
+                "Set "+
+                "Present=? "+
+                "where "+
+                "BookingId=? and State=0 and LectureId in ( "+
+                    "SELECT LectureId from Lecture,Course "+
+                    " where Lecture.CourseId=Course.CourseId and Course.TeacherId=?)"
+        db.run(sql,[flag,booking_id,teacher_id],
+            function(err){ 
+                if(err){
+                    console.log(err)
+                    reject(err);
+                }else
+                    resolve("OK");
+                
+            });       
+    });
+}

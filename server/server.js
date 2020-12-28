@@ -764,6 +764,31 @@ app.post('/api/liftRestrictions',(req,res)=>{
     });
 });
 
+app.post('/api/updatePresence',(req,res)=>{
+    const user=req.user && req.user.user;
+    const role = req.user && req.user.role;
+    const flag=req.body.flag;
+    const booking_id=req.body.booking_id;
+    if(!checkRole(role,['teacher'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+    }
+    if(flag!=0 && flag!=1){
+        res.status(422).json(
+            {errors:[{'param':'Server','msg':'wrong parameters'}]}
+        );
+    }
+
+    dao.updatePresence(flag,booking_id,user).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
 
 
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));
