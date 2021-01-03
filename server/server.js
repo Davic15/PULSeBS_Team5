@@ -8,6 +8,7 @@ const cookieParser=require('cookie-parser');
 const upload = require('express-fileupload');
 const pdf = require("pdf-creator-node");
 const fs = require('fs');
+const { start } = require('repl');
 
 
 const jwtSecret = '6xvL4xkAAbG49hcXf5GIYSvkDICiUAR6EdR5dLdwW7hMzUjjMUe9t6M5kSAYxsvX';
@@ -38,6 +39,14 @@ app.post('/api/hash',(req,res)=>{
 /////////////////////////////
 app.get('/api/years',(req,res)=>{
     dao.getRestrictedYears().then((obj)=>{
+        res.json(obj);
+    }).catch((e)=>{
+        res.status(400).json({errors:[{'param':'Server','msg':e}]});
+    });
+});
+
+app.get('/api/classrooms',(req,res)=>{
+    dao.getClassRooms().then((obj)=>{
         res.json(obj);
     }).catch((e)=>{
         res.status(400).json({errors:[{'param':'Server','msg':e}]});
@@ -764,6 +773,8 @@ app.post('/api/liftRestrictions',(req,res)=>{
     });
 });
 
+////////////////////////////////////////////////
+
 app.post('/api/updatePresence',(req,res)=>{
     const user=req.user && req.user.user;
     const role = req.user && req.user.role;
@@ -788,6 +799,75 @@ app.post('/api/updatePresence',(req,res)=>{
         );
     });
 });
+
+
+app.post('/api/updateSchedule',async (req,res)=>{
+    const user=req.user && req.user.user;
+    const role = req.user && req.user.role;
+    const lecture_id=req.body.lecture_id;
+    const day=req.body.day;
+    const start_time=req.body.start_time;
+    const end_time=req.body.end_time;
+    const remote=req.body.remote;
+    const classroomId=req.body.classroomId;
+    const booking_id=req.body.booking_id;
+    let state=0;
+
+    if(!checkRole(role,['teacher'])){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+        return;
+    }
+
+    const chkteacher=await dao.checkTeacherLecture(lecture_id,user);
+    if(!chkteacher.ok){
+        res.status(401).json(
+            {errors:[{'param':'Server','msg':'Unauthorized'}]}
+        );
+        return;
+    }
+   
+    if(remote!=0 && remote!=1){
+        res.status(422).json(
+            {errors:[{'param':'Server','msg':'wrong parameters'}]}
+        );
+        return;
+    }
+    if(remote==1)
+        state =2;
+    
+    if(start_time.localeCompare(end_time)>=0 || start_time.length!=end_time.length){
+        res.status(422).json(
+            {errors:[{'param':'Server','msg':'wrong parameters'}]}
+        );
+        return;
+    }
+    if(day!="Mon" && day!="Tue" && day!="Wed" && day!="Thu" && day!="Fri" && day!="Sat" && day!="Sun" ){
+        res.status(422).json(
+            {errors:[{'param':'Server','msg':'wrong parameters'}]}
+        );
+        return
+    }
+    const classrooom=await dao.getClassRoomById(classroomId);
+    console.log(JSON.stringify(classrooom));
+    if(classrooom.length==0){
+        res.status(422).json(
+            {errors:[{'param':'Server','msg':'wrong parameters'}]}
+        );
+        return;
+    }
+    console.log("classroom");
+
+    dao.updateSchedule(lecture_id,day,start_time,end_time,state,classroomId).then((obj)=>{
+        res.json(obj);
+    }).catch((err)=>{
+        res.status(500).json(
+            {errors:[{'param':'Server','msg':'Server error'}]}
+        );
+    });
+});
+
 
 
 

@@ -1241,7 +1241,6 @@ exports.addLectures=function(data,date_start,date_end) {
             }
             
             schedule_id=await insertSch();
-            console.log(JSON.stringify(schedule_id));
             const start_time = lecture.Time.split('-')[0];
             const end_time = lecture.Time.split('-')[1];
             let day = -1;
@@ -1471,6 +1470,7 @@ exports.liftRestrictions=function(year,date){
     });
 }
 
+//////////////////////////////
 exports.getRestrictedYears=function(){
     return new Promise(
         (resolve,reject)=>{
@@ -1517,5 +1517,184 @@ exports.updatePresence=function(flag,booking_id,teacher_id){
                     resolve("OK");
                 
             });       
+    });
+}
+
+//////////////////
+
+exports.getClassRooms=function(){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql="SELECT * FROM ClassRoom";
+                db.all(sql,(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        resolve([])
+                    }else {
+                       let ret_array=[];
+                        for (let row of rows){
+                            ret_array.push(
+                                {
+                                    ClassroomId:row.ClassroomId,
+                                    Seats:row.Seats,
+                                    Name:row.Name
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
+
+exports.getScheduled=function(lecture_id){
+    return new Promise(
+        (resolve,reject)=>{
+            const sql="SELECT * FROM  Lecture "+
+            "where ScheduleId IN (SELECT ScheduleId FROM Lecture where LectureId=?) "+
+            "and Start >= (SELECT Start FROM Lecture where LectureId=?)";
+                db.all(sql,[lecture_id,lecture_id],(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        resolve([])
+                    }else {
+                       let ret_array=[];
+                        for (let row of rows){
+                            ret_array.push(
+                                {
+                                    LectureId:row.LectureId,
+                                    CourseId:row.CourseId,
+                                    Start:row.Start,
+                                    End:row.End,
+                                    State:row.State,
+                                    ClassroomId:row.ClassroomId,
+                                    ScheduleId:row.ScheduleId
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
+
+exports.updateLecture=function(start,end,state,classroomId,lectureId){
+    return new Promise((resolve,reject)=>{  
+        const sql="UPDATE Lecture "+
+                "Set "+
+                "Start=?, "+
+                "End=?, "+
+                "State=?, "+
+                "ClassRoomId=? "+
+                "Where LectureId=?"
+        db.run(sql,[start,end,state,classroomId,lectureId],
+            function(err){ 
+                if(err){
+                    console.log(err)
+                    reject(err);
+                }else
+                    resolve("OK");
+                
+            });       
+    });
+}
+
+exports.updateScheduleRecord=function(strday,time,classroomId,schedule_id){
+    return new Promise((resolve,reject)=>{     
+        const sql="UPDATE Schedule "+
+                "Set "+
+                "DayOfWeek=?, "+
+                "Time=?, "+
+                "ClassRoomId=? "+
+                "Where ScheduleId=?"
+        db.run(sql,[strday,time,classroomId,schedule_id],
+            function(err){ 
+                if(err){
+                    console.log(err)
+                    reject(err);
+                }else
+                    resolve("OK");
+                
+            });       
+    });
+}
+
+exports.updateSchedule=  function(lecture_id,strday,start_time,end_time,remote,classroomId){
+    return new Promise(
+        async (resolve,reject)=>{
+            let day=0;
+            switch(strday) {
+                case "Mon":
+                    day = 0;
+                    break;
+                case "Tue":
+                    day = 1;
+                    break;
+                case "Wed":
+                    day = 2;
+                    break;
+                case "Thu":
+                    day = 3;
+                    break;
+                case "Fri":
+                    day = 4;
+                    break;
+                case "Sat":
+                    day = 5;
+                    break;
+                case "Sun":
+                    day = 6;
+                    break;
+            }
+            let schedule_id=-1;
+            const lectures= await this.getScheduled(lecture_id);
+
+            for (let lecture of lectures){
+                if(schedule_id==-1)
+                    schedule_id=lecture.ScheduleId;
+
+                let curDate=moment(lecture.Start.split(' ')[0]);
+                curDate.add(day-curDate.day()+1,'days');
+                Start=curDate.format("YYYY-MM-DD")+' '+start_time;
+                End=curDate.format("YYYY-MM-DD")+' '+end_time;
+                try{
+                    await this.updateLecture(Start,End,remote,classroomId,lecture.LectureId);
+                }
+                catch(ex){
+                    reject(ex);
+                }
+            }
+
+            try{
+                await this.updateScheduleRecord(strday,start_time+'-'+end_time,classroomId,schedule_id)
+            }catch(ex){
+                reject(ex);
+            }
+            resolve("ok");
+    });
+}
+
+exports.checkTeacherLecture=function(lecture_id,teacher_id){
+    return new Promise(
+        (resolve,reject)=>{
+        const sql="SELECT TeacherId FrOm Lecture,Course "+
+                "where lecture.CourseId=Course.CourseId and LectureId=? and TeacherId=?";
+        db.get(sql, [lecture_id,teacher_id], (err, row) => {
+            if(err){
+                reject(err);
+            }
+            else if(row )
+                resolve({ok:true});
+            else
+                resolve({ok:false});
+        });
     });
 }
