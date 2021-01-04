@@ -13,13 +13,12 @@ exports.replacePlaceHolders=function(str,replacements){
 
 exports.send=async function(recepient,subject,text,replacements) {
 
-
-  //let testAccount = await nodemailer.createTestAccount();
+  /*let testAccount = await nodemailer.createTestAccount();
 
   // create reusable transporter object using the default SMTP transport
   
   //PLEASE DO NOT DELETE THIS COMMENT
-  /*let transporter = nodemailer.createTransport({
+  let transporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
     port: 587,
     secure: false, // true for 465, false for other ports
@@ -39,10 +38,11 @@ exports.send=async function(recepient,subject,text,replacements) {
       pass: "ognotvgwkzavqpws", 
     },
   });
+  
 
   recepient = "pulsebs.softeng2@gmail.com"; //force send to our email
   // send mail with defined transport object
-  await transporter.sendMail({
+  let info=await transporter.sendMail({
     from: '"PULSeBs platform" <pulsebs.softeng2@gmail.com>', // sender address
     to: recepient, // list of receivers
     subject: subject, // Subject line

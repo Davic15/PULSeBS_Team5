@@ -1470,7 +1470,6 @@ exports.liftRestrictions=function(year,date){
     });
 }
 
-//////////////////////////////
 exports.getRestrictedYears=function(){
     return new Promise(
         (resolve,reject)=>{
@@ -1498,7 +1497,7 @@ exports.getRestrictedYears=function(){
         }
     );
 }
-
+////////////////////////
 exports.updatePresence=function(flag,booking_id,teacher_id){
     return new Promise((resolve,reject)=>{      
         const sql="UPDATE Booking "+
@@ -1520,13 +1519,12 @@ exports.updatePresence=function(flag,booking_id,teacher_id){
     });
 }
 
-//////////////////
 
-exports.getClassRooms=function(){
+exports.getClassRooms=function(min_seats){
     return new Promise(
         (resolve,reject)=>{
-            const sql="SELECT * FROM ClassRoom";
-                db.all(sql,(err,rows)=>{
+            const sql="SELECT * FROM ClassRoom WHERE Seats>= ?";
+                db.all(sql,[min_seats],(err,rows)=>{
                     if (err){
                         reject(err);
                     }
@@ -1682,19 +1680,67 @@ exports.updateSchedule=  function(lecture_id,strday,start_time,end_time,remote,c
     });
 }
 
-exports.checkTeacherLecture=function(lecture_id,teacher_id){
+
+exports.getBookedLectureInfo=function(lecture_id){
     return new Promise(
         (resolve,reject)=>{
-        const sql="SELECT TeacherId FrOm Lecture,Course "+
-                "where lecture.CourseId=Course.CourseId and LectureId=? and TeacherId=?";
-        db.get(sql, [lecture_id,teacher_id], (err, row) => {
-            if(err){
-                reject(err);
-            }
-            else if(row )
-                resolve({ok:true});
-            else
-                resolve({ok:false});
-        });
+            const sql="SELECT Booking.BookingId,Lecture.LectureId,User.UserId,Lecture.Start,Course.Name as CourseName,"+
+            "User.Name,User.Surname,User.Email,Classroom.Name as ClassroomName,Lecture.State, Booking.State as Queue,Classroom.Seats "+
+            "FROM  Lecture,Booking,Course,User,Classroom "+
+            "where ScheduleId IN (SELECT ScheduleId FROM Lecture where LectureId=?) "+
+            "and Start >= (SELECT Start FROM Lecture where LectureId=?) "+
+			"and Lecture.LectureId=Booking.LectureId "+
+			"and Lecture.CourseId=Course.CourseId "+
+			"and User.UserId=Booking.StudentId "+
+			"and Classroom.ClassroomId=Lecture.ClassroomId "+
+			"and Lecture.State!=1 "+
+			"and Booking.State!=2 "+
+            "Group by Booking.BookingId,Lecture.LectureId, User.UserId "+
+            "Order by Lecture.LectureId, User.UserId";
+                db.all(sql,[lecture_id,lecture_id],(err,rows)=>{
+                    if (err){
+                        reject(err);
+                    }
+                    else if(rows.length===0){
+                        resolve([])
+                    }else {
+                       let ret_array=[];
+                        for (let row of rows){
+                            ret_array.push(
+                                {
+                                    BookingId:row.BookingId,
+                                    LectureId:row.LectureId,
+                                    UserId:row.UserId,
+                                    Start:row.Start,
+                                    CourseName:row.CourseName,
+                                    Name:row.Name,
+                                    Surname:row.Surname,
+                                    Email:row.Email,
+                                    ClassroomName:row.ClassroomName,
+                                    State:row.State,
+                                    Queue:row.Queue,
+                                    Seats:row.Seats
+                                }
+                            );
+                        }
+                        resolve(ret_array);
+                    }
+                }
+            );
+        }
+    );
+}
+
+exports.deQueue=function(booking_id){
+    return new Promise((resolve,reject)=>{      
+        const sql="UPDATE Booking SET State=0 WHERE BookingId=? ";
+        db.run(sql,[booking_id],
+            function(err){ 
+                if(err){
+                    reject(err);
+                }else
+                    resolve("OK");
+                
+            });       
     });
 }

@@ -9,6 +9,7 @@ const upload = require('express-fileupload');
 const pdf = require("pdf-creator-node");
 const fs = require('fs');
 const { start } = require('repl');
+const emailer=require('./email');
 
 
 const jwtSecret = '6xvL4xkAAbG49hcXf5GIYSvkDICiUAR6EdR5dLdwW7hMzUjjMUe9t6M5kSAYxsvX';
@@ -45,7 +46,8 @@ app.get('/api/years',(req,res)=>{
     });
 });
 
-app.get('/api/classrooms',(req,res)=>{
+app.post('/api/classrooms',(req,res)=>{
+    const min_seats=req.body.min_seats;
     dao.getClassRooms().then((obj)=>{
         res.json(obj);
     }).catch((e)=>{
@@ -802,7 +804,6 @@ app.post('/api/updatePresence',(req,res)=>{
 
 
 app.post('/api/updateSchedule',async (req,res)=>{
-    const user=req.user && req.user.user;
     const role = req.user && req.user.role;
     const lecture_id=req.body.lecture_id;
     const day=req.body.day;
@@ -810,24 +811,16 @@ app.post('/api/updateSchedule',async (req,res)=>{
     const end_time=req.body.end_time;
     const remote=req.body.remote;
     const classroomId=req.body.classroomId;
-    const booking_id=req.body.booking_id;
     let state=0;
+    let email;
 
-    if(!checkRole(role,['teacher'])){
+    if(!checkRole(role,['officer'])){
         res.status(401).json(
             {errors:[{'param':'Server','msg':'Unauthorized'}]}
         );
         return;
     }
 
-    const chkteacher=await dao.checkTeacherLecture(lecture_id,user);
-    if(!chkteacher.ok){
-        res.status(401).json(
-            {errors:[{'param':'Server','msg':'Unauthorized'}]}
-        );
-        return;
-    }
-   
     if(remote!=0 && remote!=1){
         res.status(422).json(
             {errors:[{'param':'Server','msg':'wrong parameters'}]}
@@ -849,17 +842,59 @@ app.post('/api/updateSchedule',async (req,res)=>{
         );
         return
     }
+    
+    //assegnare comunque una classe nel caso il professore voglia far tornare la lezione in presenza
     const classrooom=await dao.getClassRoomById(classroomId);
-    console.log(JSON.stringify(classrooom));
     if(classrooom.length==0){
         res.status(422).json(
             {errors:[{'param':'Server','msg':'wrong parameters'}]}
         );
         return;
     }
-    console.log("classroom");
+    const prev=await dao.getBookedLectureInfo(lecture_id);
+    dao.updateSchedule(lecture_id,day,start_time,end_time,state,classroomId).then(async (obj)=>{
+        const succ=await dao.getBookedLectureInfo(lecture_id);
+        let emailReplacements;
+        let seats={};
+        const subject="Schedule update INFO";
+        for(i=0;i<prev.length;i++){
 
-    dao.updateSchedule(lecture_id,day,start_time,end_time,state,classroomId).then((obj)=>{
+            if(!seats[prev[i].LectureId])
+            {
+                seats[prev[i].LectureId]=succ[i].Seats-prev[i].Seats;
+            }
+            email="<p>Dear %NAME% %SURNAME%,<br/>the lecture %LECTURE% at %OLDTIME%, "
+            console.log(JSON.stringify(prev[i]));
+            emailReplacements={ "%NAME%":prev[i].Name,
+                                    "%SURNAME%":prev[i].Surname,
+                                    "%LECTURE%":prev[i].CourseName,
+                                    "%OLDTIME%":prev[i].Start
+                                    }
+            if(prev[i].State==2)
+                email+="held online ";
+            else{
+                email+="held in classroom %OLDCLASSROOM%";
+                emailReplacements["%OLDCLASSROOM%"]=prev[i].ClassroomName;
+            }
+            email+="<br/> will now be held at %NEWTIME%";
+            emailReplacements["%NEWTIME%"]=succ[i].Start;
+            if(succ[i].State==2)
+                email+=" online ";
+            else{
+                email+=" in classroom %NEWCLASSROOM%";
+                emailReplacements["%NEWCLASSROOM%"]=succ[i].ClassroomName;
+            } 
+            if(prev[i].Queue && seats[prev[i].LectureId]>0){
+                seats[prev[i].LectureId]--;
+                email+= "<br/> more seats available, you can now attend the lecture"
+                await dao.deQueue(prev[i].BookingId)
+            }
+            try{
+                emailer.send(prev[i].Email,subject,email,emailReplacements);
+            }catch(ex){
+                console.log(JSON.stringify(ex));
+            }
+        }
         res.json(obj);
     }).catch((err)=>{
         res.status(500).json(
