@@ -275,7 +275,7 @@ exports.getLectureInfoWithCourseAndDate=function(course_id, date){
                     });
                 }
             else
-                resolve({});
+                resolve(undefined);
         });
     });
 }
@@ -667,7 +667,7 @@ exports.changeLecture=function(teacher_id,lecture_id,state){
 ////SPRINT 2
 
 //get information needed to send scheduled email at teachers
-exports.getAllLecturesForEmail=function(teacher_id, date_start,date_end){
+exports.getAllLecturesForEmail=function(){
     return new Promise(
         (resolve,reject)=>{
             const sql = "SELECT Lecture.LectureId as Lec_id, Course.Name as CourseName,Start,Email,User.Name as TeacherName,Surname, Classroom.Name as ClassroomName , Seats as TotSeats, COUNT(DISTINCT Booking.BookingId) as BookedSeats "+
