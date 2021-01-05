@@ -250,6 +250,36 @@ exports.getLectureInfo=function(lecture_id){
     });
 }
 
+exports.getLectureInfoWithCourseAndDate=function(course_id, date){
+    return new Promise(
+        
+        (resolve,reject)=>{
+            
+        const sql="SELECT Lecture.LectureId as LectureId, Course.CourseId as CourseId, Course.Name as CourseName, Start, Classroom.Name as ClassroomName, Lecture.State as State "+
+                    "FROM Lecture,Classroom,Course " +
+                    "where Lecture.CourseId=Course.CourseId " +
+                    "and Classroom.ClassroomId=Lecture.ClassroomId " +
+                    "and Lecture.CourseId=?" +
+                    "and Lecture.Start=?";
+        db.get(sql, [course_id, date], (err, row) => {
+            if(err){
+                reject(err);
+            }else if(row){
+                resolve({
+                    LectureId:row.LectureId,
+                    CourseId:row.CourseId,
+                    CourseName:row.CourseName,
+                    ClassroomName:row.ClassroomName,
+                    Start:row.Start,
+                    State:row.State
+                    });
+                }
+            else
+                resolve({});
+        });
+    });
+}
+
 exports.getStudentInfo=function(student_id){
     return new Promise(
         (resolve,reject)=>{
@@ -1676,7 +1706,7 @@ exports.updateSchedule=  function(lecture_id,strday,start_time,end_time,remote,c
             }catch(ex){
                 reject(ex);
             }
-            resolve("ok");
+            resolve("OK");
     });
 }
 
