@@ -15,6 +15,8 @@
 .mpad {
     padding: 5px;
     width: 90%;
+    margin-left: 2rem;
+    margin-right: 2rem;
 }
 
 .center-box{
@@ -24,4 +26,8 @@
 .move-label{
     display:inline-block; 
     width: 60px;
+}
+
+.move-input{
+    margin-left: 20rem;
 }

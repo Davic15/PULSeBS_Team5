@@ -126,11 +126,11 @@ class UploadFile extends React.Component {
                 </Modal>
                 <h2>Data upload</h2>
                 <div class="row">
-                    <div className="col-4 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadTeachers} title="Teachers"/></div></div>
-                    <div className="col-4 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadCourses} title="Courses"/></div></div>
-                    <div className="col-4 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadStudents} title="Students"/></div></div>
-                    <div className="col-4 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadEnrollments} title="Enrollments"/></div></div>
-                    <div className="col-4 mpad"><div className="border-box">
+                    <div className="col-11 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadTeachers} title="Teachers"/></div></div>
+                    <div className="col-11 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadCourses} title="Courses"/></div></div>
+                    <div className="col-11 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadStudents} title="Students"/></div></div>
+                    <div className="col-11 mpad"><div className="border-box"><UploadBar onSubmit={this.uploadEnrollments} title="Enrollments"/></div></div>
+                    <div className="col-11 mpad"><div className="border-box">
                         <UploadBar onSubmit={this.uploadLectures} title="Lectures"/>
                         <div className="center-box">
                             <label className="move-label">Start </label>
@@ -176,7 +176,7 @@ class UploadBar extends React.Component {
                 <div className="">
                     <div className="form-group text-center">
                         <h4>{this.props.title}</h4>
-                        <div className="input-group input-file">
+                        <div className="input-group input-file move-input">
                             <input type="file" 
                                 className="file-style"
                                 lang="en"
