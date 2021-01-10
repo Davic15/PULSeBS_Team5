@@ -21,6 +21,7 @@
     "react-loading": "^2.0.3",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
+    "react-time-picker": "^4.1.2",
     "react-tooltip": "^4.2.11",
     "react-week-calendar": "^0.1.3"
   },

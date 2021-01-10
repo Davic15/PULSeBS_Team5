@@ -545,6 +545,81 @@ async function uploadLectures(file, start, end) {
     });
 }
 
+async function updateSchedule(lectureId, weekDay, startTime, endTime, remote, classroomId) {
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/updateSchedule", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                lecture_id: lectureId, 
+                day: weekDay, 
+                start_time: startTime, 
+                end_time: endTime, 
+                remote: remote, 
+                classroomId: classroomId
+            })
+        }).then((response) => {
+            if (response.ok){
+                resolve({});
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function updatePresence(bookingId, present) {
+    const booking_id = bookingId;
+    const flag = present;
+
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/updatePresence", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                booking_id: booking_id,
+                flag: flag
+            })
+        }).then((response) => {
+            if (response.ok){
+                resolve({});
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
+async function getClassrooms(minSeats) {
+    return new Promise((resolve, reject) => {
+        fetch(baseURL + "/classrooms", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({min_seats: minSeats})
+        }).then((response) => {
+            if (response.ok){
+                response.json().then((rows) => {
+                    resolve(rows);
+                });
+            }else{
+                response.json()
+                .then((obj) => {reject(obj); })
+                .catch((err) => {reject({errors: [{param: "Application", msg: "Cannot parse server response"}]})});
+            }
+        }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) });
+    });
+}
+
 const API = { 
     userLogin, 
     isAuthenticated, 
@@ -570,6 +645,9 @@ const API = {
     uploadStudents,
     uploadCourses,
     uploadEnrollments,
-    uploadLectures 
+    uploadLectures,
+    updateSchedule,
+    updatePresence, 
+    getClassrooms
 };
 export default API;

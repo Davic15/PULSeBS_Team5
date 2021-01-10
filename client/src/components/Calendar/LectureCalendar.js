@@ -32,6 +32,7 @@ class LectureCalendar extends React.Component {
                 <DatePicker
                     onChange={this.onDateChange}
                     value={this.state.day.toDate()}
+                    minDate={this.props.minDate && this.props.minDate.toDate()}
                 />
             </div>
             <WeekCalendar 

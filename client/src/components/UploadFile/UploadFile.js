@@ -19,6 +19,8 @@ class UploadFile extends React.Component {
     }
 
     uploadTeachers = (file) => {
+        if(!file)
+            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadTeachers(file)
@@ -29,6 +31,8 @@ class UploadFile extends React.Component {
     }
 
     uploadStudents = (file) => {
+        if(!file)
+            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadStudents(file)
@@ -39,6 +43,8 @@ class UploadFile extends React.Component {
     }
 
     uploadCourses = (file) => {
+        if(!file)
+            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadCourses(file)
@@ -49,6 +55,8 @@ class UploadFile extends React.Component {
     }
 
     uploadEnrollments = (file) => {
+        if(!file)
+            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadEnrollments(file)
@@ -59,6 +67,8 @@ class UploadFile extends React.Component {
     }
 
     uploadLectures = (file) => {
+        if(!file)
+            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadLectures(file, this.state.startDate, this.state.endDate)

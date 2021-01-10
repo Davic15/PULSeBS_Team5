@@ -17,6 +17,9 @@ import StatisticTeacher from "./components/Statistics/StatisticTeacher";
 import ContactTracingList from "./components/ContactTracing/ContactTracingList";
 import UpdateBooking from "./components/UpdateBooking/UpdateBooking";
 import UploadFile from "./components/UploadFile/UploadFile";
+import Attendance from "./components/Attendance/Attendance.js";
+import ScheduleCalendar from './components/Calendar/ScheduleCalendar';
+import CourseListOfficer from './components/Courses/CourseListOfficer';
 
 class App extends React.Component{
 
@@ -109,10 +112,15 @@ class App extends React.Component{
                     {this.state.authUser && this.state.authUser.Type === "student" && <LectureCalendarStudent />}
                     {this.state.authUser && this.state.authUser.Type === "teacher" && <LectureCalendarTeacher/>}
                 </Route>
+                <Route path='/attendance/:lectureId' render={(props) => (<>
+                    {!this.state.authUser && <Redirect to="/login" />}
+                    {this.state.authUser && this.state.authUser.Type === "teacher" && <Attendance lectureId={props.match.params.lectureId} />}
+                </>)}/>
                 <Route path="/courses">
                     {!this.state.authUser && <Redirect to="/login" />}
                     {this.state.authUser && this.state.authUser.Type === "student" && <Redirect to="/courses" />}
                     {this.state.authUser && (this.state.authUser.Type === "teacher" || this.state.authUser.Type === "booking-manager") && <CourseList />}
+                    {this.state.authUser && this.state.authUser.Type === "officer" && <CourseListOfficer />}
                 </Route>
                 <Route path='/statistics/:courseId' render={(props) => (<>
                     {!this.state.authUser && <Redirect to="/login" />}
@@ -132,6 +140,10 @@ class App extends React.Component{
                     {!this.state.authUser && <Redirect to="/login" />}
                     <UploadFile />
                 </Route>
+                <Route path='/schedule/:courseId' render={(props) => (<>
+                    {!this.state.authUser && <Redirect to="/login" />}
+                    {this.state.authUser && this.state.authUser.Type === "officer" && <ScheduleCalendar courseId={props.match.params.courseId} />}
+                </>)}/>
                 <Route path="/">
                     <Redirect to="/login" />
                 </Route>

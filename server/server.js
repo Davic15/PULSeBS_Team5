@@ -48,7 +48,7 @@ app.get('/api/years',(req,res)=>{
 
 app.post('/api/classrooms',(req,res)=>{
     const min_seats=req.body.min_seats;
-    dao.getClassRooms().then((obj)=>{
+    dao.getClassRooms(min_seats).then((obj)=>{
         res.json(obj);
     }).catch((e)=>{
         res.status(400).json({errors:[{'param':'Server','msg':e}]});
@@ -459,7 +459,7 @@ app.get('/api/courses', async (req,res)=>{
     const user=req.user && req.user.user;
     const role = req.user && req.user.role;
 
-    if(!checkRole(role,['teacher','booking-manager']) ){
+    if(!checkRole(role,['teacher','booking-manager', 'officer']) ){
         res.status(401).json(
             {errors:[{'param':'Server','msg':'Unauthorized'}]}
         );
@@ -822,6 +822,7 @@ app.post('/api/updateSchedule',async (req,res)=>{
     }
 
     if(remote!=0 && remote!=1){
+        console.log("remote "+remote);
         res.status(422).json(
             {errors:[{'param':'Server','msg':'wrong parameters'}]}
         );
@@ -831,12 +832,15 @@ app.post('/api/updateSchedule',async (req,res)=>{
         state =2;
     
     if(start_time.localeCompare(end_time)>=0 || start_time.length!=end_time.length){
+        console.log("start "+start_time);
+        console.log("end " +end_time);
         res.status(422).json(
             {errors:[{'param':'Server','msg':'wrong parameters'}]}
         );
         return;
     }
     if(day!="Mon" && day!="Tue" && day!="Wed" && day!="Thu" && day!="Fri" && day!="Sat" && day!="Sun" ){
+        console.log("day "+day);
         res.status(422).json(
             {errors:[{'param':'Server','msg':'wrong parameters'}]}
         );
@@ -846,6 +850,7 @@ app.post('/api/updateSchedule',async (req,res)=>{
     //assegnare comunque una classe nel caso il professore voglia far tornare la lezione in presenza
     const classrooom=await dao.getClassRoomById(classroomId);
     if(classrooom.length==0){
+        console.log("classroom "+classroomId);
         res.status(422).json(
             {errors:[{'param':'Server','msg':'wrong parameters'}]}
         );

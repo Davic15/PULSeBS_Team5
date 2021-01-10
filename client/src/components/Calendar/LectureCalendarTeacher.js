@@ -8,6 +8,7 @@ import {colors, descriptions} from "./CalendarMisc";
 import {getWeek} from '../../Functions';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { Link } from "react-router-dom";
 import ReactTooltip from 'react-tooltip';
 
 import './Calendar.css';
@@ -55,12 +56,6 @@ class LectureCalendarTeacher extends React.Component {
     changeLecture = (lectureId) => {
         API.changeLecture(lectureId)
         .then(() => this.getLectures(this.state.day))
-        .catch((err) => console.log(err));
-    }
-
-    getStudentList = (lectureId) => {
-        API.getStudentList(lectureId)
-        .then((students) => this.setState({students: students}))
         .catch((err) => console.log(err));
     }
 
@@ -170,8 +165,8 @@ class LectureCalendarTeacher extends React.Component {
                         <strong>Classroom: </strong>{lecture.ClassroomName}<br/>
                         <strong>Seats: </strong>{lecture.BookingCount+"/"+lecture.Seats}<br/>
                     </>}
-                    <i>{this.getDescription(lecture)}</i>
-                    {!this.isRemote(lecture) && <StudentList onLoad={() => this.getStudentList(lecture.LectureId)} students={this.state.students}/>}
+                    <i>{this.getDescription(lecture)}</i><br />
+                    {!this.isRemote(lecture) && <Link to={"/attendance/"+lecture.LectureId}>Attendance</Link>}
                 </p>
             </Modal.Body>
             <Modal.Footer>
@@ -183,7 +178,7 @@ class LectureCalendarTeacher extends React.Component {
     }
 }
 
-class StudentList extends React.Component {
+/*class StudentList extends React.Component {
     constructor(props) {
         super(props);
     }
@@ -192,27 +187,6 @@ class StudentList extends React.Component {
         this.props.onLoad();
     }
 
-    /*render() {
-        return <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Surname</th>
-                    <th>Name</th>
-                </tr>
-            </thead>
-            <tbody>
-            {this.props.students.map((student) => {
-                return <tr>
-                    <td>{student.StudentId}</td>
-                    <td>{student.Surname}</td>
-                    <td>{student.Name}</td>
-                </tr>;
-            })}
-            </tbody>
-        </table>
-        
-    }*/
     render() {
         return (
             <div className="table-wrapper">
@@ -237,6 +211,6 @@ class StudentList extends React.Component {
             </div>
         );
     }
-}
+}*/
 
 export default LectureCalendarTeacher;

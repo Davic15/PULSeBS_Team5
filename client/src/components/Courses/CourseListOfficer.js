@@ -6,7 +6,7 @@ import "../Courses/CourseList.css";
 
 import "./CourseList.css";
 
-class CourseList extends React.Component {
+class CourseListOfficer extends React.Component {
     constructor(props) {
         super(props);
         this.state = ({courses: []});
@@ -31,7 +31,7 @@ class CourseList extends React.Component {
                     <tbody>
                         {this.state.courses.map((course) => <tr>
                             <td>{course.CourseName}</td>
-                            <td><Link to={"/statistics/"+course.CourseId}>Statistics</Link></td>
+                            <td><Link to={"/schedule/"+course.CourseId}>Schedule</Link></td>
                         </tr>)}
                     </tbody>
                 </table>
@@ -42,4 +42,4 @@ class CourseList extends React.Component {
     }
 }
 
-export default CourseList;
+export default CourseListOfficer;

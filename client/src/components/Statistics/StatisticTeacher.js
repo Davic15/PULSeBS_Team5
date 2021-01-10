@@ -6,7 +6,7 @@ import { Chart } from 'react-charts';
 import {getWeek, getMonth, weekSQLtoMoment, monthSQLtoMoment} from '../../Functions';
 import { statistics, statisticMap, normalizeWeek, normalizeMonth } from './StatisticMisc';
 import {colors } from "../Calendar/CalendarMisc";
-
+import ReactTooltip from 'react-tooltip';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import "./Statistic.css";
@@ -314,17 +314,22 @@ class StatisticTeacher extends React.Component {
         const value = props.value;
         const lecture = JSON.parse(value);
     
-        return <div className="lecture">
-            <div className="lecture-tag" style={{backgroundColor:this.getColorCode(lecture)}}>
-                <b>{lecture.CourseName}</b>
+        return <>
+            <div className="lecture" data-tip={this.getDescription(lecture)}>
+                <div className="lecture-tag" style={{backgroundColor:this.getColorCode(lecture)}}>
+                    <b>{lecture.CourseName}</b>
+                </div>
+                <div className="lecture-body">
+                    <p>
+                        {start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
+                        {!(this.isRemote(lecture)) && <>
+                            {lecture.ClassroomName}<br/>
+                        </>}
+                    </p>
+                </div>
             </div>
-            <div className="lecture-body">
-                <p>{start.format("HH:mm")+" - "+end.format("HH:mm")}<br/>
-                {!(this.isRemote(lecture)) && <>
-                    {lecture.ClassroomName}<br/>
-                </>}</p>
-            </div>
-        </div>;
+            <ReactTooltip place="top" type="dark" effect="solid"/>
+        </>;
     }
 }
 
