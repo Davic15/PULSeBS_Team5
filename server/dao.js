@@ -1040,7 +1040,7 @@ exports.addTeachers=function(data) {
                 continue;
             }
 
-            const sql = "INSERT INTO User(UserId, Email, Password, Name, Surname, City, Birthday, SSN, Type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
+            const sql = "INSERT OR REPLACE INTO User(UserId, Email, Password, Name, Surname, City, Birthday, SSN, Type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
             
             try {
                 await db.run(sql, [user.Number, user.OfficialEmail, '$2b$10$E60Ykpqvvi.Bt4ZJnCRDKuJcfRN/dQg4sbq5aBjPWnyd/C7xofOlO', user.GivenName, user.Surname, 'NULL', 'NULL', user.SSN, 'teacher']);
@@ -1070,7 +1070,7 @@ exports.addStudents=function(data) {
                 continue;
             }
 
-            const sql = "INSERT INTO User(UserId, Email, Password, Name, Surname, City, Birthday, SSN, Type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
+            const sql = "INSERT OR REPLACE INTO User(UserId, Email, Password, Name, Surname, City, Birthday, SSN, Type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
             
             try {
                 await db.run(sql, [user.Id, user.OfficialEmail, '$2b$10$E60Ykpqvvi.Bt4ZJnCRDKuJcfRN/dQg4sbq5aBjPWnyd/C7xofOlO', user.Name, user.Surname, user.City, user.Birthday, user.SSN, 'student']);
@@ -1139,7 +1139,7 @@ exports.addEnrollments=function(data) {
                 continue;
             }
 
-            const sql = "INSERT INTO StudentCourse(UserId, CourseId) VALUES (?, ?)";
+            const sql = "INSERT OR REPLACE INTO StudentCourse(UserId, CourseId) VALUES (?, ?)";
 
             try {
                 await db.run(sql, [enrollment.Student, enrollment.Code]);
@@ -1192,7 +1192,7 @@ exports.addCourses=function(data) {
                 continue;
             }
 
-            const sql = "INSERT INTO Course(CourseId, TeacherId, Name, Year, Semester) VALUES (?, ?, ?, ?, ?)";
+            const sql = "INSERT OR REPLACE INTO Course(CourseId, TeacherId, Name, Year, Semester) VALUES (?, ?, ?, ?, ?)";
 
             try {
                 await db.run(sql, [course.Code, course.Teacher, course.Course, course.Year, course.Semester]);
@@ -1246,7 +1246,7 @@ exports.addLectures=function(data,date_start,date_end) {
                 checkedClasses.push(lecture.Room);
 
                 if (classroom.length===0) {
-                    const sql1 = "INSERT INTO Classroom(ClassroomId, Seats, Name) VALUES (?, ?, ?)";
+                    const sql1 = "INSERT OR REPLACE INTO Classroom(ClassroomId, Seats, Name) VALUES (?, ?, ?)";
 
                     try {
                         await db.run(sql1, [lecture.Room, lecture.Seats, lecture.Room]);
@@ -1261,7 +1261,7 @@ exports.addLectures=function(data,date_start,date_end) {
             
             let insertSch=function(){
                 return new Promise((res,rej)=>{
-                    const sqlSch = "INSERT INTO Schedule(DayOfWeek,Time,CourseId,ClassRoomId) VALUES (?,?,?,?)";
+                    const sqlSch = "INSERT OR REPLACE INTO Schedule(DayOfWeek,Time,CourseId,ClassRoomId) VALUES (?,?,?,?)";
                     db.run(sqlSch, [lecture.Day, lecture.Time, lecture.Code,lecture.Room],function (err)  {
                  
                         res(this.lastID);
@@ -1309,7 +1309,7 @@ exports.addLectures=function(data,date_start,date_end) {
             let Start="";
             let End="";
             while(endDate.isAfter(curDate)){
-                sql2= "INSERT INTO Lecture(CourseId, Start, End, State, ClassRoomId,ScheduleId) VALUES (?, ?, ?, ?, ?,?)";
+                sql2= "INSERT OR REPLACE INTO Lecture(CourseId, Start, End, State, ClassRoomId,ScheduleId) VALUES (?, ?, ?, ?, ?,?)";
                 //Start=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+start_time
                 Start=curDate.format("YYYY-MM-DD")+' '+start_time;
                 //End=curDate.year()+'-'+(curDate.month()+1)+'-'+(curDate.date()+1)+' '+end_time
@@ -1375,7 +1375,7 @@ exports.generateContactTracingReport=function(student_id,date){
 }
 
 exports.insertReport=async function(student_id,date,pathPDF,pathCSV){
-    const sql = "INSERT INTO Report(StudentId,Date,PathPDF,PathCSV) VALUES (?, ?,?,?)"; 
+    const sql = "INSERT OR REPLACE INTO Report(StudentId,Date,PathPDF,PathCSV) VALUES (?, ?,?,?)"; 
     
     try {
         await db.run(sql, [student_id,date,pathPDF,pathCSV]);     
