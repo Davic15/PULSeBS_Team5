@@ -112,7 +112,15 @@
     margin-top: 2rem;
     border-radius: 2rem;
     border: 1px solid gray;
+}
+
+.weekCalendar__content {
     max-height: 800px;
+}
+
+.calendarModal {
+    padding-top: 25px;
+    padding-bottom: 25px;
 }
 
 .daypick-row {

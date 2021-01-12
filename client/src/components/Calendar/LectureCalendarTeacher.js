@@ -151,7 +151,12 @@ class LectureCalendarTeacher extends React.Component {
             closeModal();
         }
         
-        var minutesLeft = moment.duration(start.diff(moment())).as("minutes");
+        let minutesLeft = moment.duration(start.diff(moment())).as("minutes");
+        let currentLecture = false;
+        let now = moment().format("YYYY-MM-DD HH:mm")
+        if(now >= start.format("YYYY-MM-DD HH:mm") &&
+            end.format("YYYY-MM-DD HH:mm") >= now)
+            currentLecture= true;
 
         return <Modal.Dialog scrollable={true}>
             <Modal.Header>
@@ -166,7 +171,8 @@ class LectureCalendarTeacher extends React.Component {
                         <strong>Seats: </strong>{lecture.BookingCount+"/"+lecture.Seats}<br/>
                     </>}
                     <i>{this.getDescription(lecture)}</i><br />
-                    {!this.isRemote(lecture) && <Link to={"/attendance/"+lecture.LectureId}>Attendance</Link>}
+                    {!this.isRemote(lecture) && currentLecture && <Link to={"/attendance/"+lecture.LectureId}>Record attendance</Link>}
+                    {!this.isRemote(lecture) && !currentLecture && minutesLeft <= 0 && <Link to={"/history/"+lecture.LectureId}>Attendance history</Link>}
                 </p>
             </Modal.Body>
             <Modal.Footer>
@@ -177,40 +183,5 @@ class LectureCalendarTeacher extends React.Component {
         </Modal.Dialog>
     }
 }
-
-/*class StudentList extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    componentDidMount() {
-        this.props.onLoad();
-    }
-
-    render() {
-        return (
-            <div className="table-wrapper">
-                <table className="table">
-                    <thead className="thead-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Surname</th>
-                            <th>Name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {this.props.students.map((student) => {
-                        return <tr>
-                            <td>{student.StudentId}</td>
-                            <td>{student.Surname}</td>
-                            <td>{student.Name}</td>
-                        </tr>;
-                    })}
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-}*/
 
 export default LectureCalendarTeacher;

@@ -19,8 +19,6 @@ class UploadFile extends React.Component {
     }
 
     uploadTeachers = (file) => {
-        if(!file)
-            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadTeachers(file)
@@ -31,8 +29,6 @@ class UploadFile extends React.Component {
     }
 
     uploadStudents = (file) => {
-        if(!file)
-            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadStudents(file)
@@ -43,8 +39,6 @@ class UploadFile extends React.Component {
     }
 
     uploadCourses = (file) => {
-        if(!file)
-            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadCourses(file)
@@ -55,8 +49,6 @@ class UploadFile extends React.Component {
     }
 
     uploadEnrollments = (file) => {
-        if(!file)
-            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadEnrollments(file)
@@ -67,8 +59,6 @@ class UploadFile extends React.Component {
     }
 
     uploadLectures = (file) => {
-        if(!file)
-            return;
         this.setState({loading: true});
         this.openModal();
         API.uploadLectures(file, this.state.startDate, this.state.endDate)
@@ -167,7 +157,7 @@ class UploadFile extends React.Component {
 class UploadBar extends React.Component {
     constructor(props) {
         super(props);
-        this.setState({selectedFile: null});
+        this.state = {selectedFile: null, error: null}
     }
 
     onChange = (event) => {
@@ -177,7 +167,12 @@ class UploadBar extends React.Component {
 
     handleSubmit = (event) => {
         event.preventDefault();
+        if(!this.state.selectedFile) {
+            this.setState({error: "Select a file to upload."});
+            return;
+        }
         this.props.onSubmit(this.state.selectedFile);
+        this.setState({error: null});
     }
 
     render() {
@@ -186,6 +181,7 @@ class UploadBar extends React.Component {
                 <div className="">
                     <div className="form-group text-center">
                         <h4>{this.props.title}</h4>
+                        {this.state.error && <p style={{color: "red"}}>{this.state.error}</p>}
                         <div className="input-group input-file move-input">
                             <input type="file" 
                                 className="file-style"

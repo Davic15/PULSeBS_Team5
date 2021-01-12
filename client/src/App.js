@@ -18,6 +18,7 @@ import ContactTracingList from "./components/ContactTracing/ContactTracingList";
 import UpdateBooking from "./components/UpdateBooking/UpdateBooking";
 import UploadFile from "./components/UploadFile/UploadFile";
 import Attendance from "./components/Attendance/Attendance.js";
+import AttendanceHistory from "./components/Attendance/AttendanceHistory.js";
 import ScheduleCalendar from './components/Calendar/ScheduleCalendar';
 import CourseListOfficer from './components/Courses/CourseListOfficer';
 
@@ -115,6 +116,10 @@ class App extends React.Component{
                 <Route path='/attendance/:lectureId' render={(props) => (<>
                     {!this.state.authUser && <Redirect to="/login" />}
                     {this.state.authUser && this.state.authUser.Type === "teacher" && <Attendance lectureId={props.match.params.lectureId} />}
+                </>)}/>
+                <Route path='/history/:lectureId' render={(props) => (<>
+                    {!this.state.authUser && <Redirect to="/login" />}
+                    {this.state.authUser && this.state.authUser.Type === "teacher" && <AttendanceHistory lectureId={props.match.params.lectureId} />}
                 </>)}/>
                 <Route path="/courses">
                     {!this.state.authUser && <Redirect to="/login" />}

@@ -11,7 +11,10 @@ class LectureCalendar extends React.Component {
 
     constructor(props){
         super(props);
-        this.state = {day: moment(), lectures: [], students: []};
+        let day = moment();
+        if(this.props.initialDate)
+            day = moment(this.props.initialDate);
+        this.state = {day: day, lectures: [], students: []};
     }
 
     componentDidMount() { 

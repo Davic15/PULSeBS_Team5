@@ -5,13 +5,11 @@ import LegendFilter from "../Legend/LegendFilter";
 import { Chart } from 'react-charts';
 import {getWeek, getMonth, weekSQLtoMoment, monthSQLtoMoment} from '../../Functions';
 import { statistics, statisticMap, normalizeWeek, normalizeMonth } from './StatisticMisc';
-import {colors } from "../Calendar/CalendarMisc";
+import {descriptions, colors} from "../Calendar/CalendarMisc";
 import ReactTooltip from 'react-tooltip';
 import Modal from 'react-bootstrap/Modal';
-//import ModalDialog from 'react-bootstrap/ModalDialog'
 import Button from 'react-bootstrap/Button';
 import "./Statistic.css";
-//import { useState } from "react";
 
 
 const moment = require('moment');
@@ -43,8 +41,11 @@ class ChartManager extends React.Component {
     }
 
     getDatumStyle = (datum) => {
+        let index = this.props.statistics && this.props.statistics.index;
+        if(!index)
+            index = 2;
         return {
-            opacity: datum.index == 2 ? 1 : 0.3,
+            opacity: datum.index == index ? 1 : 0.3,
         };
     }
     
@@ -55,13 +56,15 @@ class ChartManager extends React.Component {
     }
 
     render() {
+        if(!this.props.statistics) 
+            return <></>;
         let zeros = [];
         for(let i=0; i<5; i++)
             zeros.push(0);
         const bookingData = (this.props.statistics && this.props.statistics.bookingData) || zeros;
         const attendanceData = (this.props.statistics && this.props.statistics.attendanceData) || zeros;
         const cancellationData = (this.props.statistics && this.props.statistics.cancellationData) || zeros;
-        const timeLabels = (this.props.statistics && this.props.statistics.timeLabels) || ["A", "B", "C", "D", "E"];
+        const timeLabels = (this.props.statistics && this.props.statistics.timeLabels) || [];
 
         let chartData = [{
                 label: statistics.bookings.label,
@@ -98,7 +101,7 @@ class ChartManager extends React.Component {
             type: 'bar'
         };
 
-        return <div className="chart-container">
+        return <div className="chart-container" style={{height: this.props.height+"px"}}>
             <Chart 
                 data={chartData} series={series} axes={axes}           
                 getSeriesStyle={this.getSeriesStyle}
@@ -142,7 +145,9 @@ class StatisticManager extends React.Component {
         const first = moment(week.first).subtract(2, 'weeks');
         const last = moment(week.last).add(2, 'weeks');
         API.getWeeklyStatistics(this.props.courseId, first, last)
-        .then((rows) => this.setWeeklyStatistics(rows, first))
+        .then((rows) => {
+            this.setWeeklyStatistics(rows, first);
+        })
         .catch((err) => console.log(err));
     }
 
@@ -163,9 +168,33 @@ class StatisticManager extends React.Component {
         this.getMonthlyStatistics(day);
     }
 
+    isPresence = (lecture) => { return lecture.State==0; }
+    isRemote = (lecture) => { return lecture.State!=0; }
+
+    getColorCode = (lecture) => {
+        if(this.isPresence(lecture))
+            return colors.bookable;
+        else if(this.isRemote(lecture))
+            return colors.remote;
+        else
+            return "";
+    }
+
+    getDescription = (lecture) => {
+        if(this.isPresence(lecture))
+            return descriptions.bookable;
+        else if(this.isRemote(lecture))
+            return descriptions.remote;
+        else
+            return "";
+    }
+
     setWeeklyStatistics = (rows, first) => {
-        const startWeek = moment(first).week();
-        const startYear = moment(first).year();
+        first = moment(first);
+        let startWeek = first.week();
+        if(first.month() == 11 && first.week() == 1)
+            startWeek = 53;
+        const startYear = first.year();
         let timeLabels = [];
         let bookingData = [];
         let attendanceData = [];
@@ -216,16 +245,17 @@ class StatisticManager extends React.Component {
         let attendanceData = [];
         let cancellationData = [];
         
-        for(let i=0; i<5; i++) {
+        /*for(let i=0; i<5; i++) {
             bookingData[i] = attendanceData[i] = cancellationData[i] = 0;
-            timeLabels.push("");
-        }
+            timeLabels.push(i);
+        }*/
         let index = 0;
         let found = false;
         do {
             rows.sort((l1, l2) => moment(l1.Start).format("YYYY-MM-DD HH:mm").localeCompare(moment(l2.Start).format("YYYY-MM-DD HH:mm")));
+            console.log(JSON.stringify(rows));
             rows.forEach((row, i) => {
-                if(row.LectureId === lectureId) {
+                if(row.Start === start) {
                     index = i;
                     found = true;
                 }
@@ -244,12 +274,12 @@ class StatisticManager extends React.Component {
         } while(!found);
         const offset = 2 - index;
         rows.forEach((row, i) => {
-            bookingData[i + offset] = row.TotBooked + row.TotQueue;
-            attendanceData[i + offset] = row.TotPresent;
-            cancellationData[i + offset] = row.TotCancelled;
-            timeLabels[i + offset] = moment(row.Start).format("DD/MM HH:mm");
+            bookingData[i] = row.TotBooked + row.TotQueue;
+            attendanceData[i] = row.TotPresent;
+            cancellationData[i] = row.TotCancelled;
+            timeLabels[i] = moment(row.Start).format("DD/MM HH:mm");
         });
-        this.setState({lectureStatistics: {bookingData: bookingData, attendanceData: attendanceData, cancellationData: cancellationData, timeLabels: timeLabels}});
+        this.setState({lectureStatistics: {bookingData: bookingData, attendanceData: attendanceData, cancellationData: cancellationData, timeLabels: timeLabels, index: index}});
     }
 
     isPresence = (lecture) => { return lecture.State==0; }
@@ -295,11 +325,11 @@ class StatisticManager extends React.Component {
             <div className="row">
                 <div className="col-4 statistic">
                     <h1>Weekly statistics</h1>
-                    <ChartManager statistics={this.state.weeklyStatistics} />
+                    <ChartManager statistics={this.state.weeklyStatistics} height={300}/>
                 </div>
                 <div className="col-4 statistic">
                     <h1>Monthly statistics</h1>
-                    <ChartManager statistics={this.state.monthlyStatistics} />
+                    <ChartManager statistics={this.state.monthlyStatistics} height={300}/>
                 </div>
             </div>
         </div>;
@@ -316,7 +346,7 @@ class StatisticManager extends React.Component {
                 <Button variant="secondary" onClick={() => closeModal()}>Close</Button>
             </Modal.Header>
             <Modal.Body>
-                <LectureStatistics onLoad={() => this.getLectureStatistics(lecture.LectureId, lecture.Start)} statistics={this.state.lectureStatistics}/>  
+                <LectureStatistics onLoad={() => this.getLectureStatistics(lecture.LectureId, lecture.Start)} statistics={this.state.lectureStatistics}/>
             </Modal.Body>
         </Modal.Dialog>
         );
@@ -357,8 +387,8 @@ class LectureStatistics extends React.Component {
     }
 
     render() {
-        return <div className="statistic">
-            <ChartManager statistics={this.props.statistics} />
+        return <div style={{margin: "auto"}}>
+            <ChartManager statistics={this.props.statistics} height={200}/>
         </div>;
     }
 }

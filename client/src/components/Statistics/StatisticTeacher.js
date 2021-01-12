@@ -5,10 +5,10 @@ import LegendFilter from "../Legend/LegendFilter";
 import { Chart } from 'react-charts';
 import {getWeek, getMonth, weekSQLtoMoment, monthSQLtoMoment} from '../../Functions';
 import { statistics, statisticMap, normalizeWeek, normalizeMonth } from './StatisticMisc';
-import {colors } from "../Calendar/CalendarMisc";
 import ReactTooltip from 'react-tooltip';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import {descriptions, colors} from "../Calendar/CalendarMisc";
 import "./Statistic.css";
 
 const moment = require('moment');
@@ -39,8 +39,11 @@ class ChartTeacher extends React.Component {
     }
 
     getDatumStyle = (datum) => {
+        let index = this.props.statistics && this.props.statistics.index;
+        if(!index)
+            index = 2;
         return {
-            opacity: datum.index == 2 ? 1 : 0.3,
+            opacity: datum.index == index ? 1 : 0.3,
         };
     }
     
@@ -50,13 +53,17 @@ class ChartTeacher extends React.Component {
         };
     }
 
+
     render() {
+        if(!this.props.statistics) 
+            return <></>;
+
         let zeros = [];
         for(let i=0; i<5; i++)
             zeros.push(0);
         const waitingData = (this.props.statistics && this.props.statistics.waitingData) || zeros;
         const bookingData = (this.props.statistics && this.props.statistics.bookingData) || zeros;
-        const timeLabels = (this.props.statistics && this.props.statistics.timeLabels) || ["A", "B", "C", "D", "E"];
+        const timeLabels = (this.props.statistics && this.props.statistics.timeLabels) || [];
 
         let chartData = [{
                 label: statistics.bookings.label,
@@ -89,7 +96,7 @@ class ChartTeacher extends React.Component {
             type: 'bar'
         };
 
-        return <div className="chart-container">
+        return <div className="chart-container" style={{height: this.props.height+"px"}}>
             <Chart 
                 data={chartData} series={series} axes={axes}           
                 getSeriesStyle={this.getSeriesStyle}
@@ -110,6 +117,27 @@ class StatisticTeacher extends React.Component {
             {color: colors.remote, name: "Remote", checked: true}
         ];
         this.state = {day: moment(), filters: filters, lectures: [], selectedLectures: []};
+    }
+
+    isPresence = (lecture) => { return lecture.State==0; }
+    isRemote = (lecture) => { return lecture.State!=0; }
+
+    getColorCode = (lecture) => {
+        if(this.isPresence(lecture))
+            return colors.bookable;
+        else if(this.isRemote(lecture))
+            return colors.remote;
+        else
+            return "";
+    }
+
+    getDescription = (lecture) => {
+        if(this.isPresence(lecture))
+            return descriptions.bookable;
+        else if(this.isRemote(lecture))
+            return descriptions.remote;
+        else
+            return "";
     }
 
     getLectures = (day) => {
@@ -155,7 +183,9 @@ class StatisticTeacher extends React.Component {
     }
 
     setWeeklyStatistics = (rows, first) => {
-        const startWeek = moment(first).week();
+        let startWeek = first.week();
+        if(first.month() == 11 && first.week() == 1)
+            startWeek = 53;
         const startYear = moment(first).year();
         let timeLabels = [];
         let bookingData = [];
@@ -204,17 +234,17 @@ class StatisticTeacher extends React.Component {
         let waitingData = [];
 
         rows.sort((l1, l2) => moment(l1.Start).format("YYYY-MM-DD HH:mm").localeCompare(moment(l2.Start).format("YYYY-MM-DD HH:mm")));
-        for(let i=0; i<5; i++) {
+        /*for(let i=0; i<5; i++) {
             bookingData.push(0);
             waitingData.push(0);
             timeLabels.push("");
-        }
+        }*/
         let index = 0;
         let found = false;
         do {
             rows.sort((l1, l2) => moment(l1.Start).format("YYYY-MM-DD HH:mm").localeCompare(moment(l2.Start).format("YYYY-MM-DD HH:mm")));
             rows.forEach((row, i) => {
-                if(row.LectureId === lectureId) {
+                if(row.Start === start) {
                     index = i;
                     found = true;
                 }
@@ -233,11 +263,11 @@ class StatisticTeacher extends React.Component {
         } while(!found);
         const offset = 2 - index;
         rows.forEach((row, i) => {
-            bookingData[i + offset] = row.TotBooked;
-            waitingData[i + offset] = row.TotQueue;
-            timeLabels[i + offset] = moment(row.Start).format("DD/MM HH:mm");
+            bookingData[i] = row.TotBooked;
+            waitingData[i] = row.TotQueue;
+            timeLabels[i] = moment(row.Start).format("DD/MM HH:mm");
         });
-        this.setState({lectureStatistics: {bookingData: bookingData, waitingData: waitingData, timeLabels: timeLabels}});
+        this.setState({lectureStatistics: {bookingData: bookingData, waitingData: waitingData, timeLabels: timeLabels, index: index}});
     }
 
     isPresence = (lecture) => { return lecture.State==0; }
@@ -283,11 +313,11 @@ class StatisticTeacher extends React.Component {
             <div className="row">
                 <div className="col-4 statistic">
                     <h1>Weekly statistics</h1>
-                    <ChartTeacher statistics={this.state.weeklyStatistics} />
+                    <ChartTeacher statistics={this.state.weeklyStatistics} height={300}/>
                 </div>
                 <div className="col-4 statistic">
                     <h1>Monthly statistics</h1>
-                    <ChartTeacher statistics={this.state.monthylStatistics} />
+                    <ChartTeacher statistics={this.state.monthylStatistics} height={300}/>
                 </div>
             </div>
         </div>;
@@ -343,8 +373,8 @@ class LectureStatistics extends React.Component {
     }
 
     render() {
-        return <div className="statistic">
-            <ChartTeacher statistics={this.props.statistics} />
+        return <div style={{margin: "auto"}}>
+            <ChartTeacher statistics={this.props.statistics} height={200}/>
         </div>;
     }
 }
