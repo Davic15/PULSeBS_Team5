@@ -601,7 +601,7 @@ test('Dequeue student from bookings', async() => {
 });
 
 afterAll(async() => {
-    for (stat of stats) {
+    for (let stat of stats) {
         try {
             await db.run(stat);
         }

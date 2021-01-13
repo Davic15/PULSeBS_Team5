@@ -61,7 +61,7 @@ input[type="checkbox"]:checked {
     height: 10px;
     background-color: #818181;
     border-radius: 15px;
-    margin-right: 10px;
+    /*margin-right: 10px;*/
     -webkit-transition: background .3s ease;
     transition: background .3s ease;
     vertical-align: middle;
