@@ -913,13 +913,13 @@ exports.getLowerDate=function(lecture_id, n_lectures){
         (resolve,reject)=>{
         const sql="SELECT Start from(SELECT Lecture.LectureId AS LectureId, Lecture.Start AS Start,Lecture.State AS State "+
                     "FROM Lecture "+
-                    "where date(Start) < (select date(Start) From lecture where LectureId=?) "+
+                    "where date(Start) <= (select date(Start) From lecture where LectureId=?) "+
                     "and CourseId=(select CourseId From lecture where LectureId=?) "+
                     "order by Start DESC "+
                     "limit ?) as T "+
                     "order by Start "+
                     "limit 1;";
-        db.get(sql, [lecture_id,lecture_id,n_lectures], (err, row) => {
+        db.get(sql, [lecture_id,lecture_id,n_lectures+1], (err, row) => {
             if(err){
                 reject(err);
             }else if(row){
@@ -939,14 +939,14 @@ exports.getHigherDate=function(lecture_id, n_lectures){
         (resolve,reject)=>{
         const sql="SELECT Start from(SELECT Lecture.LectureId AS LectureId, Lecture.Start AS Start,Lecture.State AS State "+
                     "FROM Lecture "+
-                    "where date(Start) > (select date(Start) From lecture where LectureId=?) "+
+                    "where date(Start) >= (select date(Start) From lecture where LectureId=?) "+
                     "and CourseId=(select CourseId From lecture where LectureId=?) "+
                     "order by Start "+
                     "limit ?) as T "+
                     "order by Start DESC "+
                     "limit 1;";
         console.log(sql);
-        db.get(sql, [lecture_id,lecture_id,n_lectures], (err, row) => {
+        db.get(sql, [lecture_id,lecture_id,n_lectures+1], (err, row) => {
             if(err){
                 reject(err);
             }else if(row){
