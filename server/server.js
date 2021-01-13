@@ -8,7 +8,7 @@ const cookieParser=require('cookie-parser');
 const upload = require('express-fileupload');
 const pdf = require("pdf-creator-node");
 const fs = require('fs');
-const { start } = require('repl');
+//const { start } = require('repl');
 const emailer=require('./email');
 
 
@@ -862,7 +862,7 @@ app.post('/api/updateSchedule',async (req,res)=>{
         let emailReplacements;
         let seats={};
         const subject="Schedule update INFO";
-        for(i=0;i<prev.length;i++){
+        for(let i=0;i<prev.length;i++){
 
             if(!seats[prev[i].LectureId])
             {
@@ -895,7 +895,7 @@ app.post('/api/updateSchedule',async (req,res)=>{
                 await dao.deQueue(prev[i].BookingId)
             }
             try{
-                emailer.send(prev[i].Email,subject,email,emailReplacements);
+                await emailer.send(prev[i].Email,subject,email,emailReplacements);
             }catch(ex){
                 console.log(JSON.stringify(ex));
             }

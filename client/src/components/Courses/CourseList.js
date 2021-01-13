@@ -1,7 +1,7 @@
 import React from 'react';
 import API from '../../API';
 import {Link} from "react-router-dom";
-import {AuthContext} from '../AuthContext/AuthContext';
+//import {AuthContext} from '../AuthContext/AuthContext';
 import "../Courses/CourseList.css";
 
 import "./CourseList.css";

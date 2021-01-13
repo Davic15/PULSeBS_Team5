@@ -261,7 +261,7 @@ class StatisticTeacher extends React.Component {
                 rows.push(fakeRow);
             }
         } while(!found);
-        const offset = 2 - index;
+        //const offset = 2 - index;
         rows.forEach((row, i) => {
             bookingData[i] = row.TotBooked;
             waitingData[i] = row.TotQueue;

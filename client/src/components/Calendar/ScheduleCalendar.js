@@ -7,7 +7,7 @@ import LegendFilter from "../Legend/LegendFilter";
 import {colors, descriptions} from "./CalendarMisc";
 import {getWeek} from '../../Functions';
 import Modal from 'react-bootstrap/Modal';
-import Link from "react-router-dom";
+//import Link from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import ReactTooltip from 'react-tooltip';
 import TimePicker from 'react-time-picker';

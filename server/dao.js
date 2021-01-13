@@ -1658,7 +1658,7 @@ exports.updateScheduleRecord=function(strday,time,classroomId,schedule_id){
 exports.updateSchedule=  function(lecture_id,strday,start_time,end_time,remote,classroomId){
     return new Promise(
         async (resolve,reject)=>{
-            let day=0;
+            let day=-1;
             switch(strday) {
                 case "Mon":
                     day = 0;
@@ -1691,8 +1691,8 @@ exports.updateSchedule=  function(lecture_id,strday,start_time,end_time,remote,c
 
                 let curDate=moment(lecture.Start.split(' ')[0]);
                 curDate.add(day-curDate.day()+1,'days');
-                Start=curDate.format("YYYY-MM-DD")+' '+start_time;
-                End=curDate.format("YYYY-MM-DD")+' '+end_time;
+                let Start=curDate.format("YYYY-MM-DD")+' '+start_time;
+                let End=curDate.format("YYYY-MM-DD")+' '+end_time;
                 try{
                     await this.updateLecture(Start,End,remote,classroomId,lecture.LectureId);
                 }

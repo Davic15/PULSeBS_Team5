@@ -42,7 +42,8 @@ exports.send=async function(recepient,subject,text,replacements) {
 
   recepient = "pulsebs.softeng2@gmail.com"; //force send to our email
   // send mail with defined transport object
-  let info=await transporter.sendMail({
+  //remember to let info=await.. if in test mode
+  await transporter.sendMail({
     from: '"PULSeBs platform" <pulsebs.softeng2@gmail.com>', // sender address
     to: recepient, // list of receivers
     subject: subject, // Subject line
