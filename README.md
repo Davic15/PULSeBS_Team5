@@ -349,6 +349,40 @@
         **date**: String AAAA-MM-DD}
     Response 200: "OK"
     Description: change lecture state from 'remotee' to 'remon-lineote' for all lectures of courses of the specified year starting from the specified date (only if they were previously restricted by the officer, it doesn't change lecture set to remote by the teacher )
+    
+* ### /api/classrooms
+    Access:authenticated /students
+    type: POST
+    Body:{**min_seats**:Integer}
+    Response 200: {**ClassroomId**:Integer,
+                   **Seats**:Integer,
+                   **Name**:Strig}
+    Description: returns the list of classrom with a number of seats greater or eqaul than min_seats
+  
+ *  ### /api/updatePresence
+    Access:authenticated /students
+    type: POST
+    Body:{**flag**:Integer,
+        **booking_id**:integer}
+    Response 200: "OK"
+    Description: set a student who booked for a ecture as present (flag=1) or absentb(flag=0)
+    
+   *  ### /api/updateSchedule
+    Access:authenticated /students
+    type: POST
+    Body:{**lecture_id**:Integer,
+         **date**: String AAAA-MM-DD,
+          **start_time**: String hh:mm,
+          **end_time**: String hh:mm,
+          **remote**:Integer,
+          **classroom_id**:Integer
+          }
+    Response 200: "OK"
+    Description: changes the schedule for a lecture starting from the one with id "lecture_id", it also sends email to all affected students
+    
+   
+    
+    
 
 
 #Docker
