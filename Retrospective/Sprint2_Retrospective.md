@@ -30,7 +30,7 @@ TEAM 5 Retrospective
    
 
 - Average hours per task : 1h 16m
-- Standard deviation per task : 2h 55m
+- Standard deviation per task : 30m
 - Total task estimation error ratio: sum of total hours estimation / sum of total hours spent from previous table= 1.01
 
   
