@@ -21,6 +21,7 @@ import Attendance from "./components/Attendance/Attendance.js";
 import AttendanceHistory from "./components/Attendance/AttendanceHistory.js";
 import ScheduleCalendar from './components/Calendar/ScheduleCalendar';
 import CourseListOfficer from './components/Courses/CourseListOfficer';
+import Bookings from './components/Attendance/Bookings';
 
 class App extends React.Component{
 
@@ -120,6 +121,10 @@ class App extends React.Component{
                 <Route path='/history/:lectureId' render={(props) => (<>
                     {!this.state.authUser && <Redirect to="/login" />}
                     {this.state.authUser && this.state.authUser.Type === "teacher" && <AttendanceHistory lectureId={props.match.params.lectureId} />}
+                </>)}/>
+                <Route path='/bookings/:lectureId' render={(props) => (<>
+                    {!this.state.authUser && <Redirect to="/login" />}
+                    {this.state.authUser && this.state.authUser.Type === "teacher" && <Bookings lectureId={props.match.params.lectureId} />}
                 </>)}/>
                 <Route path="/courses">
                     {!this.state.authUser && <Redirect to="/login" />}

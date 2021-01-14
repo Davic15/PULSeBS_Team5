@@ -173,6 +173,7 @@ class LectureCalendarTeacher extends React.Component {
                     <i>{this.getDescription(lecture)}</i><br />
                     {!this.isRemote(lecture) && currentLecture && <Link to={"/attendance/"+lecture.LectureId}>Record attendance</Link>}
                     {!this.isRemote(lecture) && !currentLecture && minutesLeft <= 0 && <Link to={"/history/"+lecture.LectureId}>Attendance history</Link>}
+                    {!this.isRemote(lecture) && ((minutesLeft > 0) && !currentLecture) && <Link to={"/bookings/"+lecture.LectureId}>Bookings</Link>}
                 </p>
             </Modal.Body>
             <Modal.Footer>
