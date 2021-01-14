@@ -19,7 +19,7 @@ class ChartTeacher extends React.Component {
         super(props);
         const filters = [
             {name:statistics.bookings.label, color: statistics.bookings.color, checked:true},
-            {name:statistics.waiting.label, color: statistics.waiting.color, checked: true}
+            {name:statistics.attendance.label, color: statistics.attendance.color, checked: true}
         ]
         this.state = {filters: filters}
     }
@@ -61,7 +61,7 @@ class ChartTeacher extends React.Component {
         let zeros = [];
         for(let i=0; i<5; i++)
             zeros.push(0);
-        const waitingData = (this.props.statistics && this.props.statistics.waitingData) || zeros;
+        const attendanceData = (this.props.statistics && this.props.statistics.attendanceData) || zeros;
         const bookingData = (this.props.statistics && this.props.statistics.bookingData) || zeros;
         const timeLabels = (this.props.statistics && this.props.statistics.timeLabels) || [];
 
@@ -70,11 +70,10 @@ class ChartTeacher extends React.Component {
                 data: bookingData.map((bookings, i) => [timeLabels[i], bookings])
             },
             {
-                label: statistics.waiting.label,
-                data: waitingData.map((bookings, i) => [timeLabels[i], bookings])
+                label: statistics.attendance.label,
+                data: attendanceData.map((attendance, i) => [timeLabels[i], attendance])
             }
         ];
-
         chartData = this.applyFilters(this.state.filters, chartData);
         
         let max = 0;
@@ -89,9 +88,9 @@ class ChartTeacher extends React.Component {
 
         const axes =  [
             { primary: true, type: 'ordinal', position: 'bottom' },
-            { type: 'linear', position: 'left', stacked: true, hardMin: 0, hardMax: max }
+            { type: 'linear', position: 'left', stacked: false, hardMin: 0, hardMax: max }
         ];
-        
+
         const series = {
             type: 'bar'
         };
@@ -189,10 +188,10 @@ class StatisticTeacher extends React.Component {
         const startYear = moment(first).year();
         let timeLabels = [];
         let bookingData = [];
-        let waitingData = [];
+        let attendanceData = [];
         for(let i=0; i<5; i++) {
             bookingData.push(0);
-            waitingData.push(0);
+            attendanceData.push(0);
             const weekFirst = moment(first).add(i, 'weeks');
             const weekLast = getWeek(weekFirst).last;
             const label = weekFirst.format("DD/MM") + " - " + weekLast.format("DD/MM");
@@ -200,10 +199,10 @@ class StatisticTeacher extends React.Component {
         }
         rows.forEach((row) => {
             const i = normalizeWeek(startWeek, startYear, weekSQLtoMoment(row.Week), row.Year) - startWeek;
-            bookingData[i] = row.AvgBooked;
-            waitingData[i] = row.AvgQueue;
+            bookingData[i] = row.AvgBooked + row.AvgQueue;
+            attendanceData[i] = row.AvgPresent;
         });
-        this.setState({weeklyStatistics: {bookingData: bookingData, waitingData: waitingData, timeLabels: timeLabels}});
+        this.setState({weeklyStatistics: {bookingData: bookingData, attendanceData: attendanceData, timeLabels: timeLabels}});
     }
     
     setMonthlyStatistics = (rows, first) => {
@@ -211,27 +210,26 @@ class StatisticTeacher extends React.Component {
         const startYear = moment(first).year();
         let timeLabels = [];
         let bookingData = [];
-        let waitingData = [];
+        let attendanceData = [];
         for(let i=0; i<5; i++) {
             bookingData.push(0);
-            waitingData.push(0);
+            attendanceData.push(0);
             const monthFirst = moment(first).add(i, 'months');
             const label = monthFirst.format("MMMM 'YY");
             timeLabels.push(label);
         }
-        console.log(JSON.stringify(rows));
         rows.forEach((row) => {
             const i = normalizeMonth(startMonth, startYear, monthSQLtoMoment(row.Month), row.Year) - startMonth;
-            bookingData[i] = row.AvgBooked;
-            waitingData[i] = row.AvgQueue;
+            bookingData[i] = row.AvgBooked + row.AvgQueue;
+            attendanceData[i] = row.AvgPresent;
         });
-        this.setState({monthylStatistics: {bookingData: bookingData, waitingData: waitingData, timeLabels: timeLabels}});
+        this.setState({monthylStatistics: {bookingData: bookingData, attendanceData: attendanceData, timeLabels: timeLabels}});
     }
 
     setLectureStatistics = (rows, lectureId, start) => {
         let timeLabels = [];
         let bookingData = [];
-        let waitingData = [];
+        let attendanceData = [];
 
         rows.sort((l1, l2) => moment(l1.Start).format("YYYY-MM-DD HH:mm").localeCompare(moment(l2.Start).format("YYYY-MM-DD HH:mm")));
         /*for(let i=0; i<5; i++) {
@@ -263,11 +261,11 @@ class StatisticTeacher extends React.Component {
         } while(!found);
         //const offset = 2 - index;
         rows.forEach((row, i) => {
-            bookingData[i] = row.TotBooked;
-            waitingData[i] = row.TotQueue;
+            bookingData[i] = row.TotBooked + row.TotQueue;
+            attendanceData[i] = row.TotPresent;
             timeLabels[i] = moment(row.Start).format("DD/MM HH:mm");
         });
-        this.setState({lectureStatistics: {bookingData: bookingData, waitingData: waitingData, timeLabels: timeLabels, index: index}});
+        this.setState({lectureStatistics: {bookingData: bookingData, attendanceData: attendanceData, timeLabels: timeLabels, index: index}});
     }
 
     isPresence = (lecture) => { return lecture.State==0; }

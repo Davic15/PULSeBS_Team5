@@ -25,14 +25,14 @@ for(let name in statistics) {
 
 export const normalizeWeek = (firstWeek, firstYear, week, year) => {
     if(year > firstYear) 
-        return week + (54 - firstWeek);
+        return week + (52);
     else
         return week;
 }
 
 export const normalizeMonth = (firstMonth, firstYear, month, year) => {
     if(year > firstYear) 
-        return month + (12 - firstMonth);
+        return month + (12);
     else
         return month;
 }
