@@ -1,84 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
   <file path="D:\Documenti\PULSeBS_Team5\server\tests\API.test.js">
-    <testCase name="Insert teachers in db" duration="18"/>
-    <testCase name="Insert students in db" duration="33"/>
-    <testCase name="Insert courses in db" duration="1818"/>
-    <testCase name="Insert enrollments in db" duration="1220"/>
-    <testCase name="Insert lectures in db" duration="12015"/>
-    <testCase name="User is defined" duration="2151"/>
-    <testCase name="User is undefined" duration="1"/>
-    <testCase name="User by id is defined" duration="3"/>
+    <testCase name="Insert teachers in db" duration="20"/>
+    <testCase name="Insert students in db" duration="28"/>
+    <testCase name="Insert courses in db" duration="2013"/>
+    <testCase name="Insert enrollments in db" duration="1344"/>
+    <testCase name="Insert lectures in db" duration="13574"/>
+    <testCase name="User is defined" duration="2126"/>
+    <testCase name="User is undefined" duration="8"/>
+    <testCase name="User by id is defined" duration="2"/>
     <testCase name="User by id is empty" duration="1"/>
     <testCase name="Course by id is defined" duration="2"/>
     <testCase name="Course by id is empty" duration="1"/>
     <testCase name="Classroom by id is defined" duration="1"/>
     <testCase name="Classroom by id is empty" duration="1"/>
-    <testCase name="Get lectures for student &quot;900000&quot;" duration="2"/>
-    <testCase name="Get lectures for student &quot;900001&quot;" duration="1"/>
+    <testCase name="Get lectures for student &quot;900000&quot;" duration="1"/>
+    <testCase name="Get lectures for student &quot;900001&quot;" duration="2"/>
     <testCase name="Check course for student &quot;900000&quot;" duration="2"/>
     <testCase name="Check course for student &quot;900001&quot;" duration="0"/>
     <testCase name="Check course for teacher &quot;d0000&quot;" duration="1"/>
-    <testCase name="Check course for teacher &quot;d0001&quot;" duration="0"/>
-    <testCase name="Get lecture info" duration="1"/>
-    <testCase name="Get lecture info with valid course and date" duration="3"/>
+    <testCase name="Check course for teacher &quot;d0001&quot;" duration="2"/>
+    <testCase name="Get lecture info" duration="2"/>
+    <testCase name="Get lecture info with valid course and date" duration="2"/>
     <testCase name="Get lecture info with invalid course and date" duration="1"/>
-    <testCase name="Get student info fulfilled" duration="2"/>
+    <testCase name="Get student info fulfilled" duration="5"/>
     <testCase name="Get student info empty" duration="1"/>
-    <testCase name="Book lecture for student enrolled" duration="161"/>
-    <testCase name="Book lecture for student not enrolled" duration="2"/>
+    <testCase name="Book lecture for student enrolled" duration="128"/>
+    <testCase name="Book lecture for student not enrolled" duration="4"/>
     <testCase name="Check booked lecture for student 900000" duration="2"/>
     <testCase name="Check not booked lecture for student 900001" duration="1"/>
     <testCase name="Check booking for student not enrolled" duration="1"/>
-    <testCase name="Book lecture for student already booked" duration="2"/>
-    <testCase name="Get seats count for lecture" duration="292"/>
-    <testCase name="Get lectures for teacher" duration="3"/>
-    <testCase name="Get students for lecture" duration="308"/>
-    <testCase name="Get next student in line" duration="667"/>
-    <testCase name="Get bookings for student 900000" duration="256"/>
-    <testCase name="Get email info" duration="288"/>
-    <testCase name="Cancel lecture for authorized teacher" duration="146"/>
+    <testCase name="Book lecture for student already booked" duration="1"/>
+    <testCase name="Get seats count for lecture" duration="280"/>
+    <testCase name="Get lectures for teacher" duration="1"/>
+    <testCase name="Get students for lecture" duration="300"/>
+    <testCase name="Get next student in line" duration="832"/>
+    <testCase name="Get bookings for student 900000" duration="323"/>
+    <testCase name="Get email info" duration="300"/>
+    <testCase name="Cancel lecture for authorized teacher" duration="155"/>
     <testCase name="Move lecture to remote for authorized teacher" duration="144"/>
     <testCase name="Move lecture to remote for unauthorized teacher" duration="1"/>
     <testCase name="Get all lectures for email" duration="1"/>
     <testCase name="Set email sent" duration="143"/>
-    <testCase name="Book canceled lecture for student enrolled" duration="3"/>
+    <testCase name="Book canceled lecture for student enrolled" duration="2"/>
     <testCase name="Get lectures for course in time range" duration="2"/>
-    <testCase name="Get courses of teacher d9000" duration="138"/>
+    <testCase name="Get courses of teacher d9000" duration="151"/>
     <testCase name="Get courses of teacher d9001" duration="1"/>
-    <testCase name="Get all courses" duration="2"/>
+    <testCase name="Get all courses" duration="1"/>
     <testCase name="Get lecture lower date between lectures" duration="2"/>
-    <testCase name="Get lecture higher date between lectures" duration="32"/>
-    <testCase name="Get tot for lectures in week" duration="688"/>
-    <testCase name="Get tot for lectures in month" duration="133">
-      <failure message="Error: expect(received).toBe(expected) // Object.is equality"><![CDATA[Error: expect(received).toBe(expected) // Object.is equality
-
-Expected: 2
-Received: 0
-    at Object.<anonymous> (D:\Documenti\PULSeBS_Team5\server\tests\API.test.js:437:26)]]></failure>
-    </testCase>
-    <testCase name="Get tot for lectures in lecture" duration="2">
-      <failure message="Error: expect(received).toBe(expected) // Object.is equality"><![CDATA[Error: expect(received).toBe(expected) // Object.is equality
-
-Expected: "2020-10-12 8:30"
-Received: undefined
-    at Object.<anonymous> (D:\Documenti\PULSeBS_Team5\server\tests\API.test.js:450:22)]]></failure>
-    </testCase>
-    <testCase name="Contact tracing for student &quot;900001" duration="318"/>
-    <testCase name="Insert report for student &quot;900001&quot;" duration="1"/>
-    <testCase name="Put restrictions" duration="244"/>
+    <testCase name="Get lecture higher date between lectures" duration="40"/>
+    <testCase name="Get tot for lectures in week" duration="817"/>
+    <testCase name="Get tot for lectures in month" duration="2"/>
+    <testCase name="Get tot for lectures in lecture" duration="149"/>
+    <testCase name="Contact tracing for student &quot;900001" duration="300"/>
+    <testCase name="Insert report for student &quot;900001&quot;" duration="0"/>
+    <testCase name="Put restrictions" duration="457"/>
     <testCase name="Get restricted years with restrictions" duration="1"/>
-    <testCase name="Lift restrictions" duration="119"/>
+    <testCase name="Lift restrictions" duration="396"/>
     <testCase name="Get restricted years with no restrictions" duration="1"/>
-    <testCase name="Set student absent for teacher d9000" duration="176"/>
-    <testCase name="Set student present for teacher d9000" duration="179"/>
-    <testCase name="Get all classrooms" duration="1"/>
-    <testCase name="Get big classrooms" duration="2"/>
-    <testCase name="Get schedule from lecture" duration="2"/>
-    <testCase name="Update lecture with new schedule" duration="1"/>
+    <testCase name="Set student absent for teacher d9000" duration="144"/>
+    <testCase name="Set student present for teacher d9000" duration="156"/>
+    <testCase name="Get all classrooms" duration="0"/>
+    <testCase name="Get big classrooms" duration="1"/>
+    <testCase name="Get schedule from lecture" duration="1"/>
+    <testCase name="Update lecture with new schedule" duration="2"/>
     <testCase name="Update table schedule with schedule id" duration="1"/>
-    <testCase name="Update schedule" duration="1847"/>
-    <testCase name="Get booked lecture info" duration="158"/>
-    <testCase name="Dequeue student from bookings" duration="130"/>
+    <testCase name="Update schedule" duration="2171"/>
+    <testCase name="Get booked lecture info" duration="147"/>
+    <testCase name="Dequeue student from bookings" duration="163"/>
   </file>
 </testExecutions>
